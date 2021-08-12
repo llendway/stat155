@@ -1,7 +1,7 @@
 ---
-title: "Main Title"
+title: "STAT 155"
 output: html_document
 ---
 
-This is what will show up on the main page.
+These are the in-class lessons for STAT 155.
 
