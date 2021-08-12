@@ -1,0 +1,14 @@
+navbar: 
+  title: STAT 155
+  left:
+  - text: Lessons
+    menu: 
+    - text: Plotting data - univariate
+      href: 01_univariate.html
+    - text: Plotting data - multivariate
+      href: 02_multivariate.html
+    - text: Simple linear regression
+      href: 03_slr_creatin_interpreting_point_pred.html
+output:
+  html_document:
+    theme: flatly
