@@ -8,7 +8,7 @@ navbar:
     - text: Plotting data - multivariate
       href: 02_multivariate.html
     - text: Simple linear regression
-      href: 03_slr_creatin_interpreting_point_pred.html
+      href: 03_slr_creating_interpreting_point_pred.html
 output:
   html_document:
     theme: flatly

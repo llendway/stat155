@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Working with one variable</title>
+
+<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">STAT 155</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Lessons
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01_univariate.html">Plotting data - univariate</a>
+    </li>
+    <li>
+      <a href="02_multivariate.html">Plotting data - multivariate</a>
+    </li>
+    <li>
+      <a href="03_slr_creating_interpreting_point_pred.html">Simple linear regression</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Working with one variable</h1>
+
+</div>
+
+
+<div id="reminders" class="section level2">
+<h2>REMINDERS:</h2>
+<p><strong>Statistics is the practice of using data from a sample to make inferences about some broader population of interest.</strong> This class focuses on using linear and logistic models built from a sample of data to learn about relationships in the broader population and to make predictions.</p>
+<div id="set-up-r-studio-from-r-basics" class="section level3">
+<h3>Set up R Studio (from R Basics)</h3>
+<p>Go to Tools –&gt; Global Options. On the General tab, next to <em>Save workspace to .RData on exit</em>, choose <em>Never</em> and uncheck the box next to <em>Restore .Rdata into workspace at startup</em>. You can also go to the Appearance tab to customize the look of R Studio. Some people like black screens better than white.</p>
+<p>Save this file to somewhere <strong>OTHER THAN YOUR DOWNLOADS FOLDER</strong>! Save often.</p>
+</div>
+<div id="install-new-libraries-and-load-the-libraries-we-will-use" class="section level3">
+<h3>Install new libraries and load the libraries we will use</h3>
+<p>We need to install any new packages we plan to load in an R markdown document. Once installed, you won’t have to install them again. Today, we need to install the <code>tidyverse</code> and <code>fueleconomy</code> packages. You can either go to the Packages tab and click Install. Type <code>tidyverse</code> <code>fueleconomy</code> (separated by a space) and follow the prompts. Or else, <em>in the console</em>, type <code>install.packages("tidyverse", "fueleconomy")</code>.</p>
+<p>Then you load the libraries by running the following piece of code. You need to do this in <em>every</em> R markdown file where you use functions or datasets from these package. We will get into the habit of putting these at the very top of our documents. This will be one of the only documents where I do not have all the libraries listed at the top. Also note that I’ve added <code>warning=FALSE, message=FALSE</code> to the code chunk options, next to the <code>r</code>. This will prevent messages and warnings from being printed out.</p>
+<pre class="r"><code>library(tidyverse) #for plotting and summarizing
+library(fueleconomy) #for the dataset</code></pre>
+</div>
+</div>
+<div id="intro-to-graphing-data" class="section level2">
+<h2>Intro to Graphing Data</h2>
+<center>
+<img src="images/moderndive_flowchart_explore.png" width="600" />
+</center>
+<div class="alert alert-success">
+<p><strong>GOAL:</strong></p>
+<p>Visually examine distributions of both quantitative and categorical variables. By the end of these notes and activities, you should have a general idea for how to do the following tasks.</p>
+<ul>
+<li>Create a histogram of a quantitative variable using a reasonable number of bins or binwidth so that the graph shows enough detail but not too much.<br />
+</li>
+<li>Describe the shape, center, and spread of the distribution of a quantitative variable. Only one statistic should be use to describe each of the shape and spread, usually mean and standard deviation or median and IQR.</li>
+<li>Create a table to summarize how often each level of a categorical variable occurs. Sort the table from largest to smallest or smallest to largest.<br />
+</li>
+<li>Create a barplot to visually show how often each level of a categorical variable occurs.</li>
+</ul>
+</div>
+<p>Usually one of the first things we want to do with new data is visualize it. If you haven’t wanted to do this in the past, you’ll want to do it now because it’s going to be so easy! We will use functions from a package called <code>ggplot2</code> to create our visualizations. This package is based on a visualization framework called the <a href="https://www.amazon.com/Grammar-Graphics-Statistics-Computing/dp/0387245448">“Grammar of Graphics”</a>. We will only discuss a few key details of the framework: data, geometric objects, and aesthetic attributes. The main idea is that “A statistical graphic is a mapping of data variables to aesthetic attributes of geometric objects.”</p>
+<ol style="list-style-type: decimal">
+<li>Data: Our data set that contains <em>variables</em> (the columns) with many <em>observations</em> (the rows).<br />
+</li>
+<li>Geometric objects: What we observe on our plot - points, lines, bars, etc.</li>
+<li>Aesthetic attributes: parts of the geometric object that we observe: x/y position, color, shape, size, etc.</li>
+</ol>
+<p>In general, a basic plot can be created using the following template, where everything between the <code>&lt;&gt;</code> would be modified to fit your needs.</p>
+<pre><code>ggplot(data = &lt;DATA&gt;) +
+  &lt;GEOM_FUNCTION&gt;(mapping = aes(&lt;MAPPINGS&gt;))</code></pre>
+<p>We could also write it like this:</p>
+<pre><code>&lt;DATA&gt; %&gt;% 
+  ggplot() +
+  &lt;GEOM_FUNCTION&gt;(mapping = aes(&lt;MAPPINGS&gt;))</code></pre>
+<p><strong>NOTE</strong>: The <code>%&gt;%</code> is called a <strong>pipe operator</strong>. It should be read, “and then.” It is used to “pipe” the object before it/on its left into the function after it/on its right. It makes for more readable code. In R Studio, the keyboard shortcuts to type the pipe are <code>Ctrl+Shift+M</code> on Windows and <code>Cmd+Shift+M</code> on Macs.</p>
+<p>The ggplot2 <a href="https://www.rstudio.com/resources/cheatsheets/">cheatsheet</a> is a good reference that I would encourage you to have open as we go through examples.</p>
+<p>We will also be doing some basic data summaries using the <code>dplyr</code> package. Both <code>dplyr</code> and <code>ggplot2</code> are part of the <code>tidyverse</code> package, which is a collection of packages that are useful in data visualization and manipulation. We already installed and loaded this package.</p>
+<p><strong>The data</strong>: We will use a subset of the <code>vehicles</code> data from the <code>fueleconomy</code> dataset throughout. These are fuel economy data from the <a href="https://www.fueleconomy.gov/feg/download.shtml">EPA</a>. Some variables have been excluded or modified from the original dataset. For more details search for <code>vehicles</code> in the Help section or run <code>?vehicles</code> in the console. First, take a moment to explore that data and see what is there. Run the code below and then try to answer the questions below. Don’t worry about the code syntax.</p>
+<pre class="r"><code>vehicles_2015 &lt;- vehicles %&gt;% filter(year == 2015)
+summary(vehicles_2015 %&gt;% mutate_if(is.character, as.factor))</code></pre>
+<pre><code>##        id             make             model          year     
+##  Min.   :34644   BMW    :36   A8 L        :  4   Min.   :2015  
+##  1st Qu.:34705   MINI   :34   6           :  3   1st Qu.:2015  
+##  Median :34823   Volvo  :18   CX-5 2WD    :  3   Median :2015  
+##  Mean   :34801   Jaguar :13   Fit         :  3   Mean   :2015  
+##  3rd Qu.:34878   Audi   :11   Forester AWD:  3   3rd Qu.:2015  
+##  Max.   :34932   Mazda  :11   MX-5        :  3   Max.   :2015  
+##                  (Other):82   (Other)     :186                 
+##                              class                trans   
+##  Compact Cars                   :40   Automatic (S8) :56  
+##  Two Seaters                    :31   Automatic (S6) :47  
+##  Large Cars                     :22   Manual 6-spd   :31  
+##  Subcompact Cars                :21   Automatic 6-spd:25  
+##  Small Sport Utility Vehicle 4WD:20   Auto(AM-S7)    : 7  
+##  Midsize Cars                   :18   Automatic 8-spd: 6  
+##  (Other)                        :53   (Other)        :33  
+##                drive         cyl             displ      
+##  4-Wheel Drive    :15   Min.   : 4.000   Min.   :1.200  
+##  All-Wheel Drive  :67   1st Qu.: 4.000   1st Qu.:2.000  
+##  Front-Wheel Drive:61   Median : 6.000   Median :3.000  
+##  Rear-Wheel Drive :62   Mean   : 5.824   Mean   :3.212  
+##                         3rd Qu.: 8.000   3rd Qu.:4.400  
+##                         Max.   :12.000   Max.   :6.800  
+##                         NA&#39;s   :1        NA&#39;s   :1      
+##                          fuel          hwy             cty        
+##  Diesel                    :  3   Min.   : 18.0   Min.   : 11.00  
+##  Electricity               :  1   1st Qu.: 24.0   1st Qu.: 16.00  
+##  Gasoline or E85           : 13   Median : 28.0   Median : 20.00  
+##  Premium                   :127   Mean   : 28.6   Mean   : 20.81  
+##  Premium Gas or Electricity:  1   3rd Qu.: 32.0   3rd Qu.: 25.00  
+##  Premium or E85            :  3   Max.   :101.0   Max.   :126.00  
+##  Regular                   : 57</code></pre>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<p>Check out the basic features of the dataset:</p>
+<ul>
+<li>Examine the first six cases. (What are the cases?)<br />
+</li>
+<li>How many cases and variables are there?<br />
+</li>
+<li>What are the names of the variables?<br />
+</li>
+<li>Open the dataset in a spreadsheet type viewer (type <code>View(vehicles_2015)</code> in the console or click on it over in the Environment). Scroll through some of the data. Any questions about the data?</li>
+</ul>
+<p>What about the quality of the dataset?</p>
+<ul>
+<li>How do you think the data are collected? Try doing some searching to learn more.<br />
+</li>
+<li>Can you think of any complications?</li>
+</ul>
+</div>
+</div>
+<div id="univariate-visualizationsummarization-of-quantitative-variables" class="section level2">
+<h2>Univariate visualization/summarization of quantitative variables</h2>
+<p><strong>Research questions:</strong> What is the range of highway miles per gallon (<code>hwy</code>)? What are typical highway mpg? Are highway mpg’s variable across vehicles?</p>
+<p>As you visualize quantitative variables, keep in mind:</p>
+<ul>
+<li><strong>Center</strong>: Where is the center of the distribution? What is a typical value of the variable?</li>
+<li><strong>Variability</strong>: How spread out are the values? A lot or a little?</li>
+<li><strong>Shape</strong>: How are values distributed along the observed range? Is the distribution symmetric, right-skewed (tail is longer on the right, pulled further out to the right), left-skewed, bimodal, or uniform (flat)?</li>
+<li><strong>Outliers</strong>: Are there any outliers, i.e. values that are unusually large/small relative to the bulk of other values?</li>
+<li><strong>Context</strong>: In the context of your research, what do you learn from the plot or table? How would you describe your findings to a broad audience?</li>
+</ul>
+<p>We will often talk about the <em>distribution</em> of a variable. This is the values the variables take and how often. You should incorporate the answers to the questions above in your description of a distribution. You should also use numerical summaries, which we’ll talk about shortly. Think about trying to describe the distribution to someone who doesn’t have the picture in front of them.</p>
+<div id="histograms" class="section level3">
+<h3>Histograms</h3>
+<p>Histograms are constructed by (1) dividing up the observed range of the variable into “bins” of equal width and (2) counting up the number of cases that fall into each bin. Try out the code below. Notice it’s telling you that it has chosen the number of bins for you: 30.</p>
+<pre class="r"><code>ggplot(data = vehicles_2015) +
+  geom_histogram(aes(x = hwy))</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="01_univariate_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<p>Try changing the number of bins (fill in the number of bins below). Which number of bins seems “best”? Why?</p>
+<pre class="r"><code>ggplot(data = vehicles_2015) +
+  geom_histogram(aes(x = hwy), bins = ___)</code></pre>
+</div>
+<p>We can customize plots in various ways, like I did below, but the most important part is creating a plot that allows us to see the distribution of our variable of interest, <code>hwy</code> in this case.</p>
+<pre class="r"><code>ggplot(data = vehicles_2015) +
+  geom_histogram(aes(x = hwy), bins = 25, fill = &quot;lightblue&quot;) +
+  labs(x = &quot;Highway MPG&quot;, y = &quot;Number of vehicles&quot;) +
+  theme_minimal() </code></pre>
+<p><img src="01_univariate_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><strong>Notice</strong>: Things like bins, color, fill, etc. are <em>outside</em> of the aesthetic mapping. Remember that all the arguments <em>inside</em> the aesthetic map variables to aesthetics. Everything else happens outside of the aesthetic.</p>
+</div>
+<div id="density-plots" class="section level3">
+<h3>Density Plots</h3>
+<p>A density plot is essentially a smooth version of the histogram. Instead of sorting cases into discrete bins, the “density” of cases is calculated across the entire range of values. The greater the number of cases, the greater the density! The density is then scaled so that the area under the density curve <strong>always equals 1</strong>, and the area under any region of the curve represents the fraction of cases that lie in that range. Density plots can be especially helpful when working with very large datasets (at least 10,000 observations).</p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<p>Run and modify the following code to look at the distribution of highway mpg for All-Wheel Drive and Front-Wheel Drive vehicles. What would you remark about the differences between the two? (Think back to center, variability, shape, outliers, and scientific context.) Is it easy to make these comparisons?</p>
+<pre class="r"><code>vehicles_2015 %&gt;%
+  filter(drive == &quot;All-Wheel Drive&quot;) %&gt;% 
+  ggplot(aes(x=hwy)) +
+  geom_density(fill = &quot;orange&quot;) 
+
+acs12 %&gt;%
+  filter(____________) %&gt;% 
+  ggplot(aes(x=hwy)) +
+  geom_density()</code></pre>
+</div>
+</div>
+<div id="measures-of-center-and-spread" class="section level3">
+<h3>Measures of Center and Spread</h3>
+<p>Numerical measures of the center and spread can help us better understand the distribution of a quantitative variable. Try the following code to compute the mean, median, standard deviation (SD), and IQR of <code>hwy</code>. The IQR is the interquartile range, the difference between the 3rd quartile (aka 75th percentile, Q3) and 1st quartile. With these additional statistics, how would you describe the distribution of <code>hwy</code>?</p>
+<pre class="r"><code>vehicles_2015 %&gt;%
+  summarize(
+    mean_hwy = mean(hwy),
+    median_hwy = median(hwy),
+    sd_hwy = sd(hwy),
+    IQR_hwy = IQR(hwy)
+  )</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["mean_hwy"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["median_hwy"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["sd_hwy"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["IQR_hwy"],"name":[4],"type":["dbl"],"align":["right"]}],"data":[{"1":"28.60488","2":"28","3":"7.326087","4":"8"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>In general, we either use the mean and standard deviation or median and IQR to describe the shape and spread of a distribution. When would you use each and why?</p></li>
+<li><p>Create a graph to show the distribution of <code>displ</code> and use words and statistics to describe the distribution.</p></li>
+<li><p>Try examining the distribution of <code>hwy</code> for the entire <code>vehicles</code> dataset. Be sure to use a reasonable number of bins. Describe the distribution using words and statistics.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div id="univariate-visualizationsummarization-of-categorical-variables" class="section level2">
+<h2>Univariate visualization/summarization of categorical variables</h2>
+<p><strong>Research Question</strong>: How many 2015 vehicles are Fords?</p>
+<p>As you visualize categorical variables, keep in mind:</p>
+<ul>
+<li><strong>Variability</strong>: Are cases evenly spread out among the categories or are some categories more common than others?</li>
+<li><strong>Context</strong>: In the context of your research, what do you learn from the plot or table? How would you describe your findings to a broad audience?</li>
+</ul>
+<div id="tables" class="section level3">
+<h3>Tables</h3>
+<p>Use the table below to help answer your question:</p>
+<pre class="r"><code>vehicles_2015 %&gt;% 
+  count(make)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["make"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Acura","2":"2"},{"1":"Audi","2":"11"},{"1":"Bentley","2":"7"},{"1":"BMW","2":"36"},{"1":"Cadillac","2":"4"},{"1":"Chevrolet","2":"8"},{"1":"Chrysler","2":"3"},{"1":"Ford","2":"1"},{"1":"GMC","2":"10"},{"1":"Honda","2":"3"},{"1":"Hyundai","2":"4"},{"1":"Infiniti","2":"4"},{"1":"Jaguar","2":"13"},{"1":"Kia","2":"8"},{"1":"Lamborghini","2":"1"},{"1":"Land Rover","2":"1"},{"1":"Lexus","2":"5"},{"1":"Mazda","2":"11"},{"1":"Mercedes-Benz","2":"5"},{"1":"MINI","2":"34"},{"1":"Nissan","2":"5"},{"1":"Porsche","2":"1"},{"1":"Subaru","2":"8"},{"1":"Volkswagen","2":"2"},{"1":"Volvo","2":"18"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Look at the next two tables. How do they differ? Can you figure out what the code is doing?</p>
+<pre class="r"><code>vehicles_2015 %&gt;% 
+  count(make) %&gt;%  
+  mutate(prop = n/sum(n))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["make"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]},{"label":["prop"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"Acura","2":"2","3":"0.009756098"},{"1":"Audi","2":"11","3":"0.053658537"},{"1":"Bentley","2":"7","3":"0.034146341"},{"1":"BMW","2":"36","3":"0.175609756"},{"1":"Cadillac","2":"4","3":"0.019512195"},{"1":"Chevrolet","2":"8","3":"0.039024390"},{"1":"Chrysler","2":"3","3":"0.014634146"},{"1":"Ford","2":"1","3":"0.004878049"},{"1":"GMC","2":"10","3":"0.048780488"},{"1":"Honda","2":"3","3":"0.014634146"},{"1":"Hyundai","2":"4","3":"0.019512195"},{"1":"Infiniti","2":"4","3":"0.019512195"},{"1":"Jaguar","2":"13","3":"0.063414634"},{"1":"Kia","2":"8","3":"0.039024390"},{"1":"Lamborghini","2":"1","3":"0.004878049"},{"1":"Land Rover","2":"1","3":"0.004878049"},{"1":"Lexus","2":"5","3":"0.024390244"},{"1":"Mazda","2":"11","3":"0.053658537"},{"1":"Mercedes-Benz","2":"5","3":"0.024390244"},{"1":"MINI","2":"34","3":"0.165853659"},{"1":"Nissan","2":"5","3":"0.024390244"},{"1":"Porsche","2":"1","3":"0.004878049"},{"1":"Subaru","2":"8","3":"0.039024390"},{"1":"Volkswagen","2":"2","3":"0.009756098"},{"1":"Volvo","2":"18","3":"0.087804878"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>vehicles_2015 %&gt;% 
+  count(make) %&gt;%  
+  mutate(prop = n/sum(n)) %&gt;% 
+  arrange(desc(n))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["make"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]},{"label":["prop"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"BMW","2":"36","3":"0.175609756"},{"1":"MINI","2":"34","3":"0.165853659"},{"1":"Volvo","2":"18","3":"0.087804878"},{"1":"Jaguar","2":"13","3":"0.063414634"},{"1":"Audi","2":"11","3":"0.053658537"},{"1":"Mazda","2":"11","3":"0.053658537"},{"1":"GMC","2":"10","3":"0.048780488"},{"1":"Chevrolet","2":"8","3":"0.039024390"},{"1":"Kia","2":"8","3":"0.039024390"},{"1":"Subaru","2":"8","3":"0.039024390"},{"1":"Bentley","2":"7","3":"0.034146341"},{"1":"Lexus","2":"5","3":"0.024390244"},{"1":"Mercedes-Benz","2":"5","3":"0.024390244"},{"1":"Nissan","2":"5","3":"0.024390244"},{"1":"Cadillac","2":"4","3":"0.019512195"},{"1":"Hyundai","2":"4","3":"0.019512195"},{"1":"Infiniti","2":"4","3":"0.019512195"},{"1":"Chrysler","2":"3","3":"0.014634146"},{"1":"Honda","2":"3","3":"0.014634146"},{"1":"Acura","2":"2","3":"0.009756098"},{"1":"Volkswagen","2":"2","3":"0.009756098"},{"1":"Ford","2":"1","3":"0.004878049"},{"1":"Lamborghini","2":"1","3":"0.004878049"},{"1":"Land Rover","2":"1","3":"0.004878049"},{"1":"Porsche","2":"1","3":"0.004878049"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="barplots" class="section level3">
+<h3>Barplots</h3>
+<p>Barplots are a good way to visualize the distribution of a categorical variable Try out the code below. This shows two different ways you can create the same barplot.</p>
+<p>In the first set of code that uses <code>geom_bar</code>, the function computes the counts for you. You only have to give it an <code>x</code> aesthetic. In the second set of code that uses <code>geom_col</code>, you have to compute the counts (or percentages or whatever you want to be on the x-axis) first and use that as your <code>y</code> aesthetic. This is a good option if you have an already summarized dataset.</p>
+<pre class="r"><code>vehicles_2015 %&gt;%
+  ggplot(aes(x = make)) +
+  geom_bar()</code></pre>
+<p><img src="01_univariate_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre class="r"><code>vehicles_2015 %&gt;% 
+  count(make) %&gt;% 
+  mutate(prop = n/sum(n)) %&gt;% 
+  ggplot(aes(x = make, y = n)) +
+  geom_col()</code></pre>
+<p><img src="01_univariate_files/figure-html/unnamed-chunk-10-2.png" width="672" /></p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li>What are some pros and cons about the graph I created above? How might you fix some of the cons?<br />
+</li>
+<li>Try modifying the code from above to put the proportion, <code>prop</code>, on the y-axis of the barplot rather than the count.</li>
+</ol>
+</div>
+<p>As with histograms, you can make many modifications to barplots. I have illustrated some of them in the plots below.</p>
+<pre class="r"><code>#Plot 1
+vehicles_2015 %&gt;% 
+  mutate(make_ordered = fct_infreq(make)) %&gt;% #creates a new variable that is the same as the `make` variable but is in frequency order
+  ggplot(aes(x = fct_rev(make_ordered))) + #reverse the order so largest is first
+  geom_bar(fill = &quot;lightblue&quot;) +
+  coord_flip() +
+  labs(x = &quot;Make of vehicle&quot;, 
+       y = &quot;Number of vehicles&quot;, 
+       title = &quot;2015&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="01_univariate_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code>#Plot 2
+vehicles_2015 %&gt;% 
+  mutate(make_ordered = fct_infreq(make)) %&gt;% 
+  count(make_ordered) %&gt;% 
+  mutate(prop = n/sum(n)) %&gt;% 
+  ggplot(aes(x = fct_rev(make_ordered), y = round(prop,2))) + #`round()` will round the number to the specified number of decimal places - 2 in this case
+  geom_point(color = &quot;darkolivegreen&quot;) +
+  coord_flip() +
+  labs(x = &quot;Make of vehicle&quot;, 
+       y = &quot;Proportion of vehicles&quot;, 
+       title = &quot;2015&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="01_univariate_files/figure-html/unnamed-chunk-11-2.png" width="672" /></p>
+<p>A few suggestions when you create barplots:</p>
+<ul>
+<li>If there is no natural ordering, display by frequency. The default ordering in R is alphabetical.<br />
+</li>
+<li>When there are many categories, flip the coordinates. It is easier to make comparisons and easier to read categories with long names. I actually prefer this when there are only a few categories.<br />
+</li>
+<li>Provide useful labels! This is a good thing to do with any type of plot.<br />
+</li>
+<li>Plotting dots rather than bars is a good idea if you do not want to start at 0. For example, if you are plotting averages for different categories.</li>
+</ul>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>Choose another categorical variable and create a barplot. If you are looking for colors, <a href="https://www.r-graph-gallery.com/ggplot2-color.html">here</a> is one resource to find some options. R often picks a good default for you. I encourage you to stay away from colors that are distracting to the eye. Summarize your findings <em>in a contextually meaningful way</em>.</p></li>
+<li><p>Make a barplot using a categorical variable from the larger, <code>vehicles</code>, dataset. Summarize your findings in a contextually meaningful way.</p></li>
+<li><p>Pick a new <em>quantitative</em> variable from the data set.</p></li>
+</ol>
+<ul>
+<li>Construct a histogram. Play around with the bin width, color, etc.<br />
+</li>
+<li>Construct a density plot. Play around with the color.<br />
+</li>
+<li>Challenge: Do a Google search and try to figure out how to add transparency to the density plot.<br />
+</li>
+<li>Describe the shape, center, and spread of the distribution. You should use one statistic for each of the center and spread. Any other interesting features? Summarize your findings in 1-2 short sentences.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiV29ya2luZyB3aXRoIG9uZSB2YXJpYWJsZSIKb3V0cHV0OiAgIAogIGh0bWxfZG9jdW1lbnQ6IAogICAgZGZfcHJpbnQ6IHBhZ2VkCiAgICBjb2RlX2Rvd25sb2FkOiB0cnVlCi0tLQoKCgojIyBSRU1JTkRFUlM6IAoKKipTdGF0aXN0aWNzIGlzIHRoZSBwcmFjdGljZSBvZiB1c2luZyBkYXRhIGZyb20gYSBzYW1wbGUgdG8gbWFrZSBpbmZlcmVuY2VzIGFib3V0IHNvbWUgYnJvYWRlciBwb3B1bGF0aW9uIG9mIGludGVyZXN0LioqIFRoaXMgY2xhc3MgZm9jdXNlcyBvbiB1c2luZyBsaW5lYXIgYW5kIGxvZ2lzdGljIG1vZGVscyBidWlsdCBmcm9tIGEgc2FtcGxlIG9mIGRhdGEgdG8gbGVhcm4gYWJvdXQgcmVsYXRpb25zaGlwcyBpbiB0aGUgYnJvYWRlciBwb3B1bGF0aW9uIGFuZCB0byBtYWtlIHByZWRpY3Rpb25zLgoKIyMjIFNldCB1cCBSIFN0dWRpbyAoZnJvbSBSIEJhc2ljcykKCkdvIHRvIFRvb2xzIC0tPiBHbG9iYWwgT3B0aW9ucy4gT24gdGhlIEdlbmVyYWwgdGFiLCBuZXh0IHRvICpTYXZlIHdvcmtzcGFjZSB0byAuUkRhdGEgb24gZXhpdCosIGNob29zZSAqTmV2ZXIqIGFuZCB1bmNoZWNrIHRoZSBib3ggbmV4dCB0byAqUmVzdG9yZSAuUmRhdGEgaW50byB3b3Jrc3BhY2UgYXQgc3RhcnR1cCouIFlvdSBjYW4gYWxzbyBnbyB0byB0aGUgQXBwZWFyYW5jZSB0YWIgdG8gY3VzdG9taXplIHRoZSBsb29rIG9mIFIgU3R1ZGlvLiBTb21lIHBlb3BsZSBsaWtlIGJsYWNrIHNjcmVlbnMgYmV0dGVyIHRoYW4gd2hpdGUuCgpTYXZlIHRoaXMgZmlsZSB0byBzb21ld2hlcmUgKipPVEhFUiBUSEFOIFlPVVIgRE9XTkxPQURTIEZPTERFUioqISBTYXZlIG9mdGVuLgoKIyMjIEluc3RhbGwgbmV3IGxpYnJhcmllcyBhbmQgbG9hZCB0aGUgbGlicmFyaWVzIHdlIHdpbGwgdXNlCgpXZSBuZWVkIHRvIGluc3RhbGwgYW55IG5ldyBwYWNrYWdlcyB3ZSBwbGFuIHRvIGxvYWQgaW4gYW4gUiBtYXJrZG93biBkb2N1bWVudC4gT25jZSBpbnN0YWxsZWQsIHlvdSB3b24ndCBoYXZlIHRvIGluc3RhbGwgdGhlbSBhZ2Fpbi4gVG9kYXksIHdlIG5lZWQgdG8gaW5zdGFsbCB0aGUgYHRpZHl2ZXJzZWAgYW5kIGBmdWVsZWNvbm9teWAgcGFja2FnZXMuIFlvdSBjYW4gZWl0aGVyIGdvIHRvIHRoZSBQYWNrYWdlcyB0YWIgYW5kIGNsaWNrIEluc3RhbGwuIFR5cGUgYHRpZHl2ZXJzZWAgYGZ1ZWxlY29ub215YCAoc2VwYXJhdGVkIGJ5IGEgc3BhY2UpIGFuZCBmb2xsb3cgdGhlIHByb21wdHMuIE9yIGVsc2UsICppbiB0aGUgY29uc29sZSosIHR5cGUgYGluc3RhbGwucGFja2FnZXMoInRpZHl2ZXJzZSIsICJmdWVsZWNvbm9teSIpYC4gCgpUaGVuIHlvdSBsb2FkIHRoZSBsaWJyYXJpZXMgYnkgcnVubmluZyB0aGUgZm9sbG93aW5nIHBpZWNlIG9mIGNvZGUuIFlvdSBuZWVkIHRvIGRvIHRoaXMgaW4gKmV2ZXJ5KiBSIG1hcmtkb3duIGZpbGUgd2hlcmUgeW91IHVzZSBmdW5jdGlvbnMgb3IgZGF0YXNldHMgZnJvbSB0aGVzZSBwYWNrYWdlLiBXZSB3aWxsIGdldCBpbnRvIHRoZSBoYWJpdCBvZiBwdXR0aW5nIHRoZXNlIGF0IHRoZSB2ZXJ5IHRvcCBvZiBvdXIgZG9jdW1lbnRzLiBUaGlzIHdpbGwgYmUgb25lIG9mIHRoZSBvbmx5IGRvY3VtZW50cyB3aGVyZSBJIGRvIG5vdCBoYXZlIGFsbCB0aGUgbGlicmFyaWVzIGxpc3RlZCBhdCB0aGUgdG9wLiBBbHNvIG5vdGUgdGhhdCBJJ3ZlIGFkZGVkIGB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFYCB0byB0aGUgY29kZSBjaHVuayBvcHRpb25zLCBuZXh0IHRvIHRoZSBgcmAuIFRoaXMgd2lsbCBwcmV2ZW50IG1lc3NhZ2VzIGFuZCB3YXJuaW5ncyBmcm9tIGJlaW5nIHByaW50ZWQgb3V0LgoKYGBge3IsIHdhcm5pbmc9RkFMU0UsIG1lc3NhZ2U9RkFMU0V9CmxpYnJhcnkodGlkeXZlcnNlKSAjZm9yIHBsb3R0aW5nIGFuZCBzdW1tYXJpemluZwpsaWJyYXJ5KGZ1ZWxlY29ub215KSAjZm9yIHRoZSBkYXRhc2V0CmBgYAoKCiMjIEludHJvIHRvIEdyYXBoaW5nIERhdGEKCjxjZW50ZXI+CiFbXShpbWFnZXMvbW9kZXJuZGl2ZV9mbG93Y2hhcnRfZXhwbG9yZS5wbmcpe3dpZHRoPTYwMHB4fQo8L2NlbnRlcj4KCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1zdWNjZXNzIj4KICA8c3Ryb25nPkdPQUw6PC9zdHJvbmc+CgpWaXN1YWxseSBleGFtaW5lIGRpc3RyaWJ1dGlvbnMgb2YgYm90aCBxdWFudGl0YXRpdmUgYW5kIGNhdGVnb3JpY2FsIHZhcmlhYmxlcy4gQnkgdGhlIGVuZCBvZiB0aGVzZSBub3RlcyBhbmQgYWN0aXZpdGllcywgeW91IHNob3VsZCBoYXZlIGEgZ2VuZXJhbCBpZGVhIGZvciBob3cgdG8gZG8gdGhlIGZvbGxvd2luZyB0YXNrcy4KCiogQ3JlYXRlIGEgaGlzdG9ncmFtIG9mIGEgcXVhbnRpdGF0aXZlIHZhcmlhYmxlIHVzaW5nIGEgcmVhc29uYWJsZSBudW1iZXIgb2YgYmlucyBvciBiaW53aWR0aCBzbyB0aGF0IHRoZSBncmFwaCBzaG93cyBlbm91Z2ggZGV0YWlsIGJ1dCBub3QgdG9vIG11Y2guICAKKiBEZXNjcmliZSB0aGUgc2hhcGUsIGNlbnRlciwgYW5kIHNwcmVhZCBvZiB0aGUgZGlzdHJpYnV0aW9uIG9mIGEgcXVhbnRpdGF0aXZlIHZhcmlhYmxlLiBPbmx5IG9uZSBzdGF0aXN0aWMgc2hvdWxkIGJlIHVzZSB0byBkZXNjcmliZSBlYWNoIG9mIHRoZSBzaGFwZSBhbmQgc3ByZWFkLCB1c3VhbGx5IG1lYW4gYW5kIHN0YW5kYXJkIGRldmlhdGlvbiBvciBtZWRpYW4gYW5kIElRUi4gCiogQ3JlYXRlIGEgdGFibGUgdG8gc3VtbWFyaXplIGhvdyBvZnRlbiBlYWNoIGxldmVsIG9mIGEgY2F0ZWdvcmljYWwgdmFyaWFibGUgb2NjdXJzLiBTb3J0IHRoZSB0YWJsZSBmcm9tIGxhcmdlc3QgdG8gc21hbGxlc3Qgb3Igc21hbGxlc3QgdG8gbGFyZ2VzdC4gIAoqIENyZWF0ZSBhIGJhcnBsb3QgdG8gdmlzdWFsbHkgc2hvdyBob3cgb2Z0ZW4gZWFjaCBsZXZlbCBvZiBhIGNhdGVnb3JpY2FsIHZhcmlhYmxlIG9jY3Vycy4gCgo8L2Rpdj4KCgpVc3VhbGx5IG9uZSBvZiB0aGUgZmlyc3QgdGhpbmdzIHdlIHdhbnQgdG8gZG8gd2l0aCBuZXcgZGF0YSBpcyB2aXN1YWxpemUgaXQuIElmIHlvdSBoYXZlbid0IHdhbnRlZCB0byBkbyB0aGlzIGluIHRoZSBwYXN0LCB5b3UnbGwgd2FudCB0byBkbyBpdCBub3cgYmVjYXVzZSBpdCdzIGdvaW5nIHRvIGJlIHNvIGVhc3khIFdlIHdpbGwgdXNlIGZ1bmN0aW9ucyBmcm9tIGEgcGFja2FnZSBjYWxsZWQgYGdncGxvdDJgIHRvIGNyZWF0ZSAgb3VyIHZpc3VhbGl6YXRpb25zLiBUaGlzIHBhY2thZ2UgaXMgYmFzZWQgb24gYSB2aXN1YWxpemF0aW9uIGZyYW1ld29yayBjYWxsZWQgdGhlIFsiR3JhbW1hciBvZiBHcmFwaGljcyJdKGh0dHBzOi8vd3d3LmFtYXpvbi5jb20vR3JhbW1hci1HcmFwaGljcy1TdGF0aXN0aWNzLUNvbXB1dGluZy9kcC8wMzg3MjQ1NDQ4KS4gV2Ugd2lsbCBvbmx5IGRpc2N1c3MgYSBmZXcga2V5IGRldGFpbHMgb2YgdGhlIGZyYW1ld29yazogZGF0YSwgZ2VvbWV0cmljIG9iamVjdHMsIGFuZCBhZXN0aGV0aWMgYXR0cmlidXRlcy4gVGhlIG1haW4gaWRlYSBpcyB0aGF0ICJBIHN0YXRpc3RpY2FsIGdyYXBoaWMgaXMgYSBtYXBwaW5nIG9mIGRhdGEgdmFyaWFibGVzIHRvIGFlc3RoZXRpYyBhdHRyaWJ1dGVzIG9mIGdlb21ldHJpYyBvYmplY3RzLiIKCjEuIERhdGE6IE91ciBkYXRhIHNldCB0aGF0IGNvbnRhaW5zICp2YXJpYWJsZXMqICh0aGUgY29sdW1ucykgd2l0aCBtYW55ICpvYnNlcnZhdGlvbnMqICh0aGUgcm93cykuICAKMi4gR2VvbWV0cmljIG9iamVjdHM6IFdoYXQgd2Ugb2JzZXJ2ZSBvbiBvdXIgcGxvdCAtIHBvaW50cywgbGluZXMsIGJhcnMsIGV0Yy4gCjMuIEFlc3RoZXRpYyBhdHRyaWJ1dGVzOiBwYXJ0cyBvZiB0aGUgZ2VvbWV0cmljIG9iamVjdCB0aGF0IHdlIG9ic2VydmU6IHgveSBwb3NpdGlvbiwgY29sb3IsIHNoYXBlLCBzaXplLCBldGMuCgpJbiBnZW5lcmFsLCBhIGJhc2ljIHBsb3QgY2FuIGJlIGNyZWF0ZWQgdXNpbmcgdGhlIGZvbGxvd2luZyB0ZW1wbGF0ZSwgd2hlcmUgZXZlcnl0aGluZyBiZXR3ZWVuIHRoZSBgPD5gIHdvdWxkIGJlIG1vZGlmaWVkIHRvIGZpdCB5b3VyIG5lZWRzLgoKYGBgCmdncGxvdChkYXRhID0gPERBVEE+KSArCiAgPEdFT01fRlVOQ1RJT04+KG1hcHBpbmcgPSBhZXMoPE1BUFBJTkdTPikpCmBgYAoKV2UgY291bGQgYWxzbyB3cml0ZSBpdCBsaWtlIHRoaXM6CgpgYGAKPERBVEE+ICU+JSAKICBnZ3Bsb3QoKSArCiAgPEdFT01fRlVOQ1RJT04+KG1hcHBpbmcgPSBhZXMoPE1BUFBJTkdTPikpCmBgYCAKCioqTk9URSoqOiBUaGUgYCU+JWAgaXMgY2FsbGVkIGEgKipwaXBlIG9wZXJhdG9yKiouIEl0IHNob3VsZCBiZSByZWFkLCAiYW5kIHRoZW4uIiBJdCBpcyB1c2VkIHRvICJwaXBlIiB0aGUgb2JqZWN0IGJlZm9yZSBpdC9vbiBpdHMgbGVmdCBpbnRvIHRoZSBmdW5jdGlvbiBhZnRlciBpdC9vbiBpdHMgcmlnaHQuIEl0IG1ha2VzIGZvciBtb3JlIHJlYWRhYmxlIGNvZGUuIEluIFIgU3R1ZGlvLCB0aGUga2V5Ym9hcmQgc2hvcnRjdXRzIHRvIHR5cGUgdGhlIHBpcGUgYXJlIGBDdHJsK1NoaWZ0K01gIG9uIFdpbmRvd3MgYW5kIGBDbWQrU2hpZnQrTWAgb24gTWFjcy4KClRoZSBnZ3Bsb3QyIFtjaGVhdHNoZWV0XShodHRwczovL3d3dy5yc3R1ZGlvLmNvbS9yZXNvdXJjZXMvY2hlYXRzaGVldHMvKSBpcyBhIGdvb2QgcmVmZXJlbmNlIHRoYXQgSSB3b3VsZCBlbmNvdXJhZ2UgeW91IHRvIGhhdmUgb3BlbiBhcyB3ZSBnbyB0aHJvdWdoIGV4YW1wbGVzLiAKCldlIHdpbGwgYWxzbyBiZSBkb2luZyBzb21lIGJhc2ljIGRhdGEgc3VtbWFyaWVzIHVzaW5nIHRoZSBgZHBseXJgIHBhY2thZ2UuIEJvdGggYGRwbHlyYCBhbmQgYGdncGxvdDJgIGFyZSBwYXJ0IG9mIHRoZSBgdGlkeXZlcnNlYCBwYWNrYWdlLCB3aGljaCBpcyBhIGNvbGxlY3Rpb24gb2YgcGFja2FnZXMgdGhhdCBhcmUgdXNlZnVsIGluIGRhdGEgdmlzdWFsaXphdGlvbiBhbmQgbWFuaXB1bGF0aW9uLiBXZSBhbHJlYWR5IGluc3RhbGxlZCBhbmQgbG9hZGVkIHRoaXMgcGFja2FnZS4KCgoqKlRoZSBkYXRhKio6IFdlIHdpbGwgdXNlIGEgc3Vic2V0IG9mIHRoZSBgdmVoaWNsZXNgIGRhdGEgZnJvbSB0aGUgYGZ1ZWxlY29ub215YCBkYXRhc2V0IHRocm91Z2hvdXQuIFRoZXNlIGFyZSBmdWVsIGVjb25vbXkgZGF0YSBmcm9tIHRoZSBbRVBBXShodHRwczovL3d3dy5mdWVsZWNvbm9teS5nb3YvZmVnL2Rvd25sb2FkLnNodG1sKS4gU29tZSB2YXJpYWJsZXMgaGF2ZSBiZWVuIGV4Y2x1ZGVkIG9yIG1vZGlmaWVkIGZyb20gdGhlIG9yaWdpbmFsIGRhdGFzZXQuIEZvciBtb3JlIGRldGFpbHMgc2VhcmNoIGZvciBgdmVoaWNsZXNgIGluIHRoZSBIZWxwIHNlY3Rpb24gb3IgcnVuIGA/dmVoaWNsZXNgIGluIHRoZSBjb25zb2xlLgpGaXJzdCwgdGFrZSBhIG1vbWVudCB0byBleHBsb3JlIHRoYXQgZGF0YSBhbmQgc2VlIHdoYXQgaXMgdGhlcmUuIFJ1biB0aGUgY29kZSBiZWxvdyBhbmQgdGhlbiB0cnkgdG8gYW5zd2VyIHRoZSBxdWVzdGlvbnMgYmVsb3cuIERvbid0IHdvcnJ5IGFib3V0IHRoZSBjb2RlIHN5bnRheC4KCmBgYHtyfQp2ZWhpY2xlc18yMDE1IDwtIHZlaGljbGVzICU+JSBmaWx0ZXIoeWVhciA9PSAyMDE1KQpzdW1tYXJ5KHZlaGljbGVzXzIwMTUgJT4lIG11dGF0ZV9pZihpcy5jaGFyYWN0ZXIsIGFzLmZhY3RvcikpCmBgYAoKCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LWluZm8iPgogIDxzdHJvbmc+WU9VUiBUVVJOITwvc3Ryb25nPiAKICAKQ2hlY2sgb3V0IHRoZSBiYXNpYyBmZWF0dXJlcyBvZiB0aGUgZGF0YXNldDoKCiogRXhhbWluZSB0aGUgZmlyc3Qgc2l4IGNhc2VzLiAoV2hhdCBhcmUgdGhlIGNhc2VzPykgIAoqIEhvdyBtYW55IGNhc2VzIGFuZCB2YXJpYWJsZXMgYXJlIHRoZXJlPyAgCiogV2hhdCBhcmUgdGhlIG5hbWVzIG9mIHRoZSB2YXJpYWJsZXM/ICAKKiBPcGVuIHRoZSBkYXRhc2V0IGluIGEgc3ByZWFkc2hlZXQgdHlwZSB2aWV3ZXIgKHR5cGUgYFZpZXcodmVoaWNsZXNfMjAxNSlgIGluIHRoZSBjb25zb2xlIG9yIGNsaWNrIG9uIGl0IG92ZXIgaW4gdGhlIEVudmlyb25tZW50KS4gU2Nyb2xsIHRocm91Z2ggc29tZSBvZiB0aGUgZGF0YS4gQW55IHF1ZXN0aW9ucyBhYm91dCB0aGUgZGF0YT8KCldoYXQgYWJvdXQgdGhlIHF1YWxpdHkgb2YgdGhlIGRhdGFzZXQ/CgoqIEhvdyBkbyB5b3UgdGhpbmsgdGhlIGRhdGEgYXJlIGNvbGxlY3RlZD8gVHJ5IGRvaW5nIHNvbWUgc2VhcmNoaW5nIHRvIGxlYXJuIG1vcmUuICAKKiBDYW4geW91IHRoaW5rIG9mIGFueSBjb21wbGljYXRpb25zPwoKPC9kaXY+CgojIyBVbml2YXJpYXRlIHZpc3VhbGl6YXRpb24vc3VtbWFyaXphdGlvbiBvZiBxdWFudGl0YXRpdmUgdmFyaWFibGVzCgoqKlJlc2VhcmNoIHF1ZXN0aW9uczoqKiBXaGF0IGlzIHRoZSByYW5nZSBvZiBoaWdod2F5IG1pbGVzIHBlciBnYWxsb24gKGBod3lgKT8gV2hhdCBhcmUgdHlwaWNhbCBoaWdod2F5IG1wZz8gQXJlIGhpZ2h3YXkgbXBnJ3MgdmFyaWFibGUgYWNyb3NzIHZlaGljbGVzPwoKQXMgeW91IHZpc3VhbGl6ZSBxdWFudGl0YXRpdmUgdmFyaWFibGVzLCBrZWVwIGluIG1pbmQ6CgotICoqQ2VudGVyKio6IFdoZXJlIGlzIHRoZSBjZW50ZXIgb2YgdGhlIGRpc3RyaWJ1dGlvbj8gV2hhdCBpcyBhIHR5cGljYWwgdmFsdWUgb2YgdGhlIHZhcmlhYmxlPwotICoqVmFyaWFiaWxpdHkqKjogSG93IHNwcmVhZCBvdXQgYXJlIHRoZSB2YWx1ZXM/IEEgbG90IG9yIGEgbGl0dGxlPwotICoqU2hhcGUqKjogSG93IGFyZSB2YWx1ZXMgZGlzdHJpYnV0ZWQgYWxvbmcgdGhlIG9ic2VydmVkIHJhbmdlPyBJcyB0aGUgZGlzdHJpYnV0aW9uIHN5bW1ldHJpYywgcmlnaHQtc2tld2VkICh0YWlsIGlzIGxvbmdlciBvbiB0aGUgcmlnaHQsIHB1bGxlZCBmdXJ0aGVyIG91dCB0byB0aGUgcmlnaHQpLCBsZWZ0LXNrZXdlZCwgYmltb2RhbCwgb3IgdW5pZm9ybSAoZmxhdCk/Ci0gKipPdXRsaWVycyoqOiBBcmUgdGhlcmUgYW55IG91dGxpZXJzLCBpLmUuIHZhbHVlcyB0aGF0IGFyZSB1bnVzdWFsbHkgbGFyZ2Uvc21hbGwgcmVsYXRpdmUgdG8gdGhlIGJ1bGsgb2Ygb3RoZXIgdmFsdWVzPwotICoqQ29udGV4dCoqOiBJbiB0aGUgY29udGV4dCBvZiB5b3VyIHJlc2VhcmNoLCB3aGF0IGRvIHlvdSBsZWFybiBmcm9tIHRoZSBwbG90IG9yIHRhYmxlPyBIb3cgd291bGQgeW91IGRlc2NyaWJlIHlvdXIgZmluZGluZ3MgdG8gYSBicm9hZCBhdWRpZW5jZT8KCldlIHdpbGwgb2Z0ZW4gdGFsayBhYm91dCB0aGUgKmRpc3RyaWJ1dGlvbiogb2YgYSB2YXJpYWJsZS4gVGhpcyBpcyB0aGUgdmFsdWVzIHRoZSB2YXJpYWJsZXMgdGFrZSBhbmQgaG93IG9mdGVuLiBZb3Ugc2hvdWxkIGluY29ycG9yYXRlIHRoZSBhbnN3ZXJzIHRvIHRoZSBxdWVzdGlvbnMgYWJvdmUgaW4geW91ciBkZXNjcmlwdGlvbiBvZiBhIGRpc3RyaWJ1dGlvbi4gWW91IHNob3VsZCBhbHNvIHVzZSBudW1lcmljYWwgc3VtbWFyaWVzLCB3aGljaCB3ZSdsbCB0YWxrIGFib3V0IHNob3J0bHkuIFRoaW5rIGFib3V0IHRyeWluZyB0byBkZXNjcmliZSB0aGUgZGlzdHJpYnV0aW9uIHRvIHNvbWVvbmUgd2hvIGRvZXNuJ3QgaGF2ZSB0aGUgcGljdHVyZSBpbiBmcm9udCBvZiB0aGVtLgoKIyMjIEhpc3RvZ3JhbXMKCkhpc3RvZ3JhbXMgYXJlIGNvbnN0cnVjdGVkIGJ5ICgxKSBkaXZpZGluZyB1cCB0aGUgb2JzZXJ2ZWQgcmFuZ2Ugb2YgdGhlIHZhcmlhYmxlIGludG8gImJpbnMiIG9mIGVxdWFsIHdpZHRoIGFuZCAoMikgY291bnRpbmcgdXAgdGhlIG51bWJlciBvZiBjYXNlcyB0aGF0IGZhbGwgaW50byBlYWNoIGJpbi4gVHJ5IG91dCB0aGUgY29kZSBiZWxvdy4gTm90aWNlIGl0J3MgdGVsbGluZyB5b3UgdGhhdCBpdCBoYXMgY2hvc2VuIHRoZSBudW1iZXIgb2YgYmlucyBmb3IgeW91OiAzMC4gCgpgYGB7cn0KZ2dwbG90KGRhdGEgPSB2ZWhpY2xlc18yMDE1KSArCiAgZ2VvbV9oaXN0b2dyYW0oYWVzKHggPSBod3kpKQpgYGAKCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LWluZm8iPgogIDxzdHJvbmc+WU9VUiBUVVJOITwvc3Ryb25nPiAKICAKICBUcnkgY2hhbmdpbmcgdGhlIG51bWJlciBvZiBiaW5zIChmaWxsIGluIHRoZSBudW1iZXIgb2YgYmlucyBiZWxvdykuIFdoaWNoIG51bWJlciBvZiBiaW5zIHNlZW1zICJiZXN0Ij8gV2h5PwoKYGBge3IsIGV2YWw9RkFMU0V9CmdncGxvdChkYXRhID0gdmVoaWNsZXNfMjAxNSkgKwogIGdlb21faGlzdG9ncmFtKGFlcyh4ID0gaHd5KSwgYmlucyA9IF9fXykKYGBgCgo8L2Rpdj4KCgoKV2UgY2FuIGN1c3RvbWl6ZSBwbG90cyBpbiB2YXJpb3VzIHdheXMsIGxpa2UgSSBkaWQgYmVsb3csIGJ1dCB0aGUgbW9zdCBpbXBvcnRhbnQgcGFydCBpcyBjcmVhdGluZyBhIHBsb3QgdGhhdCBhbGxvd3MgdXMgdG8gc2VlIHRoZSBkaXN0cmlidXRpb24gb2Ygb3VyIHZhcmlhYmxlIG9mIGludGVyZXN0LCBgaHd5YCBpbiB0aGlzIGNhc2UuICAKCmBgYHtyfQpnZ3Bsb3QoZGF0YSA9IHZlaGljbGVzXzIwMTUpICsKICBnZW9tX2hpc3RvZ3JhbShhZXMoeCA9IGh3eSksIGJpbnMgPSAyNSwgZmlsbCA9ICJsaWdodGJsdWUiKSArCiAgbGFicyh4ID0gIkhpZ2h3YXkgTVBHIiwgeSA9ICJOdW1iZXIgb2YgdmVoaWNsZXMiKSArCiAgdGhlbWVfbWluaW1hbCgpIApgYGAKCioqTm90aWNlKio6IFRoaW5ncyBsaWtlIGJpbnMsIGNvbG9yLCBmaWxsLCBldGMuIGFyZSAqb3V0c2lkZSogb2YgdGhlIGFlc3RoZXRpYyBtYXBwaW5nLiBSZW1lbWJlciB0aGF0IGFsbCB0aGUgYXJndW1lbnRzICppbnNpZGUqIHRoZSBhZXN0aGV0aWMgbWFwIHZhcmlhYmxlcyB0byBhZXN0aGV0aWNzLiBFdmVyeXRoaW5nIGVsc2UgaGFwcGVucyBvdXRzaWRlIG9mIHRoZSBhZXN0aGV0aWMuCgoKIyMjIERlbnNpdHkgUGxvdHMKCkEgZGVuc2l0eSBwbG90IGlzIGVzc2VudGlhbGx5IGEgc21vb3RoIHZlcnNpb24gb2YgdGhlIGhpc3RvZ3JhbS4gSW5zdGVhZCBvZiBzb3J0aW5nIGNhc2VzIGludG8gZGlzY3JldGUgYmlucywgdGhlICJkZW5zaXR5IiBvZiBjYXNlcyBpcyBjYWxjdWxhdGVkIGFjcm9zcyB0aGUgZW50aXJlIHJhbmdlIG9mIHZhbHVlcy4gVGhlIGdyZWF0ZXIgdGhlIG51bWJlciBvZiBjYXNlcywgdGhlIGdyZWF0ZXIgdGhlIGRlbnNpdHkhIFRoZSBkZW5zaXR5IGlzIHRoZW4gc2NhbGVkIHNvIHRoYXQgdGhlIGFyZWEgdW5kZXIgdGhlIGRlbnNpdHkgY3VydmUgKiphbHdheXMgZXF1YWxzIDEqKiwgYW5kIHRoZSBhcmVhIHVuZGVyIGFueSByZWdpb24gb2YgdGhlIGN1cnZlIHJlcHJlc2VudHMgdGhlIGZyYWN0aW9uIG9mIGNhc2VzIHRoYXQgbGllIGluIHRoYXQgcmFuZ2UuIERlbnNpdHkgcGxvdHMgY2FuIGJlIGVzcGVjaWFsbHkgaGVscGZ1bCB3aGVuIHdvcmtpbmcgd2l0aCB2ZXJ5IGxhcmdlIGRhdGFzZXRzIChhdCBsZWFzdCAxMCwwMDAgb2JzZXJ2YXRpb25zKS4KCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LWluZm8iPgogIDxzdHJvbmc+WU9VUiBUVVJOITwvc3Ryb25nPgogIApSdW4gYW5kIG1vZGlmeSB0aGUgZm9sbG93aW5nIGNvZGUgdG8gbG9vayBhdCB0aGUgZGlzdHJpYnV0aW9uIG9mIGhpZ2h3YXkgbXBnIGZvciBBbGwtV2hlZWwgRHJpdmUgYW5kIEZyb250LVdoZWVsIERyaXZlIHZlaGljbGVzLiBXaGF0IHdvdWxkIHlvdSByZW1hcmsgYWJvdXQgdGhlIGRpZmZlcmVuY2VzIGJldHdlZW4gdGhlIHR3bz8gKFRoaW5rIGJhY2sgdG8gY2VudGVyLCB2YXJpYWJpbGl0eSwgc2hhcGUsIG91dGxpZXJzLCBhbmQgc2NpZW50aWZpYyBjb250ZXh0LikgSXMgaXQgZWFzeSB0byBtYWtlIHRoZXNlIGNvbXBhcmlzb25zPwoKYGBge3IgZXZhbD1GQUxTRX0KdmVoaWNsZXNfMjAxNSAlPiUKICBmaWx0ZXIoZHJpdmUgPT0gIkFsbC1XaGVlbCBEcml2ZSIpICU+JSAKICBnZ3Bsb3QoYWVzKHg9aHd5KSkgKwogIGdlb21fZGVuc2l0eShmaWxsID0gIm9yYW5nZSIpIAoKYWNzMTIgJT4lCiAgZmlsdGVyKF9fX19fX19fX19fXykgJT4lIAogIGdncGxvdChhZXMoeD1od3kpKSArCiAgZ2VvbV9kZW5zaXR5KCkKYGBgCgo8L2Rpdj4KCiMjIyBNZWFzdXJlcyBvZiBDZW50ZXIgYW5kIFNwcmVhZAoKTnVtZXJpY2FsIG1lYXN1cmVzIG9mIHRoZSBjZW50ZXIgYW5kIHNwcmVhZCBjYW4gaGVscCB1cyBiZXR0ZXIgdW5kZXJzdGFuZCB0aGUgZGlzdHJpYnV0aW9uIG9mIGEgcXVhbnRpdGF0aXZlIHZhcmlhYmxlLiBUcnkgdGhlIGZvbGxvd2luZyBjb2RlIHRvIGNvbXB1dGUgdGhlIG1lYW4sIG1lZGlhbiwgc3RhbmRhcmQgZGV2aWF0aW9uIChTRCksIGFuZCBJUVIgb2YgYGh3eWAuIFRoZSBJUVIgaXMgdGhlIGludGVycXVhcnRpbGUgcmFuZ2UsIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4gdGhlIDNyZCBxdWFydGlsZSAoYWthIDc1dGggcGVyY2VudGlsZSwgUTMpIGFuZCAxc3QgcXVhcnRpbGUuIFdpdGggdGhlc2UgYWRkaXRpb25hbCBzdGF0aXN0aWNzLCBob3cgd291bGQgeW91IGRlc2NyaWJlIHRoZSBkaXN0cmlidXRpb24gb2YgYGh3eWA/CgpgYGB7cn0KdmVoaWNsZXNfMjAxNSAlPiUKICBzdW1tYXJpemUoCiAgICBtZWFuX2h3eSA9IG1lYW4oaHd5KSwKICAgIG1lZGlhbl9od3kgPSBtZWRpYW4oaHd5KSwKICAgIHNkX2h3eSA9IHNkKGh3eSksCiAgICBJUVJfaHd5ID0gSVFSKGh3eSkKICApCmBgYAoKCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1pbmZvIj4KICA8c3Ryb25nPllPVVIgVFVSTiE8L3N0cm9uZz4KCjEuIEluIGdlbmVyYWwsIHdlIGVpdGhlciB1c2UgdGhlIG1lYW4gYW5kIHN0YW5kYXJkIGRldmlhdGlvbiBvciBtZWRpYW4gYW5kIElRUiB0byBkZXNjcmliZSB0aGUgc2hhcGUgYW5kIHNwcmVhZCBvZiBhIGRpc3RyaWJ1dGlvbi4gV2hlbiB3b3VsZCB5b3UgdXNlIGVhY2ggYW5kIHdoeT8KCjIuIENyZWF0ZSBhIGdyYXBoIHRvIHNob3cgdGhlIGRpc3RyaWJ1dGlvbiBvZiBgZGlzcGxgIGFuZCB1c2Ugd29yZHMgYW5kIHN0YXRpc3RpY3MgdG8gZGVzY3JpYmUgdGhlIGRpc3RyaWJ1dGlvbi4gCgozLiBUcnkgZXhhbWluaW5nIHRoZSBkaXN0cmlidXRpb24gb2YgYGh3eWAgZm9yIHRoZSBlbnRpcmUgYHZlaGljbGVzYCBkYXRhc2V0LiBCZSBzdXJlIHRvIHVzZSBhIHJlYXNvbmFibGUgbnVtYmVyIG9mIGJpbnMuIERlc2NyaWJlIHRoZSBkaXN0cmlidXRpb24gdXNpbmcgd29yZHMgYW5kIHN0YXRpc3RpY3MuIAoKPC9kaXY+CgojIyBVbml2YXJpYXRlIHZpc3VhbGl6YXRpb24vc3VtbWFyaXphdGlvbiBvZiBjYXRlZ29yaWNhbCB2YXJpYWJsZXMKCioqUmVzZWFyY2ggUXVlc3Rpb24qKjogSG93IG1hbnkgMjAxNSB2ZWhpY2xlcyBhcmUgRm9yZHM/CgpBcyB5b3UgdmlzdWFsaXplIGNhdGVnb3JpY2FsIHZhcmlhYmxlcywga2VlcCBpbiBtaW5kOgoKLSAqKlZhcmlhYmlsaXR5Kio6IEFyZSBjYXNlcyBldmVubHkgc3ByZWFkIG91dCBhbW9uZyB0aGUgY2F0ZWdvcmllcyBvciBhcmUgc29tZSBjYXRlZ29yaWVzIG1vcmUgY29tbW9uIHRoYW4gb3RoZXJzPwotICoqQ29udGV4dCoqOiBJbiB0aGUgY29udGV4dCBvZiB5b3VyIHJlc2VhcmNoLCB3aGF0IGRvIHlvdSBsZWFybiBmcm9tIHRoZSBwbG90IG9yIHRhYmxlPyBIb3cgd291bGQgeW91IGRlc2NyaWJlIHlvdXIgZmluZGluZ3MgdG8gYSBicm9hZCBhdWRpZW5jZT8KCiMjIyBUYWJsZXMKClVzZSB0aGUgdGFibGUgYmVsb3cgdG8gaGVscCBhbnN3ZXIgeW91ciBxdWVzdGlvbjoKCmBgYHtyfQp2ZWhpY2xlc18yMDE1ICU+JSAKICBjb3VudChtYWtlKQpgYGAKCkxvb2sgYXQgdGhlIG5leHQgdHdvIHRhYmxlcy4gSG93IGRvIHRoZXkgZGlmZmVyPyBDYW4geW91IGZpZ3VyZSBvdXQgd2hhdCB0aGUgY29kZSBpcyBkb2luZz8KCmBgYHtyfQp2ZWhpY2xlc18yMDE1ICU+JSAKICBjb3VudChtYWtlKSAlPiUgIAogIG11dGF0ZShwcm9wID0gbi9zdW0obikpCgp2ZWhpY2xlc18yMDE1ICU+JSAKICBjb3VudChtYWtlKSAlPiUgIAogIG11dGF0ZShwcm9wID0gbi9zdW0obikpICU+JSAKICBhcnJhbmdlKGRlc2MobikpCmBgYAoKCiMjIyBCYXJwbG90cwoKQmFycGxvdHMgYXJlIGEgZ29vZCB3YXkgdG8gdmlzdWFsaXplIHRoZSBkaXN0cmlidXRpb24gb2YgYSBjYXRlZ29yaWNhbCB2YXJpYWJsZSBUcnkgb3V0IHRoZSBjb2RlIGJlbG93LiBUaGlzIHNob3dzIHR3byBkaWZmZXJlbnQgd2F5cyB5b3UgY2FuIGNyZWF0ZSB0aGUgc2FtZSBiYXJwbG90LiAKCkluIHRoZSBmaXJzdCBzZXQgb2YgY29kZSB0aGF0IHVzZXMgYGdlb21fYmFyYCwgdGhlIGZ1bmN0aW9uIGNvbXB1dGVzIHRoZSBjb3VudHMgZm9yIHlvdS4gWW91IG9ubHkgaGF2ZSB0byBnaXZlIGl0IGFuIGB4YCBhZXN0aGV0aWMuIEluIHRoZSBzZWNvbmQgc2V0IG9mIGNvZGUgdGhhdCB1c2VzIGBnZW9tX2NvbGAsIHlvdSBoYXZlIHRvIGNvbXB1dGUgdGhlIGNvdW50cyAob3IgcGVyY2VudGFnZXMgb3Igd2hhdGV2ZXIgeW91IHdhbnQgdG8gYmUgb24gdGhlIHgtYXhpcykgZmlyc3QgYW5kIHVzZSB0aGF0IGFzIHlvdXIgYHlgIGFlc3RoZXRpYy4gVGhpcyBpcyBhIGdvb2Qgb3B0aW9uIGlmIHlvdSBoYXZlIGFuIGFscmVhZHkgc3VtbWFyaXplZCBkYXRhc2V0LiAKCmBgYHtyfQp2ZWhpY2xlc18yMDE1ICU+JQogIGdncGxvdChhZXMoeCA9IG1ha2UpKSArCiAgZ2VvbV9iYXIoKQoKdmVoaWNsZXNfMjAxNSAlPiUgCiAgY291bnQobWFrZSkgJT4lIAogIG11dGF0ZShwcm9wID0gbi9zdW0obikpICU+JSAKICBnZ3Bsb3QoYWVzKHggPSBtYWtlLCB5ID0gbikpICsKICBnZW9tX2NvbCgpCmBgYAoKPGRpdiBjbGFzcz0iYWxlcnQgYWxlcnQtaW5mbyI+CiAgPHN0cm9uZz5ZT1VSIFRVUk4hPC9zdHJvbmc+CiAgCiAgMS4gV2hhdCBhcmUgc29tZSBwcm9zIGFuZCBjb25zIGFib3V0IHRoZSBncmFwaCBJIGNyZWF0ZWQgYWJvdmU/IEhvdyBtaWdodCB5b3UgZml4IHNvbWUgb2YgdGhlIGNvbnM/ICAKICAyLiBUcnkgbW9kaWZ5aW5nIHRoZSBjb2RlIGZyb20gYWJvdmUgdG8gcHV0IHRoZSBwcm9wb3J0aW9uLCBgcHJvcGAsIG9uIHRoZSB5LWF4aXMgb2YgdGhlIGJhcnBsb3QgcmF0aGVyIHRoYW4gdGhlIGNvdW50LgoKPC9kaXY+CgpBcyB3aXRoIGhpc3RvZ3JhbXMsIHlvdSBjYW4gbWFrZSBtYW55IG1vZGlmaWNhdGlvbnMgdG8gYmFycGxvdHMuIEkgaGF2ZSBpbGx1c3RyYXRlZCBzb21lIG9mIHRoZW0gaW4gdGhlIHBsb3RzIGJlbG93LiAKCmBgYHtyfQojUGxvdCAxCnZlaGljbGVzXzIwMTUgJT4lIAogIG11dGF0ZShtYWtlX29yZGVyZWQgPSBmY3RfaW5mcmVxKG1ha2UpKSAlPiUgI2NyZWF0ZXMgYSBuZXcgdmFyaWFibGUgdGhhdCBpcyB0aGUgc2FtZSBhcyB0aGUgYG1ha2VgIHZhcmlhYmxlIGJ1dCBpcyBpbiBmcmVxdWVuY3kgb3JkZXIKICBnZ3Bsb3QoYWVzKHggPSBmY3RfcmV2KG1ha2Vfb3JkZXJlZCkpKSArICNyZXZlcnNlIHRoZSBvcmRlciBzbyBsYXJnZXN0IGlzIGZpcnN0CiAgZ2VvbV9iYXIoZmlsbCA9ICJsaWdodGJsdWUiKSArCiAgY29vcmRfZmxpcCgpICsKICBsYWJzKHggPSAiTWFrZSBvZiB2ZWhpY2xlIiwgCiAgICAgICB5ID0gIk51bWJlciBvZiB2ZWhpY2xlcyIsIAogICAgICAgdGl0bGUgPSAiMjAxNSIpICsKICB0aGVtZV9taW5pbWFsKCkKCiNQbG90IDIKdmVoaWNsZXNfMjAxNSAlPiUgCiAgbXV0YXRlKG1ha2Vfb3JkZXJlZCA9IGZjdF9pbmZyZXEobWFrZSkpICU+JSAKICBjb3VudChtYWtlX29yZGVyZWQpICU+JSAKICBtdXRhdGUocHJvcCA9IG4vc3VtKG4pKSAlPiUgCiAgZ2dwbG90KGFlcyh4ID0gZmN0X3JldihtYWtlX29yZGVyZWQpLCB5ID0gcm91bmQocHJvcCwyKSkpICsgI2Byb3VuZCgpYCB3aWxsIHJvdW5kIHRoZSBudW1iZXIgdG8gdGhlIHNwZWNpZmllZCBudW1iZXIgb2YgZGVjaW1hbCBwbGFjZXMgLSAyIGluIHRoaXMgY2FzZQogIGdlb21fcG9pbnQoY29sb3IgPSAiZGFya29saXZlZ3JlZW4iKSArCiAgY29vcmRfZmxpcCgpICsKICBsYWJzKHggPSAiTWFrZSBvZiB2ZWhpY2xlIiwgCiAgICAgICB5ID0gIlByb3BvcnRpb24gb2YgdmVoaWNsZXMiLCAKICAgICAgIHRpdGxlID0gIjIwMTUiKSArCiAgdGhlbWVfbWluaW1hbCgpCmBgYAoKCkEgZmV3IHN1Z2dlc3Rpb25zIHdoZW4geW91IGNyZWF0ZSBiYXJwbG90czoKCiogSWYgdGhlcmUgaXMgbm8gbmF0dXJhbCBvcmRlcmluZywgZGlzcGxheSBieSBmcmVxdWVuY3kuIFRoZSBkZWZhdWx0IG9yZGVyaW5nIGluIFIgaXMgYWxwaGFiZXRpY2FsLiAgCiogV2hlbiB0aGVyZSBhcmUgbWFueSBjYXRlZ29yaWVzLCBmbGlwIHRoZSBjb29yZGluYXRlcy4gSXQgaXMgZWFzaWVyIHRvIG1ha2UgY29tcGFyaXNvbnMgYW5kIGVhc2llciB0byByZWFkIGNhdGVnb3JpZXMgd2l0aCBsb25nIG5hbWVzLiBJIGFjdHVhbGx5IHByZWZlciB0aGlzIHdoZW4gdGhlcmUgYXJlIG9ubHkgYSBmZXcgY2F0ZWdvcmllcy4gIAoqIFByb3ZpZGUgdXNlZnVsIGxhYmVscyEgVGhpcyBpcyBhIGdvb2QgdGhpbmcgdG8gZG8gd2l0aCBhbnkgdHlwZSBvZiBwbG90LiAgCiogUGxvdHRpbmcgZG90cyByYXRoZXIgdGhhbiBiYXJzIGlzIGEgZ29vZCBpZGVhIGlmIHlvdSBkbyBub3Qgd2FudCB0byBzdGFydCBhdCAwLiBGb3IgZXhhbXBsZSwgaWYgeW91IGFyZSBwbG90dGluZyBhdmVyYWdlcyBmb3IgZGlmZmVyZW50IGNhdGVnb3JpZXMuCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1pbmZvIj4KICA8c3Ryb25nPllPVVIgVFVSTiE8L3N0cm9uZz4KICAKMS4gQ2hvb3NlIGFub3RoZXIgY2F0ZWdvcmljYWwgdmFyaWFibGUgYW5kIGNyZWF0ZSBhIGJhcnBsb3QuIElmIHlvdSBhcmUgbG9va2luZyBmb3IgY29sb3JzLCBbaGVyZV0oaHR0cHM6Ly93d3cuci1ncmFwaC1nYWxsZXJ5LmNvbS9nZ3Bsb3QyLWNvbG9yLmh0bWwpIGlzIG9uZSByZXNvdXJjZSB0byBmaW5kIHNvbWUgb3B0aW9ucy4gUiBvZnRlbiBwaWNrcyBhIGdvb2QgZGVmYXVsdCBmb3IgeW91LiBJIGVuY291cmFnZSB5b3UgdG8gc3RheSBhd2F5IGZyb20gY29sb3JzIHRoYXQgYXJlIGRpc3RyYWN0aW5nIHRvIHRoZSBleWUuIFN1bW1hcml6ZSB5b3VyIGZpbmRpbmdzICppbiBhIGNvbnRleHR1YWxseSBtZWFuaW5nZnVsIHdheSouIAoKMi4gTWFrZSBhIGJhcnBsb3QgdXNpbmcgYSBjYXRlZ29yaWNhbCB2YXJpYWJsZSBmcm9tIHRoZSBsYXJnZXIsIGB2ZWhpY2xlc2AsIGRhdGFzZXQuIFN1bW1hcml6ZSB5b3VyIGZpbmRpbmdzIGluIGEgY29udGV4dHVhbGx5IG1lYW5pbmdmdWwgd2F5LiAKCjMuIFBpY2sgYSBuZXcgKnF1YW50aXRhdGl2ZSogdmFyaWFibGUgZnJvbSB0aGUgZGF0YSBzZXQuIAogIAogICsgQ29uc3RydWN0IGEgaGlzdG9ncmFtLiBQbGF5IGFyb3VuZCB3aXRoIHRoZSBiaW4gd2lkdGgsIGNvbG9yLCBldGMuICAgIAogICsgQ29uc3RydWN0IGEgZGVuc2l0eSBwbG90LiBQbGF5IGFyb3VuZCB3aXRoIHRoZSBjb2xvci4gIAogICsgQ2hhbGxlbmdlOiBEbyBhIEdvb2dsZSBzZWFyY2ggYW5kIHRyeSB0byBmaWd1cmUgb3V0IGhvdyB0byBhZGQgdHJhbnNwYXJlbmN5IHRvIHRoZSBkZW5zaXR5IHBsb3QuICAKICArIERlc2NyaWJlIHRoZSBzaGFwZSwgY2VudGVyLCBhbmQgc3ByZWFkIG9mIHRoZSBkaXN0cmlidXRpb24uIFlvdSBzaG91bGQgdXNlIG9uZSBzdGF0aXN0aWMgZm9yIGVhY2ggb2YgdGhlIGNlbnRlciBhbmQgc3ByZWFkLiBBbnkgb3RoZXIgaW50ZXJlc3RpbmcgZmVhdHVyZXM/IFN1bW1hcml6ZSB5b3VyIGZpbmRpbmdzIGluIDEtMiBzaG9ydCBzZW50ZW5jZXMuIAoKPC9kaXY+CgoK</div>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("01_univariate.Rmd");
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

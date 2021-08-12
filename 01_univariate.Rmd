@@ -3,6 +3,7 @@ title: "Working with one variable"
 output:   
   html_document: 
     df_print: paged
+    code_download: true
 ---
 
 

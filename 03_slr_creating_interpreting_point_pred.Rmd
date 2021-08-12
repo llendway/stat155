@@ -3,6 +3,7 @@ title: "Simple Linear Regression (SLR): Creating models, interpreting models, po
 output:
   html_document: 
     df_print: paged
+    code_download: true
 ---
 
 ```{r, message=FALSE, warning=FALSE}
@@ -256,7 +257,7 @@ augment(lm_displ,
 
 #OR
 
-my_new_data <- tibble(displacement = c(3, 3.5, 4.0, 4.5, 5.0, 5.5),
+my_new_data <- tibble(displ = c(3, 3.5, 4.0, 4.5, 5.0, 5.5),
                       garbage = c(1,2,3,4,5,6))
 
 augment(lm_displ, 

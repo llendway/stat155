@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Simple Linear Regression (SLR): Creating models, interpreting models, point prediction</title>
+
+<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">STAT 155</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Lessons
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01_univariate.html">Plotting data - univariate</a>
+    </li>
+    <li>
+      <a href="02_multivariate.html">Plotting data - multivariate</a>
+    </li>
+    <li>
+      <a href="03_slr_creating_interpreting_point_pred.html">Simple linear regression</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Simple Linear Regression (SLR): Creating models, interpreting models, point prediction</h1>
+
+</div>
+
+
+<pre class="r"><code>library(tidyverse) #for plotting and summarizing
+library(moderndive) #for nice model output
+library(broom) #for nice model output 
+theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite</code></pre>
+<p><img src="images/moderndive_flowchart_slr.png" width="600" /></p>
+<p>As we begin to study models, remember this quote by famous statistician George Box,<br />
+<br />
+</p>
+<center>
+<strong>“All models are wrong but some are useful.”</strong>
+</center>
+<p><br />
+<br />
+</p>
+<div class="alert alert-success">
+<p><strong>GOAL:</strong></p>
+<p>By the end of these notes and activities, you should be able to perform the following tasks.</p>
+<ul>
+<li>Fit a linear regression model using the <code>lm</code> function.<br />
+</li>
+<li>Write out a model equation by hand.<br />
+</li>
+<li>Obtain model output using <code>tidy()</code> or <code>get_regression_table()</code>.<br />
+</li>
+<li>Interpret the coefficients from a simple linear regression model that uses one quantitative OR one categorical predictor variable.<br />
+</li>
+<li>Use the <code>augment()</code> function (or <code>get_regression_points()</code>) to obtain fitted values and residuals.<br />
+</li>
+<li>Use the <code>augment()</code> function to predict new values.<br />
+</li>
+<li>Plot the fitted line on top of the observed values.</li>
+</ul>
+</div>
+<div id="the-data" class="section level1">
+<h1>The data</h1>
+<p>We will use the <code>mpg</code> dataset from the <code>ggplot2</code> library (part of the <code>tidyverse</code>). This is a subset of the <code>vehicles</code> dataset we have been examining. It has been further cleaned. To learn more about the dataset, search for <code>mpg</code> in the Help tab or run <code>?mpg</code> in the console.</p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li>How would you describe the relationship between <em>displ</em> and <em>hwy</em>?<br />
+</li>
+<li>Is the description different for each <em>drv</em>?</li>
+</ol>
+<pre class="r"><code>mpg %&gt;% 
+  ggplot() +
+  geom_jitter(aes(x=displ, y=hwy, color=drv))</code></pre>
+<p><img src="03_slr_creating_interpreting_point_pred_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<ol start="3" style="list-style-type: decimal">
+<li>Create some graphs and calculate statistics to describe the distribution of each of the three variables we’re studying. Write down a description in 1-2 sentences for each.</li>
+</ol>
+</div>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>We are going to discuss different types of linear models, their notation in R, how to interpret the model coefficients, and how to use them for prediction.</p>
+<p>What does it mean to fit a model to data? We are looking for a mathematical equation to represent the “general” relationship between a <em>response variable</em> and <em>explanatory variables</em>. We know it won’t be perfect, but we would like something useful. In this course, we focus on linear models. They take the form:</p>
+<p><span class="math display">\[
+\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x_1 + \hat{\beta}_2 x_2 + ... + \hat{\beta}_p x_p.
+\]</span></p>
+<p>The “hats” on top of the <span class="math inline">\(y\)</span> and the <span class="math inline">\(\beta\)</span>s are to indicate that those quantities are estimates obtained from data. The <span class="math inline">\(\beta\)</span>s will be numbers. The above is just a more complex version of the traditional equation of a line:</p>
+<p><span class="math display">\[
+y = mx + b
+\]</span></p>
+<p>The resulting model equation has many different names: model equation (or specifically linear model equation or just model), fitted model, least squares regression line, multiple regression line, estimated line, etc. These all mean the same thing.</p>
+<p>The model has two main uses:</p>
+<ol style="list-style-type: decimal">
+<li><p>Explanation: to explain the relationship between the explanatory variables and the response variable, ie. how <span class="math inline">\(y\)</span> relates to each of <span class="math inline">\(x_1\)</span>, <span class="math inline">\(x_2\)</span>, …,<span class="math inline">\(x_p\)</span>. The coefficients (<span class="math inline">\(\hat{\beta}_1\)</span>, <span class="math inline">\(\hat{\beta}_2\)</span>, …, <span class="math inline">\(\hat{\beta}_p\)</span>) tell us about that.</p></li>
+<li><p>Prediction: to find the <em>predicted value</em> (also called <em>predicted response</em>, <em>fitted value</em>, <em>model value</em>, and a few other things) which is the value the response variable takes when you plug in the values of the explanatory variables. Or to predict values of <span class="math inline">\(y\)</span> when it is unknown.</p></li>
+</ol>
+<p>We will use the <code>lm</code> function (which stands for linear model) to fit models. This function requires two arguments: the model equation and the data. The model equation is written in the form <code>y ~ x1 + x2</code>, where <code>y</code> is the response and <code>x1</code> and <code>x2</code> are the explanatory variables. More variables can be added by using the <code>+</code> sign to separate them. Here is a generic example</p>
+<pre class="r"><code>lm(y ~ x1 + x2, data=the_data)</code></pre>
+</div>
+<div id="linear-regression-with-one-quantitative-explanatory-variable" class="section level1">
+<h1>Linear regression with one quantitative explanatory variable</h1>
+<p>Let’s look at an example.</p>
+<pre class="r"><code>lm_displ &lt;- lm(hwy ~ displ, data=mpg)
+
+lm_displ</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = hwy ~ displ, data = mpg)
+## 
+## Coefficients:
+## (Intercept)        displ  
+##      35.698       -3.531</code></pre>
+<p>Notice a couple things:</p>
+<ol style="list-style-type: decimal">
+<li>I have saved this model to an object named <code>lm_displ</code>.<br />
+</li>
+<li>The output gives us the intercept, <span class="math inline">\(\hat{\beta}_0\)</span> and the slope or coefficient for the <code>displ</code> term, <span class="math inline">\(\hat{\beta}_1\)</span>.</li>
+</ol>
+<p>We can obtain more output (which we’ll want when we start doing inference), using the either the <code>get_regression_table()</code> or <code>tidy()</code> function.</p>
+<pre class="r"><code>get_regression_table(lm_displ)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std_error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p_value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["lower_ci"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["upper_ci"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"intercept","2":"35.698","3":"0.720","4":"49.555","5":"0","6":"34.278","7":"37.117"},{"1":"displ","2":"-3.531","3":"0.195","4":"-18.151","5":"0","6":"-3.914","7":"-3.147"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>tidy(lm_displ)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std.error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"35.697651","3":"0.7203676","4":"49.55477","5":"2.123519e-125"},{"1":"displ","2":"-3.530589","3":"0.1945137","4":"-18.15085","5":"2.038974e-46"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>For now, we are just interested in the <em>term</em> and <em>estimate</em> columns. The <em>term</em> column is the term/variable in the model equation. The column titled <em>estimate</em> gives the estimated coefficients of the variables/terms (ie. the <span class="math inline">\(\hat{\beta}\)</span>s.</p>
+<p>We could write out the equation above as:</p>
+<p><span class="math display">\[
+\hat{hwy} = 35.70 - 3.53 displ
+\]</span></p>
+<div id="explanation" class="section level2">
+<h2>Explanation</h2>
+<div class="alert alert-info">
+<p><strong>YOUR TURN! (don’t look ahead)</strong></p>
+<ol style="list-style-type: decimal">
+<li>How do you interpret the intercept, 35.70?<br />
+</li>
+<li>How do you interpret the slope, -3.53?</li>
+</ol>
+</div>
+<p><br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+</p>
+<p>In general, in a simple linear regression with one quantitative explanatory variable, the intercept is the <em>average</em> response when the explanatory variable(s) is equal to zero. The slope is the <em>average</em> change in the response variable for a one unit increase in the explanatory variable. The image below helps illustrate this (don’t worry about the code).</p>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="03_slr_creating_interpreting_point_pred_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>The blue line shows the fitted line (the model). The purple vertical line highlights engine displacement values of 3 cubic inches. The purple horizontal line reflects the fitted value, <span class="math inline">\(\hat{y}_i\)</span> for an observation with a displacement of 3. The yellow vertical line highlights engine displacement values of 4 cubic inches. The yellow horizontal line reflects the fitted value, <span class="math inline">\(\hat{y}_i\)</span> for an observation with a displacement of 4. The distance between the purple and yellow lines is about - 3.53, which reflects the estimated slope. On average, cars with a displacement that is 1 cubic inch larger will get 3.53 MPG less. The intercept, 35.70, is interpreted as the average MPG for a car with a displacement of 0 cubic inches.</p>
+</div>
+<div id="prediction" class="section level2">
+<h2>Prediction</h2>
+<p>In addition to interpreting the models, we often want to use them to predict future or unknown values of the response variable for observations where we know the values of the explanatory variables. We will introduce and reiterate some terms.</p>
+<ul>
+<li><strong>actual values</strong>, also called observed values, are exactly what you might guess, the actual values of the response variable. They are the <span class="math inline">\(y_i\)</span>’s.</li>
+<li><strong>fitted values</strong>, also called predicted values or model values, are the value the response variable takes when you plug in the values of the explanatory variables. They are the <span class="math inline">\(\hat{y}_i\)</span>’s.<br />
+</li>
+<li><strong>residuals</strong> are the difference between the actual and fitted values, <span class="math inline">\(y_i - \hat{y}_i\)</span>’s.</li>
+</ul>
+<p><img src="03_slr_creating_interpreting_point_pred_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN! (don’t look ahead)</strong></p>
+<p>How would you find the predicted highway miles per gallon for a vehicle with an engine displacement of 4.5 litres?</p>
+</div>
+<p><br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+</p>
+<p>We can use the <code>augment()</code> function to help us do this. The <code>get_regression_points()</code> function from the <code>moderndive</code> library also works. The names of the variables in the output are slightly different, though, and it will not work later when we do logistic regression.</p>
+<p>We can use it to find the predicted responses for all the data used to fit this model. Below I just show the first 10 rows.</p>
+<pre class="r"><code>aug_displ &lt;- augment(lm_displ)
+
+aug_displ %&gt;% 
+  slice(1:10)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["hwy"],"name":[1],"type":["int"],"align":["right"]},{"label":["displ"],"name":[2],"type":["dbl"],"align":["right"]},{"label":[".fitted"],"name":[3],"type":["dbl"],"align":["right"]},{"label":[".resid"],"name":[4],"type":["dbl"],"align":["right"]},{"label":[".hat"],"name":[5],"type":["dbl"],"align":["right"]},{"label":[".sigma"],"name":[6],"type":["dbl"],"align":["right"]},{"label":[".cooksd"],"name":[7],"type":["dbl"],"align":["right"]},{"label":[".std.resid"],"name":[8],"type":["dbl"],"align":["right"]}],"data":[{"1":"29","2":"1.8","3":"29.34259","4":"-0.3425912","5":"0.011459924","6":"3.844212","7":"4.676940e-05","8":"-0.08982602"},{"1":"29","2":"1.8","3":"29.34259","4":"-0.3425912","5":"0.011459924","6":"3.844212","7":"4.676940e-05","8":"-0.08982602"},{"1":"31","2":"2.0","3":"28.63647","4":"2.3635266","5":"0.009843324","6":"3.841101","7":"1.905773e-03","8":"0.61920098"},{"1":"30","2":"2.0","3":"28.63647","4":"1.3635266","5":"0.009843324","6":"3.843222","7":"6.342747e-04","8":"0.35721917"},{"1":"26","2":"2.8","3":"25.81200","4":"0.1879976","5":"0.005433937","6":"3.844259","7":"6.597330e-06","8":"0.04914265"},{"1":"26","2":"2.8","3":"25.81200","4":"0.1879976","5":"0.005433937","6":"3.844259","7":"6.597330e-06","8":"0.04914265"},{"1":"27","2":"3.1","3":"24.75283","4":"2.2471742","5":"0.004628934","6":"3.841421","7":"8.016793e-04","8":"0.58717473"},{"1":"26","2":"1.8","3":"29.34259","4":"-3.3425912","5":"0.011459924","6":"3.837910","7":"4.452213e-03","8":"-0.87641386"},{"1":"25","2":"1.8","3":"29.34259","4":"-4.3425912","5":"0.011459924","6":"3.833523","7":"7.514625e-03","8":"-1.13860980"},{"1":"28","2":"2.0","3":"28.63647","4":"-0.6364734","5":"0.009843324","6":"3.844049","7":"1.382009e-04","8":"-0.16674447"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>This dataset contains the response variable, all explanatory variables, and some additional information. One piece of additional information is the variable <em>.fitted</em>. These are the predicted (fitted) values.</p>
+<p>Sometimes we want all the variables in our original dataset, plus these new variables. We can get that, by adding a <code>data =</code> argument to the <code>augment()</code> function.</p>
+<pre class="r"><code>augment(lm_displ, data = mpg) %&gt;% 
+  slice(1:10)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["manufacturer"],"name":[1],"type":["chr"],"align":["left"]},{"label":["model"],"name":[2],"type":["chr"],"align":["left"]},{"label":["displ"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["year"],"name":[4],"type":["int"],"align":["right"]},{"label":["cyl"],"name":[5],"type":["int"],"align":["right"]},{"label":["trans"],"name":[6],"type":["chr"],"align":["left"]},{"label":["drv"],"name":[7],"type":["chr"],"align":["left"]},{"label":["cty"],"name":[8],"type":["int"],"align":["right"]},{"label":["hwy"],"name":[9],"type":["int"],"align":["right"]},{"label":["fl"],"name":[10],"type":["chr"],"align":["left"]},{"label":["class"],"name":[11],"type":["chr"],"align":["left"]},{"label":[".fitted"],"name":[12],"type":["dbl"],"align":["right"]},{"label":[".resid"],"name":[13],"type":["dbl"],"align":["right"]},{"label":[".hat"],"name":[14],"type":["dbl"],"align":["right"]},{"label":[".sigma"],"name":[15],"type":["dbl"],"align":["right"]},{"label":[".cooksd"],"name":[16],"type":["dbl"],"align":["right"]},{"label":[".std.resid"],"name":[17],"type":["dbl"],"align":["right"]}],"data":[{"1":"audi","2":"a4","3":"1.8","4":"1999","5":"4","6":"auto(l5)","7":"f","8":"18","9":"29","10":"p","11":"compact","12":"29.34259","13":"-0.3425912","14":"0.011459924","15":"3.844212","16":"4.676940e-05","17":"-0.08982602"},{"1":"audi","2":"a4","3":"1.8","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"p","11":"compact","12":"29.34259","13":"-0.3425912","14":"0.011459924","15":"3.844212","16":"4.676940e-05","17":"-0.08982602"},{"1":"audi","2":"a4","3":"2.0","4":"2008","5":"4","6":"manual(m6)","7":"f","8":"20","9":"31","10":"p","11":"compact","12":"28.63647","13":"2.3635266","14":"0.009843324","15":"3.841101","16":"1.905773e-03","17":"0.61920098"},{"1":"audi","2":"a4","3":"2.0","4":"2008","5":"4","6":"auto(av)","7":"f","8":"21","9":"30","10":"p","11":"compact","12":"28.63647","13":"1.3635266","14":"0.009843324","15":"3.843222","16":"6.342747e-04","17":"0.35721917"},{"1":"audi","2":"a4","3":"2.8","4":"1999","5":"6","6":"auto(l5)","7":"f","8":"16","9":"26","10":"p","11":"compact","12":"25.81200","13":"0.1879976","14":"0.005433937","15":"3.844259","16":"6.597330e-06","17":"0.04914265"},{"1":"audi","2":"a4","3":"2.8","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"18","9":"26","10":"p","11":"compact","12":"25.81200","13":"0.1879976","14":"0.005433937","15":"3.844259","16":"6.597330e-06","17":"0.04914265"},{"1":"audi","2":"a4","3":"3.1","4":"2008","5":"6","6":"auto(av)","7":"f","8":"18","9":"27","10":"p","11":"compact","12":"24.75283","13":"2.2471742","14":"0.004628934","15":"3.841421","16":"8.016793e-04","17":"0.58717473"},{"1":"audi","2":"a4 quattro","3":"1.8","4":"1999","5":"4","6":"manual(m5)","7":"4","8":"18","9":"26","10":"p","11":"compact","12":"29.34259","13":"-3.3425912","14":"0.011459924","15":"3.837910","16":"4.452213e-03","17":"-0.87641386"},{"1":"audi","2":"a4 quattro","3":"1.8","4":"1999","5":"4","6":"auto(l5)","7":"4","8":"16","9":"25","10":"p","11":"compact","12":"29.34259","13":"-4.3425912","14":"0.011459924","15":"3.833523","16":"7.514625e-03","17":"-1.13860980"},{"1":"audi","2":"a4 quattro","3":"2.0","4":"2008","5":"4","6":"manual(m6)","7":"4","8":"20","9":"28","10":"p","11":"compact","12":"28.63647","13":"-0.6364734","14":"0.009843324","15":"3.844049","16":"1.382009e-04","17":"-0.16674447"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>We can also use <code>augment()</code> to predict unknown or future values, like predicting the highway MPG for a displacement of 4.5. We need to add a <code>newdata =</code> argument to the function and give it a dataset as an argument. Because there is just one value, we can create the dataset “on the fly.” The <code>tibble()</code> function can be used to create a dataset. If we wanted multiple predictions, we separate them with commas inside the <code>c()</code>. Be sure the variable is named EXACTLY as the variable name appears in the original dataset.</p>
+<pre class="r"><code>augment(lm_displ, 
+        newdata = tibble(displ = c(4.5)))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["displ"],"name":[1],"type":["dbl"],"align":["right"]},{"label":[".fitted"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"4.5","2":"19.81"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>#example of more than one prediction
+augment(lm_displ, 
+        newdata = tibble(displ = c(3, 3.5, 4.0, 4.5, 5.0, 5.5)))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["displ"],"name":[1],"type":["dbl"],"align":["right"]},{"label":[".fitted"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"3.0","2":"25.10588"},{"1":"3.5","2":"23.34059"},{"1":"4.0","2":"21.57530"},{"1":"4.5","2":"19.81000"},{"1":"5.0","2":"18.04471"},{"1":"5.5","2":"16.27941"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>#OR
+
+my_new_data &lt;- tibble(displ = c(3, 3.5, 4.0, 4.5, 5.0, 5.5),
+                      garbage = c(1,2,3,4,5,6))
+
+augment(lm_displ, 
+        newdata = my_new_data)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["displ"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["garbage"],"name":[2],"type":["dbl"],"align":["right"]},{"label":[".fitted"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"3.0","2":"1","3":"25.10588"},{"1":"3.5","2":"2","3":"23.34059"},{"1":"4.0","2":"3","3":"21.57530"},{"1":"4.5","2":"4","3":"19.81000"},{"1":"5.0","2":"5","3":"18.04471"},{"1":"5.5","2":"6","3":"16.27941"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>We can also use this to plot our fitted line on the plot of the original data.</p>
+<pre class="r"><code>augment(lm_displ, data = mpg) %&gt;% 
+  ggplot() +
+  geom_jitter(aes(x = displ, y = hwy)) + 
+  geom_line(aes(x = displ, y = .fitted), color = &quot;blue&quot;) + #the fitted line
+  labs(x = &quot;Engine Displacement&quot;, y = &quot;Highway MPG&quot;)</code></pre>
+<p><img src="03_slr_creating_interpreting_point_pred_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li>Fit a model that used <em>cty</em> to explain <em>hwy</em>. Write down the model equation.<br />
+</li>
+<li>Interpret the intercept and slope from the model.<br />
+</li>
+<li>Plot the line on top of a scatterplot of the data.<br />
+</li>
+<li>Use the model to predict the highway MPG, <em>hwy</em>, for a car that gets 24 MPG in the city and for a car that gets 65 MPG in the city. Do you trust both of these predictions?</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="linear-regression-with-one-categorical-factor-variable" class="section level1">
+<h1>Linear regression with one categorical (factor) variable</h1>
+<p>Now, let’s examine a model that uses a categorical (factor) explanatory variable. First, we’ll try just putting a categorical variable in the model equation.</p>
+<pre class="r"><code>lm_drv &lt;- lm(hwy ~ drv,
+                 data=mpg)
+tidy(lm_drv)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std.error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"19.174757","3":"0.4036737","4":"47.500634","5":"3.396345e-121"},{"1":"drvf","2":"8.985620","3":"0.5668272","4":"15.852486","5":"8.578919e-39"},{"1":"drvr","2":"1.825243","3":"0.9134093","4":"1.998275","5":"4.685929e-02"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>It did something. <strong>WHAT did it do? Any ideas?</strong> First, let’s run the following code. <strong>How is what we see below related to what we see above?</strong></p>
+<pre class="r"><code>mpg %&gt;% 
+  group_by(drv) %&gt;% 
+  summarize(mean_hwy = mean(hwy))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["drv"],"name":[1],"type":["chr"],"align":["left"]},{"label":["mean_hwy"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"4","2":"19.17476"},{"1":"f","2":"28.16038"},{"1":"r","2":"21.00000"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Since R cannot use <em>drv</em> directly (its values are words not numbers), it is creating 2 new variables:</p>
+<p><em>drvf</em> is 1 if <em>drv</em> is <em>f</em> and 0 otherwise, and <em>drvr</em> is 1 if <em>drv</em> is <em>r</em> and 0 otherwise.</p>
+<p>Let’s write out the model equation:</p>
+<p><span class="math display">\[
+\hat{hwy} = 19.18 + 8.99drvf + 1.83drvr
+\]</span></p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN! (don’t look ahead)</strong></p>
+<ol style="list-style-type: decimal">
+<li>When will both <em>drvf</em> and <em>drvr</em> take a value of 0?<br />
+</li>
+<li>What is the predicted value for a front wheel drive vehicle?<br />
+</li>
+<li>What is the predicted value for a rear wheel drive vehicle?</li>
+<li>What is the predicted value for a 4 wheel drive vehicle?</li>
+<li>Interpret each of the coefficients.</li>
+</ol>
+</div>
+<p><br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+</p>
+<p>In general, in a simple linear regression with one categorical explanatory variable, the intercept is the <em>average</em> response when the explanatory variable is at the “baseline” or “reference” level. That is the level of the categorical variable that does not have a dummy variable created for it. Notice, that is also the average response when all other variables are zero, same as when we had one quantitative explanatory variable.</p>
+<p>The other coefficients are the difference in average response between the level of the indicator variable and the reference level. This is similar to “increasing the explanatory variable by one,” but it doesn’t really make sense to talk about it that way.</p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li>Create a model that uses <em>class</em> to explain <em>hwy</em>. Interpret each of the coefficients.<br />
+</li>
+<li>What is the predicted highway MPG for a pickup?</li>
+</ol>
+</div>
+</div>
+<div id="intercept-only-model" class="section level1">
+<h1>Intercept Only Model</h1>
+<p>A <em>very</em> simple model we thus far have avoided considering, is one with only an intercept. We can fit that model using the code below.</p>
+<pre class="r"><code>lm_int &lt;- lm(hwy ~ 1, data=mpg)</code></pre>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li>How would you interpret the estimated intercept?<br />
+</li>
+<li>What does this model mean conceptually? When would this be a “good” model?</li>
+</ol>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiU2ltcGxlIExpbmVhciBSZWdyZXNzaW9uIChTTFIpOiBDcmVhdGluZyBtb2RlbHMsIGludGVycHJldGluZyBtb2RlbHMsIHBvaW50IHByZWRpY3Rpb24iCm91dHB1dDoKICBodG1sX2RvY3VtZW50OiAKICAgIGRmX3ByaW50OiBwYWdlZAogICAgY29kZV9kb3dubG9hZDogdHJ1ZQotLS0KCmBgYHtyLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpsaWJyYXJ5KHRpZHl2ZXJzZSkgI2ZvciBwbG90dGluZyBhbmQgc3VtbWFyaXppbmcKbGlicmFyeShtb2Rlcm5kaXZlKSAjZm9yIG5pY2UgbW9kZWwgb3V0cHV0CmxpYnJhcnkoYnJvb20pICNmb3IgbmljZSBtb2RlbCBvdXRwdXQgCnRoZW1lX3NldCh0aGVtZV9taW5pbWFsKCkpICNjaGFuZ2VzIHRoZSB0aGVtZSBvZiBnZ3Bsb3RzIHRvIHRoZW1lX21pbmltYWwsIG15IHBlcnNvbmFsIGZhdm9yaXRlCmBgYAoKCiFbXShpbWFnZXMvbW9kZXJuZGl2ZV9mbG93Y2hhcnRfc2xyLnBuZyl7d2lkdGg9NjAwcHh9CgpBcyB3ZSBiZWdpbiB0byBzdHVkeSBtb2RlbHMsIHJlbWVtYmVyIHRoaXMgcXVvdGUgYnkgZmFtb3VzIHN0YXRpc3RpY2lhbiBHZW9yZ2UgQm94LCAKXApcCgo8Y2VudGVyPgoqKiJBbGwgbW9kZWxzIGFyZSB3cm9uZyBidXQgc29tZSBhcmUgdXNlZnVsLiIqKgo8L2NlbnRlcj4KXApcCgoKPGRpdiBjbGFzcz0iYWxlcnQgYWxlcnQtc3VjY2VzcyI+CiAgPHN0cm9uZz5HT0FMOjwvc3Ryb25nPgoKQnkgdGhlIGVuZCBvZiB0aGVzZSBub3RlcyBhbmQgYWN0aXZpdGllcywgeW91IHNob3VsZCBiZSBhYmxlIHRvIHBlcmZvcm0gdGhlIGZvbGxvd2luZyB0YXNrcy4KCiogRml0IGEgbGluZWFyIHJlZ3Jlc3Npb24gbW9kZWwgdXNpbmcgdGhlIGBsbWAgZnVuY3Rpb24uICAKKiBXcml0ZSBvdXQgYSBtb2RlbCBlcXVhdGlvbiBieSBoYW5kLiAgCiogT2J0YWluIG1vZGVsIG91dHB1dCB1c2luZyBgdGlkeSgpYCBvciBgZ2V0X3JlZ3Jlc3Npb25fdGFibGUoKWAuICAKKiBJbnRlcnByZXQgdGhlIGNvZWZmaWNpZW50cyBmcm9tIGEgc2ltcGxlIGxpbmVhciByZWdyZXNzaW9uIG1vZGVsIHRoYXQgdXNlcyBvbmUgcXVhbnRpdGF0aXZlIE9SIG9uZSBjYXRlZ29yaWNhbCBwcmVkaWN0b3IgdmFyaWFibGUuICAKKiBVc2UgdGhlIGBhdWdtZW50KClgIGZ1bmN0aW9uIChvciBgZ2V0X3JlZ3Jlc3Npb25fcG9pbnRzKClgKSB0byBvYnRhaW4gZml0dGVkIHZhbHVlcyBhbmQgcmVzaWR1YWxzLiAgCiogVXNlIHRoZSBgYXVnbWVudCgpYCBmdW5jdGlvbiB0byBwcmVkaWN0IG5ldyB2YWx1ZXMuICAKKiBQbG90IHRoZSBmaXR0ZWQgbGluZSBvbiB0b3Agb2YgdGhlIG9ic2VydmVkIHZhbHVlcy4KCjwvZGl2PgoKCiMgVGhlIGRhdGEKCldlIHdpbGwgdXNlIHRoZSBgbXBnYCBkYXRhc2V0IGZyb20gdGhlIGBnZ3Bsb3QyYCBsaWJyYXJ5IChwYXJ0IG9mIHRoZSBgdGlkeXZlcnNlYCkuIFRoaXMgaXMgYSBzdWJzZXQgb2YgdGhlIGB2ZWhpY2xlc2AgZGF0YXNldCB3ZSBoYXZlIGJlZW4gZXhhbWluaW5nLiBJdCBoYXMgYmVlbiBmdXJ0aGVyIGNsZWFuZWQuIFRvIGxlYXJuIG1vcmUgYWJvdXQgdGhlIGRhdGFzZXQsIHNlYXJjaCBmb3IgYG1wZ2AgaW4gdGhlIEhlbHAgdGFiIG9yIHJ1biBgP21wZ2AgaW4gdGhlIGNvbnNvbGUuCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1pbmZvIj4KICA8c3Ryb25nPllPVVIgVFVSTiE8L3N0cm9uZz4KCjEuIEhvdyB3b3VsZCB5b3UgZGVzY3JpYmUgdGhlIHJlbGF0aW9uc2hpcCBiZXR3ZWVuICpkaXNwbCogYW5kICpod3kqPyAgCjIuIElzIHRoZSBkZXNjcmlwdGlvbiBkaWZmZXJlbnQgZm9yIGVhY2ggKmRydio/CgpgYGB7cn0KbXBnICU+JSAKICBnZ3Bsb3QoKSArCiAgZ2VvbV9qaXR0ZXIoYWVzKHg9ZGlzcGwsIHk9aHd5LCBjb2xvcj1kcnYpKQpgYGAKCjMuIENyZWF0ZSBzb21lIGdyYXBocyBhbmQgY2FsY3VsYXRlIHN0YXRpc3RpY3MgdG8gZGVzY3JpYmUgdGhlIGRpc3RyaWJ1dGlvbiBvZiBlYWNoIG9mIHRoZSB0aHJlZSB2YXJpYWJsZXMgd2UncmUgc3R1ZHlpbmcuIFdyaXRlIGRvd24gYSBkZXNjcmlwdGlvbiBpbiAxLTIgc2VudGVuY2VzIGZvciBlYWNoLgoKYGBge3J9CmBgYAoKPC9kaXY+CgojIEludHJvZHVjdGlvbgoKV2UgYXJlIGdvaW5nIHRvIGRpc2N1c3MgZGlmZmVyZW50IHR5cGVzIG9mIGxpbmVhciBtb2RlbHMsIHRoZWlyIG5vdGF0aW9uIGluIFIsIGhvdyB0byBpbnRlcnByZXQgdGhlIG1vZGVsIGNvZWZmaWNpZW50cywgYW5kIGhvdyB0byB1c2UgdGhlbSBmb3IgcHJlZGljdGlvbi4KCldoYXQgZG9lcyBpdCBtZWFuIHRvIGZpdCBhIG1vZGVsIHRvIGRhdGE/IFdlIGFyZSBsb29raW5nIGZvciBhIG1hdGhlbWF0aWNhbCBlcXVhdGlvbiB0byByZXByZXNlbnQgdGhlICJnZW5lcmFsIiByZWxhdGlvbnNoaXAgYmV0d2VlbiBhICpyZXNwb25zZSB2YXJpYWJsZSogYW5kICpleHBsYW5hdG9yeSB2YXJpYWJsZXMqLiBXZSBrbm93IGl0IHdvbid0IGJlIHBlcmZlY3QsIGJ1dCB3ZSB3b3VsZCBsaWtlIHNvbWV0aGluZyB1c2VmdWwuIEluIHRoaXMgY291cnNlLCB3ZSBmb2N1cyBvbiBsaW5lYXIgbW9kZWxzLiBUaGV5IHRha2UgdGhlIGZvcm06CgokJApcaGF0e3l9ID0gXGhhdHtcYmV0YX1fMCArIFxoYXR7XGJldGF9XzEgeF8xICsgXGhhdHtcYmV0YX1fMiB4XzIgKyAuLi4gKyBcaGF0e1xiZXRhfV9wIHhfcC4KJCQKClRoZSAiaGF0cyIgb24gdG9wIG9mIHRoZSAkeSQgYW5kIHRoZSAkXGJldGEkcyBhcmUgdG8gaW5kaWNhdGUgdGhhdCB0aG9zZSBxdWFudGl0aWVzIGFyZSBlc3RpbWF0ZXMgb2J0YWluZWQgZnJvbSBkYXRhLiBUaGUgJFxiZXRhJHMgd2lsbCBiZSBudW1iZXJzLiBUaGUgYWJvdmUgaXMganVzdCBhIG1vcmUgY29tcGxleCB2ZXJzaW9uIG9mIHRoZSB0cmFkaXRpb25hbCBlcXVhdGlvbiBvZiBhIGxpbmU6CgokJAp5ID0gbXggKyBiCiQkCgpUaGUgcmVzdWx0aW5nIG1vZGVsIGVxdWF0aW9uIGhhcyBtYW55IGRpZmZlcmVudCBuYW1lczogbW9kZWwgZXF1YXRpb24gKG9yIHNwZWNpZmljYWxseSBsaW5lYXIgbW9kZWwgZXF1YXRpb24gb3IganVzdCBtb2RlbCksIGZpdHRlZCBtb2RlbCwgbGVhc3Qgc3F1YXJlcyByZWdyZXNzaW9uIGxpbmUsIG11bHRpcGxlIHJlZ3Jlc3Npb24gbGluZSwgZXN0aW1hdGVkIGxpbmUsIGV0Yy4gVGhlc2UgYWxsIG1lYW4gdGhlIHNhbWUgdGhpbmcuCgpUaGUgbW9kZWwgaGFzIHR3byBtYWluIHVzZXM6CgoxLiBFeHBsYW5hdGlvbjogdG8gZXhwbGFpbiB0aGUgcmVsYXRpb25zaGlwIGJldHdlZW4gdGhlIGV4cGxhbmF0b3J5IHZhcmlhYmxlcyBhbmQgdGhlIHJlc3BvbnNlIHZhcmlhYmxlLCBpZS4gaG93ICR5JCByZWxhdGVzIHRvIGVhY2ggb2YgJHhfMSQsICR4XzIkLCAuLi4sJHhfcCQuIFRoZSBjb2VmZmljaWVudHMgKCRcaGF0e1xiZXRhfV8xJCwgJFxoYXR7XGJldGF9XzIkLCAuLi4sICRcaGF0e1xiZXRhfV9wJCkgdGVsbCB1cyBhYm91dCB0aGF0LiAKCjIuIFByZWRpY3Rpb246IHRvIGZpbmQgdGhlICpwcmVkaWN0ZWQgdmFsdWUqIChhbHNvIGNhbGxlZCAqcHJlZGljdGVkIHJlc3BvbnNlKiwgKmZpdHRlZCB2YWx1ZSosICptb2RlbCB2YWx1ZSosIGFuZCBhIGZldyBvdGhlciB0aGluZ3MpIHdoaWNoIGlzIHRoZSB2YWx1ZSB0aGUgcmVzcG9uc2UgdmFyaWFibGUgdGFrZXMgd2hlbiB5b3UgcGx1ZyBpbiB0aGUgdmFsdWVzIG9mIHRoZSBleHBsYW5hdG9yeSB2YXJpYWJsZXMuIE9yIHRvIHByZWRpY3QgdmFsdWVzIG9mICR5JCB3aGVuIGl0IGlzIHVua25vd24uCgpXZSB3aWxsIHVzZSB0aGUgYGxtYCBmdW5jdGlvbiAod2hpY2ggc3RhbmRzIGZvciBsaW5lYXIgbW9kZWwpIHRvIGZpdCBtb2RlbHMuIFRoaXMgZnVuY3Rpb24gcmVxdWlyZXMgdHdvIGFyZ3VtZW50czogdGhlIG1vZGVsIGVxdWF0aW9uIGFuZCB0aGUgZGF0YS4gVGhlIG1vZGVsIGVxdWF0aW9uIGlzIHdyaXR0ZW4gaW4gdGhlIGZvcm0gYHkgfiB4MSArIHgyYCwgd2hlcmUgYHlgIGlzIHRoZSByZXNwb25zZSBhbmQgYHgxYCBhbmQgYHgyYCBhcmUgdGhlIGV4cGxhbmF0b3J5IHZhcmlhYmxlcy4gTW9yZSB2YXJpYWJsZXMgY2FuIGJlIGFkZGVkIGJ5IHVzaW5nIHRoZSBgK2Agc2lnbiB0byBzZXBhcmF0ZSB0aGVtLiBIZXJlIGlzIGEgZ2VuZXJpYyBleGFtcGxlCgpgYGB7ciwgZXZhbD1GQUxTRX0KbG0oeSB+IHgxICsgeDIsIGRhdGE9dGhlX2RhdGEpCmBgYAoKIyBMaW5lYXIgcmVncmVzc2lvbiB3aXRoIG9uZSBxdWFudGl0YXRpdmUgZXhwbGFuYXRvcnkgdmFyaWFibGUKCkxldCdzIGxvb2sgYXQgYW4gZXhhbXBsZS4KCmBgYHtyfQpsbV9kaXNwbCA8LSBsbShod3kgfiBkaXNwbCwgZGF0YT1tcGcpCgpsbV9kaXNwbApgYGAKCk5vdGljZSBhIGNvdXBsZSB0aGluZ3M6CgoxLiBJIGhhdmUgc2F2ZWQgdGhpcyBtb2RlbCB0byBhbiBvYmplY3QgbmFtZWQgYGxtX2Rpc3BsYC4gIAoyLiBUaGUgb3V0cHV0IGdpdmVzIHVzIHRoZSBpbnRlcmNlcHQsICRcaGF0e1xiZXRhfV8wJCBhbmQgdGhlIHNsb3BlICBvciBjb2VmZmljaWVudCBmb3IgdGhlIGBkaXNwbGAgdGVybSwgJFxoYXR7XGJldGF9XzEkLgoKCldlIGNhbiBvYnRhaW4gbW9yZSBvdXRwdXQgKHdoaWNoIHdlJ2xsIHdhbnQgd2hlbiB3ZSBzdGFydCBkb2luZyBpbmZlcmVuY2UpLCB1c2luZyB0aGUgZWl0aGVyIHRoZSBgZ2V0X3JlZ3Jlc3Npb25fdGFibGUoKWAgb3IgYHRpZHkoKWAgZnVuY3Rpb24uCgpgYGB7cn0KZ2V0X3JlZ3Jlc3Npb25fdGFibGUobG1fZGlzcGwpCmBgYAoKCmBgYHtyfQp0aWR5KGxtX2Rpc3BsKQpgYGAKCkZvciBub3csIHdlIGFyZSBqdXN0IGludGVyZXN0ZWQgaW4gdGhlICp0ZXJtKiBhbmQgKmVzdGltYXRlKiBjb2x1bW5zLiBUaGUgKnRlcm0qIGNvbHVtbiBpcyB0aGUgdGVybS92YXJpYWJsZSBpbiB0aGUgbW9kZWwgZXF1YXRpb24uIFRoZSBjb2x1bW4gdGl0bGVkICplc3RpbWF0ZSogZ2l2ZXMgdGhlIGVzdGltYXRlZCBjb2VmZmljaWVudHMgb2YgdGhlIHZhcmlhYmxlcy90ZXJtcyAoaWUuIHRoZSAkXGhhdHtcYmV0YX0kcy4gCgpXZSBjb3VsZCB3cml0ZSBvdXQgdGhlIGVxdWF0aW9uIGFib3ZlIGFzOgoKJCQKXGhhdHtod3l9ID0gMzUuNzAgLSAzLjUzIGRpc3BsCiQkCgojIyBFeHBsYW5hdGlvbgoKPGRpdiBjbGFzcz0iYWxlcnQgYWxlcnQtaW5mbyI+CiAgPHN0cm9uZz5ZT1VSIFRVUk4hIChkb24ndCBsb29rIGFoZWFkKTwvc3Ryb25nPgoKMS4gSG93IGRvIHlvdSBpbnRlcnByZXQgdGhlIGludGVyY2VwdCwgMzUuNzA/ICAKMi4gSG93IGRvIHlvdSBpbnRlcnByZXQgdGhlIHNsb3BlLCAtMy41Mz8KCjwvZGl2PgoKClwKXApcClwKXApcClwKXApcClwKXApcClwKXApcClwKXAoKSW4gZ2VuZXJhbCwgaW4gYSBzaW1wbGUgbGluZWFyIHJlZ3Jlc3Npb24gd2l0aCBvbmUgcXVhbnRpdGF0aXZlIGV4cGxhbmF0b3J5IHZhcmlhYmxlLCB0aGUgaW50ZXJjZXB0IGlzIHRoZSAqYXZlcmFnZSogcmVzcG9uc2Ugd2hlbiB0aGUgZXhwbGFuYXRvcnkgdmFyaWFibGUocykgaXMgZXF1YWwgdG8gemVyby4gVGhlIHNsb3BlIGlzIHRoZSAqYXZlcmFnZSogY2hhbmdlIGluIHRoZSByZXNwb25zZSB2YXJpYWJsZSBmb3IgYSBvbmUgdW5pdCBpbmNyZWFzZSBpbiB0aGUgZXhwbGFuYXRvcnkgdmFyaWFibGUuIFRoZSBpbWFnZSBiZWxvdyBoZWxwcyBpbGx1c3RyYXRlIHRoaXMgKGRvbid0IHdvcnJ5IGFib3V0IHRoZSBjb2RlKS4KCmBgYHtyLCBlY2hvPUZBTFNFfQpnZ3Bsb3QobXBnLAogICAgICAgYWVzKHggPSBkaXNwbCwgeSA9IGh3eSkpICsgCiAgZ2VvbV9qaXR0ZXIoKSArCiAgZ2VvbV9zbW9vdGgobWV0aG9kID0gImxtIiwgc2UgPSBGQUxTRSkgKwogIGdlb21fdmxpbmUoeGludGVyY2VwdCA9IDQsIGNvbG9yID0gImxpZ2h0Z29sZGVucm9kIiwgYWxwaGEgPSAuNSwgc2l6ZSA9IDIpICsKICBnZW9tX3ZsaW5lKHhpbnRlcmNlcHQgPSAzLCBjb2xvciA9ICJtZWRpdW1wdXJwbGUxIiwgYWxwaGEgPSAuNSwgc2l6ZSA9IDIpICsKICBnZW9tX2hsaW5lKHlpbnRlcmNlcHQgPSAzNS43MCAtIDMuNTMqMywgY29sb3IgPSAibWVkaXVtcHVycGxlMSIsIGFscGhhID0gLjUsIHNpemUgPSAyKSArCiAgZ2VvbV9obGluZSh5aW50ZXJjZXB0ID0gMzUuNzAgLSAzLjUzKjQsIGNvbG9yID0gImxpZ2h0Z29sZGVucm9kIiwgYWxwaGEgPSAuNSwgc2l6ZSA9IDIpICsKICBzY2FsZV94X2NvbnRpbnVvdXMoYnJlYWtzID0gMTo4KSArCiAgc2NhbGVfeV9jb250aW51b3VzKGJyZWFrcyA9IHNlcSgxMCw2MCwxMCkpICsKICBsYWJzKHRpdGxlID0gIlJhdyBkYXRhIHdpdGggbW9kZWwgKGJsdWUgbGluZSkiKQpgYGAKClRoZSBibHVlIGxpbmUgc2hvd3MgdGhlIGZpdHRlZCBsaW5lICh0aGUgbW9kZWwpLiBUaGUgcHVycGxlIHZlcnRpY2FsIGxpbmUgaGlnaGxpZ2h0cyBlbmdpbmUgZGlzcGxhY2VtZW50IHZhbHVlcyBvZiAzIGN1YmljIGluY2hlcy4gVGhlIHB1cnBsZSBob3Jpem9udGFsIGxpbmUgcmVmbGVjdHMgdGhlIGZpdHRlZCB2YWx1ZSwgJFxoYXR7eX1faSQgZm9yIGFuIG9ic2VydmF0aW9uIHdpdGggYSBkaXNwbGFjZW1lbnQgb2YgMy4gVGhlIHllbGxvdyB2ZXJ0aWNhbCBsaW5lIGhpZ2hsaWdodHMgZW5naW5lIGRpc3BsYWNlbWVudCB2YWx1ZXMgb2YgNCBjdWJpYyBpbmNoZXMuIFRoZSB5ZWxsb3cgaG9yaXpvbnRhbCBsaW5lIHJlZmxlY3RzIHRoZSBmaXR0ZWQgdmFsdWUsICRcaGF0e3l9X2kkIGZvciBhbiBvYnNlcnZhdGlvbiB3aXRoIGEgZGlzcGxhY2VtZW50IG9mIDQuIFRoZSBkaXN0YW5jZSBiZXR3ZWVuIHRoZSBwdXJwbGUgYW5kIHllbGxvdyBsaW5lcyBpcyBhYm91dCAtIDMuNTMsIHdoaWNoIHJlZmxlY3RzIHRoZSBlc3RpbWF0ZWQgc2xvcGUuIE9uIGF2ZXJhZ2UsIGNhcnMgd2l0aCBhIGRpc3BsYWNlbWVudCB0aGF0IGlzIDEgY3ViaWMgaW5jaCBsYXJnZXIgd2lsbCBnZXQgMy41MyBNUEcgbGVzcy4gVGhlIGludGVyY2VwdCwgMzUuNzAsIGlzIGludGVycHJldGVkIGFzIHRoZSBhdmVyYWdlIE1QRyBmb3IgYSBjYXIgd2l0aCBhIGRpc3BsYWNlbWVudCBvZiAwIGN1YmljIGluY2hlcy4KCgojIyBQcmVkaWN0aW9uCgpJbiBhZGRpdGlvbiB0byBpbnRlcnByZXRpbmcgdGhlIG1vZGVscywgd2Ugb2Z0ZW4gd2FudCB0byB1c2UgdGhlbSB0byBwcmVkaWN0IGZ1dHVyZSBvciB1bmtub3duIHZhbHVlcyBvZiB0aGUgcmVzcG9uc2UgdmFyaWFibGUgZm9yIG9ic2VydmF0aW9ucyB3aGVyZSB3ZSBrbm93IHRoZSB2YWx1ZXMgb2YgdGhlIGV4cGxhbmF0b3J5IHZhcmlhYmxlcy4gV2Ugd2lsbCBpbnRyb2R1Y2UgYW5kIHJlaXRlcmF0ZSBzb21lIHRlcm1zLgoKKiAqKmFjdHVhbCB2YWx1ZXMqKiwgYWxzbyBjYWxsZWQgb2JzZXJ2ZWQgdmFsdWVzLCBhcmUgZXhhY3RseSB3aGF0IHlvdSBtaWdodCBndWVzcywgdGhlIGFjdHVhbCB2YWx1ZXMgb2YgdGhlIHJlc3BvbnNlIHZhcmlhYmxlLiBUaGV5IGFyZSB0aGUgJHlfaSQncy4KKiAqKmZpdHRlZCB2YWx1ZXMqKiwgYWxzbyBjYWxsZWQgcHJlZGljdGVkIHZhbHVlcyBvciBtb2RlbCB2YWx1ZXMsIGFyZSB0aGUgdmFsdWUgdGhlIHJlc3BvbnNlIHZhcmlhYmxlIHRha2VzIHdoZW4geW91IHBsdWcgaW4gdGhlIHZhbHVlcyBvZiB0aGUgZXhwbGFuYXRvcnkgdmFyaWFibGVzLiBUaGV5IGFyZSB0aGUgJFxoYXR7eX1faSQncy4gIAoqICoqcmVzaWR1YWxzKiogYXJlIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4gdGhlIGFjdHVhbCBhbmQgZml0dGVkIHZhbHVlcywgJHlfaSAtIFxoYXR7eX1faSQncy4gCgpgYGB7ciwgZWNobz1GQUxTRX0KYXVnbWVudChsbV9kaXNwbCwgZGF0YSA9IG1wZykgJT4lIAogIGdncGxvdChhZXMoeCA9IGRpc3BsLCB5ID0gaHd5KSkgKwogIGdlb21faml0dGVyKCkgKyAKICBnZW9tX2xpbmUoYWVzKHggPSBkaXNwbCwgeSA9IC5maXR0ZWQpLCBjb2xvciA9ICJibHVlIiwgc2l6ZSA9IC41KSArCiAgZ2VvbV9wb2ludChhZXMoeCA9IGRpc3BsLCB5ID0gLmZpdHRlZCksIGNvbG9yID0gImJsdWUiKSArCiAgZ2VvbV9zZWdtZW50KGFlcyh4ZW5kID0gZGlzcGwsIAogICAgICAgICAgICAgICAgICAgeWVuZCA9IDM1LjcwIC0gMy41MypkaXNwbCksIAogICAgICAgICAgICAgICBjb2xvciA9ICJyZWQiKSArCiAgc2NhbGVfeF9jb250aW51b3VzKGJyZWFrcyA9IDE6OCkgKwogIHNjYWxlX3lfY29udGludW91cyhicmVha3MgPSBzZXEoMTAsNjAsMTApKSArCiAgbGFicyh0aXRsZSA9ICJBY3R1YWwgKGJsYWNrKSwgRml0dGVkIChibHVlKSwgYW5kIHJlc2lkdWFscyAocmVkKSIpCmBgYAoKPGRpdiBjbGFzcz0iYWxlcnQgYWxlcnQtaW5mbyI+CiAgPHN0cm9uZz5ZT1VSIFRVUk4hIChkb24ndCBsb29rIGFoZWFkKTwvc3Ryb25nPgoKSG93IHdvdWxkIHlvdSBmaW5kIHRoZSBwcmVkaWN0ZWQgaGlnaHdheSBtaWxlcyBwZXIgZ2FsbG9uIGZvciBhIHZlaGljbGUgd2l0aCBhbiBlbmdpbmUgZGlzcGxhY2VtZW50IG9mIDQuNSBsaXRyZXM/Cgo8L2Rpdj4KClwKXApcClwKXApcClwKXApcClwKXApcClwKXApcClwKCldlIGNhbiB1c2UgdGhlIGBhdWdtZW50KClgIGZ1bmN0aW9uIHRvIGhlbHAgdXMgZG8gdGhpcy4gVGhlIGBnZXRfcmVncmVzc2lvbl9wb2ludHMoKWAgZnVuY3Rpb24gZnJvbSB0aGUgYG1vZGVybmRpdmVgIGxpYnJhcnkgYWxzbyB3b3Jrcy4gVGhlIG5hbWVzIG9mIHRoZSB2YXJpYWJsZXMgaW4gdGhlIG91dHB1dCBhcmUgc2xpZ2h0bHkgZGlmZmVyZW50LCB0aG91Z2gsIGFuZCBpdCB3aWxsIG5vdCB3b3JrIGxhdGVyIHdoZW4gd2UgZG8gbG9naXN0aWMgcmVncmVzc2lvbi4KCldlIGNhbiB1c2UgaXQgdG8gZmluZCB0aGUgcHJlZGljdGVkIHJlc3BvbnNlcyBmb3IgYWxsIHRoZSBkYXRhIHVzZWQgdG8gZml0IHRoaXMgbW9kZWwuIEJlbG93IEkganVzdCBzaG93IHRoZSBmaXJzdCAxMCByb3dzLgoKYGBge3J9CmF1Z19kaXNwbCA8LSBhdWdtZW50KGxtX2Rpc3BsKQoKYXVnX2Rpc3BsICU+JSAKICBzbGljZSgxOjEwKQpgYGAKClRoaXMgZGF0YXNldCBjb250YWlucyB0aGUgcmVzcG9uc2UgdmFyaWFibGUsIGFsbCBleHBsYW5hdG9yeSB2YXJpYWJsZXMsIGFuZCBzb21lIGFkZGl0aW9uYWwgaW5mb3JtYXRpb24uIE9uZSBwaWVjZSBvZiBhZGRpdGlvbmFsIGluZm9ybWF0aW9uIGlzIHRoZSB2YXJpYWJsZSAqLmZpdHRlZCouIFRoZXNlIGFyZSB0aGUgcHJlZGljdGVkIChmaXR0ZWQpIHZhbHVlcy4gCgpTb21ldGltZXMgd2Ugd2FudCBhbGwgdGhlIHZhcmlhYmxlcyBpbiBvdXIgb3JpZ2luYWwgZGF0YXNldCwgcGx1cyB0aGVzZSBuZXcgdmFyaWFibGVzLiBXZSBjYW4gZ2V0IHRoYXQsIGJ5IGFkZGluZyBhIGBkYXRhID0gYCBhcmd1bWVudCB0byB0aGUgYGF1Z21lbnQoKWAgZnVuY3Rpb24uIAoKYGBge3J9CmF1Z21lbnQobG1fZGlzcGwsIGRhdGEgPSBtcGcpICU+JSAKICBzbGljZSgxOjEwKQpgYGAKCldlIGNhbiBhbHNvIHVzZSBgYXVnbWVudCgpIGAgdG8gcHJlZGljdCB1bmtub3duIG9yIGZ1dHVyZSB2YWx1ZXMsIGxpa2UgcHJlZGljdGluZyB0aGUgaGlnaHdheSBNUEcgZm9yIGEgZGlzcGxhY2VtZW50IG9mIDQuNS4gV2UgbmVlZCB0byBhZGQgYSBgbmV3ZGF0YSA9IGAgYXJndW1lbnQgdG8gdGhlIGZ1bmN0aW9uIGFuZCBnaXZlIGl0IGEgZGF0YXNldCBhcyBhbiBhcmd1bWVudC4gQmVjYXVzZSB0aGVyZSBpcyBqdXN0IG9uZSB2YWx1ZSwgd2UgY2FuIGNyZWF0ZSB0aGUgZGF0YXNldCAib24gdGhlIGZseS4iIFRoZSBgdGliYmxlKClgIGZ1bmN0aW9uIGNhbiBiZSB1c2VkIHRvIGNyZWF0ZSBhIGRhdGFzZXQuIElmIHdlIHdhbnRlZCBtdWx0aXBsZSBwcmVkaWN0aW9ucywgd2Ugc2VwYXJhdGUgdGhlbSB3aXRoIGNvbW1hcyBpbnNpZGUgdGhlIGBjKClgLiBCZSBzdXJlIHRoZSB2YXJpYWJsZSBpcyBuYW1lZCBFWEFDVExZIGFzIHRoZSB2YXJpYWJsZSBuYW1lIGFwcGVhcnMgaW4gdGhlIG9yaWdpbmFsIGRhdGFzZXQuCgpgYGB7cn0KYXVnbWVudChsbV9kaXNwbCwgCiAgICAgICAgbmV3ZGF0YSA9IHRpYmJsZShkaXNwbCA9IGMoNC41KSkpCgojZXhhbXBsZSBvZiBtb3JlIHRoYW4gb25lIHByZWRpY3Rpb24KYXVnbWVudChsbV9kaXNwbCwgCiAgICAgICAgbmV3ZGF0YSA9IHRpYmJsZShkaXNwbCA9IGMoMywgMy41LCA0LjAsIDQuNSwgNS4wLCA1LjUpKSkKCiNPUgoKbXlfbmV3X2RhdGEgPC0gdGliYmxlKGRpc3BsID0gYygzLCAzLjUsIDQuMCwgNC41LCA1LjAsIDUuNSksCiAgICAgICAgICAgICAgICAgICAgICBnYXJiYWdlID0gYygxLDIsMyw0LDUsNikpCgphdWdtZW50KGxtX2Rpc3BsLCAKICAgICAgICBuZXdkYXRhID0gbXlfbmV3X2RhdGEpCgpgYGAKCldlIGNhbiBhbHNvIHVzZSB0aGlzIHRvIHBsb3Qgb3VyIGZpdHRlZCBsaW5lIG9uIHRoZSBwbG90IG9mIHRoZSBvcmlnaW5hbCBkYXRhLgoKYGBge3J9CmF1Z21lbnQobG1fZGlzcGwsIGRhdGEgPSBtcGcpICU+JSAKICBnZ3Bsb3QoKSArCiAgZ2VvbV9qaXR0ZXIoYWVzKHggPSBkaXNwbCwgeSA9IGh3eSkpICsgCiAgZ2VvbV9saW5lKGFlcyh4ID0gZGlzcGwsIHkgPSAuZml0dGVkKSwgY29sb3IgPSAiYmx1ZSIpICsgI3RoZSBmaXR0ZWQgbGluZQogIGxhYnMoeCA9ICJFbmdpbmUgRGlzcGxhY2VtZW50IiwgeSA9ICJIaWdod2F5IE1QRyIpCmBgYAoKPGRpdiBjbGFzcz0iYWxlcnQgYWxlcnQtaW5mbyI+CiAgPHN0cm9uZz5ZT1VSIFRVUk4hPC9zdHJvbmc+CgoxLiBGaXQgYSBtb2RlbCB0aGF0IHVzZWQgKmN0eSogdG8gZXhwbGFpbiAqaHd5Ki4gV3JpdGUgZG93biB0aGUgbW9kZWwgZXF1YXRpb24uICAKMi4gSW50ZXJwcmV0IHRoZSBpbnRlcmNlcHQgYW5kIHNsb3BlIGZyb20gdGhlIG1vZGVsLiAgCjMuIFBsb3QgdGhlIGxpbmUgb24gdG9wIG9mIGEgc2NhdHRlcnBsb3Qgb2YgdGhlIGRhdGEuICAKNC4gVXNlIHRoZSBtb2RlbCB0byBwcmVkaWN0IHRoZSBoaWdod2F5IE1QRywgKmh3eSosICBmb3IgYSBjYXIgdGhhdCBnZXRzIDI0IE1QRyBpbiB0aGUgY2l0eSBhbmQgZm9yIGEgY2FyIHRoYXQgZ2V0cyA2NSBNUEcgaW4gdGhlIGNpdHkuIERvIHlvdSB0cnVzdCBib3RoIG9mIHRoZXNlIHByZWRpY3Rpb25zPwoKPC9kaXY+CgojIExpbmVhciByZWdyZXNzaW9uIHdpdGggb25lIGNhdGVnb3JpY2FsIChmYWN0b3IpIHZhcmlhYmxlCgpOb3csIGxldCdzIGV4YW1pbmUgYSBtb2RlbCB0aGF0IHVzZXMgYSBjYXRlZ29yaWNhbCAoZmFjdG9yKSBleHBsYW5hdG9yeSB2YXJpYWJsZS4gRmlyc3QsIHdlJ2xsIHRyeSBqdXN0IHB1dHRpbmcgYSBjYXRlZ29yaWNhbCB2YXJpYWJsZSBpbiB0aGUgbW9kZWwgZXF1YXRpb24uCgpgYGB7cn0KbG1fZHJ2IDwtIGxtKGh3eSB+IGRydiwKICAgICAgICAgICAgICAgICBkYXRhPW1wZykKdGlkeShsbV9kcnYpCmBgYAoKSXQgZGlkIHNvbWV0aGluZy4gKipXSEFUIGRpZCBpdCBkbz8gQW55IGlkZWFzPyoqIEZpcnN0LCBsZXQncyBydW4gdGhlIGZvbGxvd2luZyBjb2RlLiAqKkhvdyBpcyB3aGF0IHdlIHNlZSBiZWxvdyByZWxhdGVkIHRvIHdoYXQgd2Ugc2VlIGFib3ZlPyoqCgpgYGB7cn0KbXBnICU+JSAKICBncm91cF9ieShkcnYpICU+JSAKICBzdW1tYXJpemUobWVhbl9od3kgPSBtZWFuKGh3eSkpCmBgYAoKU2luY2UgUiBjYW5ub3QgdXNlICpkcnYqIGRpcmVjdGx5IChpdHMgdmFsdWVzIGFyZSB3b3JkcyBub3QgbnVtYmVycyksIGl0IGlzIGNyZWF0aW5nIDIgbmV3IHZhcmlhYmxlczogCgoqZHJ2ZiogaXMgMSBpZiAqZHJ2KiBpcyAqZiogYW5kIDAgb3RoZXJ3aXNlLCBhbmQgCipkcnZyKiAgaXMgMSBpZiAqZHJ2KiBpcyAqciogYW5kIDAgb3RoZXJ3aXNlLiAgCgpMZXQncyB3cml0ZSBvdXQgdGhlIG1vZGVsIGVxdWF0aW9uOgoKJCQKXGhhdHtod3l9ID0gMTkuMTggKyA4Ljk5ZHJ2ZiArIDEuODNkcnZyCiQkCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1pbmZvIj4KICA8c3Ryb25nPllPVVIgVFVSTiEgKGRvbid0IGxvb2sgYWhlYWQpPC9zdHJvbmc+CgoxLiBXaGVuIHdpbGwgYm90aCAqZHJ2ZiogYW5kICpkcnZyKiB0YWtlIGEgdmFsdWUgb2YgMD8gIAoyLiBXaGF0IGlzIHRoZSBwcmVkaWN0ZWQgdmFsdWUgZm9yIGEgZnJvbnQgd2hlZWwgZHJpdmUgdmVoaWNsZT8gIAozLiBXaGF0IGlzIHRoZSBwcmVkaWN0ZWQgdmFsdWUgZm9yIGEgcmVhciB3aGVlbCBkcml2ZSB2ZWhpY2xlPwo0LiBXaGF0IGlzIHRoZSBwcmVkaWN0ZWQgdmFsdWUgZm9yIGEgNCB3aGVlbCBkcml2ZSB2ZWhpY2xlPyAKNS4gSW50ZXJwcmV0IGVhY2ggb2YgdGhlIGNvZWZmaWNpZW50cy4KCjwvZGl2PgoKXApcClwKXApcClwKXApcClwKXApcClwKXApcClwKXAoKSW4gZ2VuZXJhbCwgaW4gYSBzaW1wbGUgbGluZWFyIHJlZ3Jlc3Npb24gd2l0aCBvbmUgY2F0ZWdvcmljYWwgZXhwbGFuYXRvcnkgdmFyaWFibGUsIHRoZSBpbnRlcmNlcHQgaXMgdGhlICphdmVyYWdlKiByZXNwb25zZSB3aGVuIHRoZSBleHBsYW5hdG9yeSB2YXJpYWJsZSBpcyBhdCB0aGUgImJhc2VsaW5lIiBvciAicmVmZXJlbmNlIiBsZXZlbC4gVGhhdCBpcyB0aGUgbGV2ZWwgb2YgdGhlIGNhdGVnb3JpY2FsIHZhcmlhYmxlIHRoYXQgZG9lcyBub3QgaGF2ZSBhIGR1bW15IHZhcmlhYmxlIGNyZWF0ZWQgZm9yIGl0LiBOb3RpY2UsIHRoYXQgaXMgYWxzbyB0aGUgYXZlcmFnZSByZXNwb25zZSB3aGVuIGFsbCBvdGhlciB2YXJpYWJsZXMgYXJlIHplcm8sIHNhbWUgYXMgd2hlbiB3ZSBoYWQgb25lIHF1YW50aXRhdGl2ZSBleHBsYW5hdG9yeSB2YXJpYWJsZS4gCgpUaGUgb3RoZXIgY29lZmZpY2llbnRzIGFyZSB0aGUgZGlmZmVyZW5jZSBpbiBhdmVyYWdlIHJlc3BvbnNlIGJldHdlZW4gdGhlIGxldmVsIG9mIHRoZSBpbmRpY2F0b3IgdmFyaWFibGUgYW5kIHRoZSByZWZlcmVuY2UgbGV2ZWwuIFRoaXMgaXMgc2ltaWxhciB0byAiaW5jcmVhc2luZyB0aGUgZXhwbGFuYXRvcnkgdmFyaWFibGUgYnkgb25lLCIgYnV0IGl0IGRvZXNuJ3QgcmVhbGx5IG1ha2Ugc2Vuc2UgdG8gdGFsayBhYm91dCBpdCB0aGF0IHdheS4KCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LWluZm8iPgogIDxzdHJvbmc+WU9VUiBUVVJOITwvc3Ryb25nPgoKMS4gQ3JlYXRlIGEgbW9kZWwgdGhhdCB1c2VzICpjbGFzcyogdG8gZXhwbGFpbiAqaHd5Ki4gSW50ZXJwcmV0IGVhY2ggb2YgdGhlIGNvZWZmaWNpZW50cy4gIAoyLiBXaGF0IGlzIHRoZSBwcmVkaWN0ZWQgaGlnaHdheSBNUEcgZm9yIGEgcGlja3VwPwoKPC9kaXY+CgoKIyBJbnRlcmNlcHQgT25seSBNb2RlbAoKQSAqdmVyeSogc2ltcGxlIG1vZGVsIHdlIHRodXMgZmFyIGhhdmUgYXZvaWRlZCBjb25zaWRlcmluZywgaXMgb25lIHdpdGggb25seSBhbiBpbnRlcmNlcHQuIFdlIGNhbiBmaXQgdGhhdCBtb2RlbCB1c2luZyB0aGUgY29kZSBiZWxvdy4gCgpgYGB7cn0KbG1faW50IDwtIGxtKGh3eSB+IDEsIGRhdGE9bXBnKQpgYGAKCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LWluZm8iPgogIDxzdHJvbmc+WU9VUiBUVVJOITwvc3Ryb25nPgogIAoxLiBIb3cgd291bGQgeW91IGludGVycHJldCB0aGUgZXN0aW1hdGVkIGludGVyY2VwdD8gIAoyLiBXaGF0IGRvZXMgdGhpcyBtb2RlbCBtZWFuIGNvbmNlcHR1YWxseT8gV2hlbiB3b3VsZCB0aGlzIGJlIGEgImdvb2QiIG1vZGVsPwoKPC9kaXY+CgoK</div>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("03_slr_creating_interpreting_point_pred.Rmd");
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
