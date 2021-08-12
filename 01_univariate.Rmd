@@ -2,13 +2,12 @@
 title: "Working with one variable"
 output:   
   html_document: 
+    toc: true
+    toc_float: true
     df_print: paged
     code_download: true
 ---
 
-
-
-## REMINDERS: 
 
 **Statistics is the practice of using data from a sample to make inferences about some broader population of interest.** This class focuses on using linear and logistic models built from a sample of data to learn about relationships in the broader population and to make predictions.
 
@@ -78,7 +77,7 @@ The ggplot2 [cheatsheet](https://www.rstudio.com/resources/cheatsheets/) is a go
 We will also be doing some basic data summaries using the `dplyr` package. Both `dplyr` and `ggplot2` are part of the `tidyverse` package, which is a collection of packages that are useful in data visualization and manipulation. We already installed and loaded this package.
 
 
-**The data**: We will use a subset of the `vehicles` data from the `fueleconomy` dataset throughout. These are fuel economy data from the [EPA](https://www.fueleconomy.gov/feg/download.shtml). Some variables have been excluded or modified from the original dataset. For more details search for `vehicles` in the Help section or run `?vehicles` in the console.
+**The data**: We will use a subset of the `vehicles` data from the `fueleconomy` library throughout. These are fuel economy data from the [EPA](https://www.fueleconomy.gov/feg/download.shtml). Some variables have been excluded or modified from the original dataset. For more details search for `vehicles` in the Help section or run `?vehicles` in the console.
 First, take a moment to explore that data and see what is there. Run the code below and then try to answer the questions below. Don't worry about the code syntax.
 
 ```{r}
