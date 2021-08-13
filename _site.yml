@@ -27,6 +27,6 @@ navbar:
       href: 11_hypothesis_tests.html
     - text: Hypothesis tests - ANOVA
       href: 12_hypothesis_testing_anova.html
-output:
+output: 
   html_document:
-    theme: flatly
+    theme: cerulean
