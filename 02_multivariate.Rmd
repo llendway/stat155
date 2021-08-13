@@ -220,6 +220,19 @@ vehicles_2015_no_na %>%
   2. Examine the relationship between `hwy` and another categorical variable in the dataset. Try some of the different methods we used above. Calculate some statistics (means, medians, sd, etc.) to describe how highway mpg differs across the categorical variable.
   3. Try using the large `vehicles` dataset with `hwy` as the response. Use `year` as a categorical variable. When you do that, you will need to use `factor(year)` so that R treats it as a categorical variable rather than a number. Answer the same questions as above.
 
+## A helpful table
+
+This list is definitely not exhaustive but should help you make a good choice about which graphs will be useful in which scenarios.
+
+For what? | Graph |`ggplot` `geom` hints
+------------- | ------------- | --------------
+Distribution of quantitative | Histogram | `geom_histogram(aes(x = quantitative variable))` 
+Distribution of quantitative | Density plot | `geom_density(aes(x = quantitative variable))` 
+Distribution of categorical | Barplot | `geom_bar(aes(x = categorical variable))`  
+Distribution of categorical (if you already know the counts) | Barplot | `geom_col(aes(x = categorical variable, y = count variable))`  
+Relationship between quant. response and quant. predictor | Scatterplot| `geom_point(aes(x = quant. predictor, y = quant. response))`   
+Relationship between quant. response and cat. predictor | side-by-side boxplots | `geom_boxplot(aes(x = cat. predictor, y = quant. response))`  
+Relationship between quant. response and cat. predictor | density ridge plots | `geom_density_ridges(aes(x = quant. response, y = cat. predictor))`
 
 ## So many more plots! 
 

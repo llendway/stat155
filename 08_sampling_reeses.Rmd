@@ -1,0 +1,159 @@
+---
+title: "Sampling Distributions and Bootstrapping Introduction: Reese's Pieces Activity"
+name: "PUT NAME(S) HERE"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    code_download: true
+---
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse) #for plotting and summarizing
+library(ggridges) #for ridge plots
+library(ggmosaic) #for mosaic plots
+library(moderndive) #for nice model output
+library(broom) #for nice model output 
+library(infer) #NEW! for making inferences about models
+theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
+```
+
+# Introduction
+
+We have spent A LOT of time this semester fitting and interpreting model output. This is a VERY important part of modeling. Now, we are going to focus on making inferences from our models, that is, drawing conclusions to a larger population from the model that was built on a sample of data. In order to do this, we will need to gain some understanding of sampling variation. We are going to start with a very simple example, one that does not involve a model, at least not in the way we have been thinking of them all semester.
+
+You will be turning in this activity as a homework assignment. So, at least one person should record answers. 
+
+# Reese's Pieces activity, Part 1
+
+Complete the following and discuss with the people at your table (ie. your Zoom breakout room). 
+
+(@) Reese's Pieces candies have three colors: orange, brown, and yellow. Which color do you think has more candies in a package: orange, brown or yellow? 
+
+(@) Guess the proportion of each color (orange, brown, and yellow) in a bag and record your answer.
+
+(@) If each student in the class takes a sample of 25 Reeses pieces, would you expect every student to have the same proportion of oranges in their sample? Why?
+
+(@) Each student should now take a virtual sample of 25 Reeses pieces from [this](http://www.rossmanchance.com/applets/OneProp/OneProp.htm?candy=1) applet. Just click the "Draw Samples" icon without changing any settings. As you are doing this, you want to pretend that we are at the Reeses factory pulling out a sample of 25 Reeses (if you have a peanut allergy, pretend they are color coated candies instead). Record the number and proportion of orange candies, and number of browns and yellows (you'll need to count those by hand) in your sample below. 
+
+number of oranges:
+proportion of oranges:
+
+number of browns:
+number of yellows:
+
+(@) Once everyone has done that, we will record all our observations in a dotplot (like a histogram but we see each individual data point) in the Zoom virtual whiteboard. What does this distribution show us? Why is it important? 
+
+# Reese's Pieces activity, Part 2
+
+We will continue to use [this](http://www.rossmanchance.com/applets/OneProp/OneProp.htm?candy=1) applet to help us with some simulations. You will see a big container of colored candies: that represents the POPULATION. What proportion are orange candies in the population? This is set in the Probability of orange box. Make sure this is at 0.5, which according to [this](https://en.wikipedia.org/wiki/Reese%27s_Pieces#External_links) uncited wikipedia article, is the true proportion.
+
+(@) How does the population parameter, in this case the population proportion of orange candies, $p$ compare to the sample statistic, the proportion of orange candies in your sample, $\hat{p}$? How does it compare to the center of the class distribution?
+
+(@) Click the "Reset" button. Then choose "Proportion of orange" (rather than the default "Number of orange"). Now, turn off the animation by clicking on the box next to "Animate" so that there is no check mark there.  Change the "Number of samples" to 200. Click on draw samples, and see the distribution created. This is called a **sampling distribution** of $\hat{p}$. What does each dot represent? Describe the distribution's shape, center and spread. How does this compare to the one our class constructed on the board?
+
+(@) Click reset. What happens to this sampling distribution of $\hat{p}$ if you change the number of candies in each sample? Try using a sample of size 10 and a sample of size 100 and discuss the following questions for each. How close is each $\hat{p}$ to the POPULATION PARAMETER? How does the shape, center, and spread of the distribution change? Pay close attention to the x-axis. 
+
+# Reese's Pieces activity, Part 3
+
+It was nice to be able to sample from the population over and over again, but in the real world, we can't usually do that. We usually have just one sample. So, how do we learn about sampling variation without sampling from the population? We use a technique called bootstrapping!
+
+Here is the general bootstrapping algorithm:
+
+* Collect a random sample.  
+* Take a sample, WITH REPLACEMENT, of the original sample that is the same size as the original sample. This is called the resample or the bootstrap sample.  
+* Compute the statistic you are interested in on the bootstrap sample. So, $\hat{p}$, in this example.  
+* Repeat the previous two steps a reasonable number of times, say at least 100 but more if you can. 
+
+
+(@) We are going to use R to help us do more simulations. Each of you will use the data from the original sample you took. We first create a dataset with two variables: `obs` is just the observation number, `color` is the color of that observation. The observations will be numbered 1, 2, ..., 25. Replace my 14, 6, and 5 with the numbers you got for each color.
+
+```{r}
+initial_random_sample <- tibble(obs = 1:25,
+                                color = c(rep("o", 14), 
+                                          rep("y", 6),
+                                          rep("b", 5)))
+```
+
+What is the proportion of oranges (o's) in this sample?
+
+```{r}
+initial_random_sample %>% 
+  count(color) %>% 
+  mutate(prop = n/sum(n))
+```
+
+(@) Next, use the `sample_n()` function to draw a sample, with replacement, from the original sample and of the same size as the original sample. How many times does observation 12 show up in the resample? How many times does observation 1 show up in the resample? *NOTE*: The `set.seed()` function at the beginning allows you to replicate the random sampling process so that you get the same random sample everytime the code runs (including when you knit the document). This also means that if someone else uses that same seed, they will get the sampe result, as long as they started with the same data. It is very important to use `set.seed()` anytime we conduct a random process so that we can replicate it. It does not matter what number we put in there.  
+
+```{r}
+set.seed(1211)
+
+bootstrap_sample1 <- 
+  initial_random_sample %>% 
+  sample_n(size = 25, #sample size
+           replace = TRUE #sample with replacement
+           )
+
+bootstrap_sample1 %>% 
+  count(obs, sort = TRUE)
+```
+
+
+(@) What proportion of observations in `bootstrap_sample1` are orange? Is it the same proportion as in `initial_random_sample`?
+
+```{r}
+bootstrap_sample1 %>% 
+  count(color) %>% 
+  mutate(prop = n/sum(n))
+```
+
+(@) Now, we want to take MANY bootstrap samples. There is a function that will help us do that: `rep_sample_n()` from the `infer` library. Initially, we'll just take 2 bootstrap samples. We set a seed again because we're performing a random process.
+
+```{r}
+set.seed(14)
+bootstrap_2samps <- 
+  initial_random_sample %>% 
+  rep_sample_n(size = 25, #size of each sample
+               replace = TRUE, #sample with replacement
+               reps = 2 #how many samples of size 25 to take 
+                        #(different from sample size)
+               )
+
+bootstrap_2samps
+```
+
+Notice the `rep_sample_n()` function created a column called `replicate`. Nowe, we can find the proportion of oranges for each replicate. Describe what each piece of the code does below.
+
+```{r}
+bootstrap_2samps %>% 
+  count(replicate, color) %>% 
+  group_by(replicate) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  filter(color == "o")
+```
+
+
+(@) Now, take 200 bootstrap samples and find the proportion of oranges in each of the bootstrap samples. I started the code below. Be sure to remove the `eval=FALSE` from the code chunk options.
+
+```{r, eval=FALSE}
+set.seed(14)
+bootstrap_200samps <- 
+  initial_random_sample %>% 
+  rep_sample_n(size = ?, #size of each sample
+               replace = ?, #sample with replacement
+               reps = ? #how many samples of size 25 to take 
+                        #(different from sample size)
+               )
+
+phats_200 <- #put the code that finds the proportion of oranges in each boostramp sample here.
+
+#Show the first ten rows of phats_200
+phats_200 %>% 
+  slice(1:10)
+
+```
+
+(@) Make a histogram to examine the distribution of $\hat{p}$. This is called the bootstrap distribution of $\hat{p}$. How is this different from the true sampling distribution?
+
+(@) Start from the beginning. What happens if you start with a larger initial sample? A smaller initital sample? (You can use the applet to generate new samples.)

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Model Fitting and Evaluation</title>
+
+<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">STAT 155</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Lessons
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01_univariate.html">Plotting data - univariate</a>
+    </li>
+    <li>
+      <a href="02_multivariate.html">Plotting data - multivariate</a>
+    </li>
+    <li>
+      <a href="03_slr_creating_interpreting_point_pred.html">Simple linear regression</a>
+    </li>
+    <li>
+      <a href="04_mlr_creating_interpreting_point_pred.html">Multiple linear regression</a>
+    </li>
+    <li>
+      <a href="05_model_fitting_eval.html">Model evaluation</a>
+    </li>
+    <li>
+      <a href="06_assumptions_transformations.html">Model assumptions &amp; transformations</a>
+    </li>
+    <li>
+      <a href="07_logistic_regression.html">Logistic regression</a>
+    </li>
+    <li>
+      <a href="08_sampling_reeses.html">Sampling variation with Reese's</a>
+    </li>
+    <li>
+      <a href="09_sampling_variation_models.html">Sampling variation in models</a>
+    </li>
+    <li>
+      <a href="10_confidence_intervals.html">Confidence intervals</a>
+    </li>
+    <li>
+      <a href="11_hypothesis_tests.html">Hypothesis tests</a>
+    </li>
+    <li>
+      <a href="12_hypothesis_testing_anova.html">Hypothesis tests - ANOVA</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Model Fitting and Evaluation</h1>
+
+</div>
+
+
+<pre class="r"><code>library(tidyverse) #for plotting and summarizing
+library(moderndive) #for nice model output
+library(broom) #for nice model output 
+library(gridExtra) #for nicely organizing plots
+library(openintro) #for data
+theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite</code></pre>
+<div class="alert alert-success">
+<p><strong>GOAL:</strong></p>
+<p>By the end of these notes and activities, you should be able to perform the following tasks.</p>
+<ul>
+<li>Have a high-level understanding of how linear model coefficients are estimated.<br />
+</li>
+<li>Use <span class="math inline">\(R^2\)</span> to describe how well your response variable can be explained by the model.<br />
+</li>
+<li>Use <span class="math inline">\(\hat{\sigma}\)</span> (also called <span class="math inline">\(s_e\)</span> or residual standard error) to estimate how variable the predictions may be.</li>
+</ul>
+</div>
+<div id="model-fitting" class="section level1">
+<h1>Model Fitting</h1>
+<p>Up until now, we have mostly been concerned with interpreting coefficients from linear models, but where do they come from?</p>
+<p>The “best” coefficients are those that minimize the sum of the squared residuals. This is referred to as the least squares criterion. If you like mathematical equations, it can be written mathematically, as:</p>
+<p><span class="math display">\[
+\text{min}_{\bf{\beta}} \sum_{i=1}^n[y_i - (\beta_0 + \beta_1 x_{i1} + ... + \beta_p x_{ip})]^2
+\]</span></p>
+<p>Calculus and linear algebra can be used to solve the minimization problem explicitly. We will not go through that in this class, but I encourage you to take Linear Algebra and Computational Linear Algebra if learning those details is of interest to you.</p>
+<p>Instead let’s look at this in a picture. The graph on the left is the least squares solution. The one on the right is just another line I made up.</p>
+<pre class="r"><code>lm_displ &lt;- lm(hwy ~ displ,
+               data=mpg)
+
+p1 &lt;- augment(lm_displ, data = mpg) %&gt;% 
+  ggplot(aes(x = displ, y = hwy)) +
+  geom_point() + 
+  geom_line(aes(x = displ, y = .fitted), color = &quot;blue&quot;, size = .5) +
+  geom_point(aes(x = displ, y = .fitted), color = &quot;blue&quot;) +
+  geom_segment(aes(xend = displ, 
+                   yend = 35.70 - 3.53*displ), 
+               color = &quot;red&quot;) +
+  scale_x_continuous(breaks = 1:8) +
+  scale_y_continuous(breaks = seq(10,60,10)) +
+  labs(title = &quot;Best model&quot;, subtitle = &quot;Actual (black), Fitted (blue), and residuals (red)&quot;)
+
+p2 &lt;- mpg %&gt;% 
+  ggplot(aes(x = displ, y = hwy)) +
+  geom_point() + 
+  geom_abline(slope = .5, intercept = 15, color = &quot;blue&quot;, size = .5) +
+  geom_point(aes(x = displ, y = 15 + .5*displ), color = &quot;blue&quot;) +
+  geom_segment(aes(xend = displ, 
+                   yend = 15 + .5*displ), 
+               color = &quot;red&quot;) +
+  scale_x_continuous(breaks = 1:8) +
+  scale_y_continuous(breaks = seq(10,60,10)) +
+  labs(title = &quot;Another model&quot;)
+
+grid.arrange(p1, p2, nrow = 1)</code></pre>
+<p><img src="05_model_fitting_eval_files/figure-html/unnamed-chunk-2-1.png" width="768" /></p>
+<p>Below I compute the sum of the squared residuals for the best fit line (I have rounded the coefficients so this is not exact).</p>
+<pre class="r"><code>stats_best &lt;- mpg %&gt;% 
+  mutate(fitted = 35.70 - 3.53*displ,
+         resid = hwy - fitted,
+         resid_squared = resid^2)
+
+stats_best</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["manufacturer"],"name":[1],"type":["chr"],"align":["left"]},{"label":["model"],"name":[2],"type":["chr"],"align":["left"]},{"label":["displ"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["year"],"name":[4],"type":["int"],"align":["right"]},{"label":["cyl"],"name":[5],"type":["int"],"align":["right"]},{"label":["trans"],"name":[6],"type":["chr"],"align":["left"]},{"label":["drv"],"name":[7],"type":["chr"],"align":["left"]},{"label":["cty"],"name":[8],"type":["int"],"align":["right"]},{"label":["hwy"],"name":[9],"type":["int"],"align":["right"]},{"label":["fl"],"name":[10],"type":["chr"],"align":["left"]},{"label":["class"],"name":[11],"type":["chr"],"align":["left"]},{"label":["fitted"],"name":[12],"type":["dbl"],"align":["right"]},{"label":["resid"],"name":[13],"type":["dbl"],"align":["right"]},{"label":["resid_squared"],"name":[14],"type":["dbl"],"align":["right"]}],"data":[{"1":"audi","2":"a4","3":"1.8","4":"1999","5":"4","6":"auto(l5)","7":"f","8":"18","9":"29","10":"p","11":"compact","12":"29.346","13":"-0.346","14":"0.119716"},{"1":"audi","2":"a4","3":"1.8","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"p","11":"compact","12":"29.346","13":"-0.346","14":"0.119716"},{"1":"audi","2":"a4","3":"2.0","4":"2008","5":"4","6":"manual(m6)","7":"f","8":"20","9":"31","10":"p","11":"compact","12":"28.640","13":"2.360","14":"5.569600"},{"1":"audi","2":"a4","3":"2.0","4":"2008","5":"4","6":"auto(av)","7":"f","8":"21","9":"30","10":"p","11":"compact","12":"28.640","13":"1.360","14":"1.849600"},{"1":"audi","2":"a4","3":"2.8","4":"1999","5":"6","6":"auto(l5)","7":"f","8":"16","9":"26","10":"p","11":"compact","12":"25.816","13":"0.184","14":"0.033856"},{"1":"audi","2":"a4","3":"2.8","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"18","9":"26","10":"p","11":"compact","12":"25.816","13":"0.184","14":"0.033856"},{"1":"audi","2":"a4","3":"3.1","4":"2008","5":"6","6":"auto(av)","7":"f","8":"18","9":"27","10":"p","11":"compact","12":"24.757","13":"2.243","14":"5.031049"},{"1":"audi","2":"a4 quattro","3":"1.8","4":"1999","5":"4","6":"manual(m5)","7":"4","8":"18","9":"26","10":"p","11":"compact","12":"29.346","13":"-3.346","14":"11.195716"},{"1":"audi","2":"a4 quattro","3":"1.8","4":"1999","5":"4","6":"auto(l5)","7":"4","8":"16","9":"25","10":"p","11":"compact","12":"29.346","13":"-4.346","14":"18.887716"},{"1":"audi","2":"a4 quattro","3":"2.0","4":"2008","5":"4","6":"manual(m6)","7":"4","8":"20","9":"28","10":"p","11":"compact","12":"28.640","13":"-0.640","14":"0.409600"},{"1":"audi","2":"a4 quattro","3":"2.0","4":"2008","5":"4","6":"auto(s6)","7":"4","8":"19","9":"27","10":"p","11":"compact","12":"28.640","13":"-1.640","14":"2.689600"},{"1":"audi","2":"a4 quattro","3":"2.8","4":"1999","5":"6","6":"auto(l5)","7":"4","8":"15","9":"25","10":"p","11":"compact","12":"25.816","13":"-0.816","14":"0.665856"},{"1":"audi","2":"a4 quattro","3":"2.8","4":"1999","5":"6","6":"manual(m5)","7":"4","8":"17","9":"25","10":"p","11":"compact","12":"25.816","13":"-0.816","14":"0.665856"},{"1":"audi","2":"a4 quattro","3":"3.1","4":"2008","5":"6","6":"auto(s6)","7":"4","8":"17","9":"25","10":"p","11":"compact","12":"24.757","13":"0.243","14":"0.059049"},{"1":"audi","2":"a4 quattro","3":"3.1","4":"2008","5":"6","6":"manual(m6)","7":"4","8":"15","9":"25","10":"p","11":"compact","12":"24.757","13":"0.243","14":"0.059049"},{"1":"audi","2":"a6 quattro","3":"2.8","4":"1999","5":"6","6":"auto(l5)","7":"4","8":"15","9":"24","10":"p","11":"midsize","12":"25.816","13":"-1.816","14":"3.297856"},{"1":"audi","2":"a6 quattro","3":"3.1","4":"2008","5":"6","6":"auto(s6)","7":"4","8":"17","9":"25","10":"p","11":"midsize","12":"24.757","13":"0.243","14":"0.059049"},{"1":"audi","2":"a6 quattro","3":"4.2","4":"2008","5":"8","6":"auto(s6)","7":"4","8":"16","9":"23","10":"p","11":"midsize","12":"20.874","13":"2.126","14":"4.519876"},{"1":"chevrolet","2":"c1500 suburban 2wd","3":"5.3","4":"2008","5":"8","6":"auto(l4)","7":"r","8":"14","9":"20","10":"r","11":"suv","12":"16.991","13":"3.009","14":"9.054081"},{"1":"chevrolet","2":"c1500 suburban 2wd","3":"5.3","4":"2008","5":"8","6":"auto(l4)","7":"r","8":"11","9":"15","10":"e","11":"suv","12":"16.991","13":"-1.991","14":"3.964081"},{"1":"chevrolet","2":"c1500 suburban 2wd","3":"5.3","4":"2008","5":"8","6":"auto(l4)","7":"r","8":"14","9":"20","10":"r","11":"suv","12":"16.991","13":"3.009","14":"9.054081"},{"1":"chevrolet","2":"c1500 suburban 2wd","3":"5.7","4":"1999","5":"8","6":"auto(l4)","7":"r","8":"13","9":"17","10":"r","11":"suv","12":"15.579","13":"1.421","14":"2.019241"},{"1":"chevrolet","2":"c1500 suburban 2wd","3":"6.0","4":"2008","5":"8","6":"auto(l4)","7":"r","8":"12","9":"17","10":"r","11":"suv","12":"14.520","13":"2.480","14":"6.150400"},{"1":"chevrolet","2":"corvette","3":"5.7","4":"1999","5":"8","6":"manual(m6)","7":"r","8":"16","9":"26","10":"p","11":"2seater","12":"15.579","13":"10.421","14":"108.597241"},{"1":"chevrolet","2":"corvette","3":"5.7","4":"1999","5":"8","6":"auto(l4)","7":"r","8":"15","9":"23","10":"p","11":"2seater","12":"15.579","13":"7.421","14":"55.071241"},{"1":"chevrolet","2":"corvette","3":"6.2","4":"2008","5":"8","6":"manual(m6)","7":"r","8":"16","9":"26","10":"p","11":"2seater","12":"13.814","13":"12.186","14":"148.498596"},{"1":"chevrolet","2":"corvette","3":"6.2","4":"2008","5":"8","6":"auto(s6)","7":"r","8":"15","9":"25","10":"p","11":"2seater","12":"13.814","13":"11.186","14":"125.126596"},{"1":"chevrolet","2":"corvette","3":"7.0","4":"2008","5":"8","6":"manual(m6)","7":"r","8":"15","9":"24","10":"p","11":"2seater","12":"10.990","13":"13.010","14":"169.260100"},{"1":"chevrolet","2":"k1500 tahoe 4wd","3":"5.3","4":"2008","5":"8","6":"auto(l4)","7":"4","8":"14","9":"19","10":"r","11":"suv","12":"16.991","13":"2.009","14":"4.036081"},{"1":"chevrolet","2":"k1500 tahoe 4wd","3":"5.3","4":"2008","5":"8","6":"auto(l4)","7":"4","8":"11","9":"14","10":"e","11":"suv","12":"16.991","13":"-2.991","14":"8.946081"},{"1":"chevrolet","2":"k1500 tahoe 4wd","3":"5.7","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"r","11":"suv","12":"15.579","13":"-0.579","14":"0.335241"},{"1":"chevrolet","2":"k1500 tahoe 4wd","3":"6.5","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"14","9":"17","10":"d","11":"suv","12":"12.755","13":"4.245","14":"18.020025"},{"1":"chevrolet","2":"malibu","3":"2.4","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"19","9":"27","10":"r","11":"midsize","12":"27.228","13":"-0.228","14":"0.051984"},{"1":"chevrolet","2":"malibu","3":"2.4","4":"2008","5":"4","6":"auto(l4)","7":"f","8":"22","9":"30","10":"r","11":"midsize","12":"27.228","13":"2.772","14":"7.683984"},{"1":"chevrolet","2":"malibu","3":"3.1","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"18","9":"26","10":"r","11":"midsize","12":"24.757","13":"1.243","14":"1.545049"},{"1":"chevrolet","2":"malibu","3":"3.5","4":"2008","5":"6","6":"auto(l4)","7":"f","8":"18","9":"29","10":"r","11":"midsize","12":"23.345","13":"5.655","14":"31.979025"},{"1":"chevrolet","2":"malibu","3":"3.6","4":"2008","5":"6","6":"auto(s6)","7":"f","8":"17","9":"26","10":"r","11":"midsize","12":"22.992","13":"3.008","14":"9.048064"},{"1":"dodge","2":"caravan 2wd","3":"2.4","4":"1999","5":"4","6":"auto(l3)","7":"f","8":"18","9":"24","10":"r","11":"minivan","12":"27.228","13":"-3.228","14":"10.419984"},{"1":"dodge","2":"caravan 2wd","3":"3.0","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"17","9":"24","10":"r","11":"minivan","12":"25.110","13":"-1.110","14":"1.232100"},{"1":"dodge","2":"caravan 2wd","3":"3.3","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"16","9":"22","10":"r","11":"minivan","12":"24.051","13":"-2.051","14":"4.206601"},{"1":"dodge","2":"caravan 2wd","3":"3.3","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"16","9":"22","10":"r","11":"minivan","12":"24.051","13":"-2.051","14":"4.206601"},{"1":"dodge","2":"caravan 2wd","3":"3.3","4":"2008","5":"6","6":"auto(l4)","7":"f","8":"17","9":"24","10":"r","11":"minivan","12":"24.051","13":"-0.051","14":"0.002601"},{"1":"dodge","2":"caravan 2wd","3":"3.3","4":"2008","5":"6","6":"auto(l4)","7":"f","8":"17","9":"24","10":"r","11":"minivan","12":"24.051","13":"-0.051","14":"0.002601"},{"1":"dodge","2":"caravan 2wd","3":"3.3","4":"2008","5":"6","6":"auto(l4)","7":"f","8":"11","9":"17","10":"e","11":"minivan","12":"24.051","13":"-7.051","14":"49.716601"},{"1":"dodge","2":"caravan 2wd","3":"3.8","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"15","9":"22","10":"r","11":"minivan","12":"22.286","13":"-0.286","14":"0.081796"},{"1":"dodge","2":"caravan 2wd","3":"3.8","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"15","9":"21","10":"r","11":"minivan","12":"22.286","13":"-1.286","14":"1.653796"},{"1":"dodge","2":"caravan 2wd","3":"3.8","4":"2008","5":"6","6":"auto(l6)","7":"f","8":"16","9":"23","10":"r","11":"minivan","12":"22.286","13":"0.714","14":"0.509796"},{"1":"dodge","2":"caravan 2wd","3":"4.0","4":"2008","5":"6","6":"auto(l6)","7":"f","8":"16","9":"23","10":"r","11":"minivan","12":"21.580","13":"1.420","14":"2.016400"},{"1":"dodge","2":"dakota pickup 4wd","3":"3.7","4":"2008","5":"6","6":"manual(m6)","7":"4","8":"15","9":"19","10":"r","11":"pickup","12":"22.639","13":"-3.639","14":"13.242321"},{"1":"dodge","2":"dakota pickup 4wd","3":"3.7","4":"2008","5":"6","6":"auto(l4)","7":"4","8":"14","9":"18","10":"r","11":"pickup","12":"22.639","13":"-4.639","14":"21.520321"},{"1":"dodge","2":"dakota pickup 4wd","3":"3.9","4":"1999","5":"6","6":"auto(l4)","7":"4","8":"13","9":"17","10":"r","11":"pickup","12":"21.933","13":"-4.933","14":"24.334489"},{"1":"dodge","2":"dakota pickup 4wd","3":"3.9","4":"1999","5":"6","6":"manual(m5)","7":"4","8":"14","9":"17","10":"r","11":"pickup","12":"21.933","13":"-4.933","14":"24.334489"},{"1":"dodge","2":"dakota pickup 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"14","9":"19","10":"r","11":"pickup","12":"19.109","13":"-0.109","14":"0.011881"},{"1":"dodge","2":"dakota pickup 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"14","9":"19","10":"r","11":"pickup","12":"19.109","13":"-0.109","14":"0.011881"},{"1":"dodge","2":"dakota pickup 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"9","9":"12","10":"e","11":"pickup","12":"19.109","13":"-7.109","14":"50.537881"},{"1":"dodge","2":"dakota pickup 4wd","3":"5.2","4":"1999","5":"8","6":"manual(m5)","7":"4","8":"11","9":"17","10":"r","11":"pickup","12":"17.344","13":"-0.344","14":"0.118336"},{"1":"dodge","2":"dakota pickup 4wd","3":"5.2","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"r","11":"pickup","12":"17.344","13":"-2.344","14":"5.494336"},{"1":"dodge","2":"durango 4wd","3":"3.9","4":"1999","5":"6","6":"auto(l4)","7":"4","8":"13","9":"17","10":"r","11":"suv","12":"21.933","13":"-4.933","14":"24.334489"},{"1":"dodge","2":"durango 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"13","9":"17","10":"r","11":"suv","12":"19.109","13":"-2.109","14":"4.447881"},{"1":"dodge","2":"durango 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"9","9":"12","10":"e","11":"suv","12":"19.109","13":"-7.109","14":"50.537881"},{"1":"dodge","2":"durango 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"13","9":"17","10":"r","11":"suv","12":"19.109","13":"-2.109","14":"4.447881"},{"1":"dodge","2":"durango 4wd","3":"5.2","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"16","10":"r","11":"suv","12":"17.344","13":"-1.344","14":"1.806336"},{"1":"dodge","2":"durango 4wd","3":"5.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"13","9":"18","10":"r","11":"suv","12":"15.579","13":"2.421","14":"5.861241"},{"1":"dodge","2":"durango 4wd","3":"5.9","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"r","11":"suv","12":"14.873","13":"0.127","14":"0.016129"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"4.7","4":"2008","5":"8","6":"manual(m6)","7":"4","8":"12","9":"16","10":"r","11":"pickup","12":"19.109","13":"-3.109","14":"9.665881"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"9","9":"12","10":"e","11":"pickup","12":"19.109","13":"-7.109","14":"50.537881"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"13","9":"17","10":"r","11":"pickup","12":"19.109","13":"-2.109","14":"4.447881"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"13","9":"17","10":"r","11":"pickup","12":"19.109","13":"-2.109","14":"4.447881"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"4.7","4":"2008","5":"8","6":"manual(m6)","7":"4","8":"12","9":"16","10":"r","11":"pickup","12":"19.109","13":"-3.109","14":"9.665881"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"4.7","4":"2008","5":"8","6":"manual(m6)","7":"4","8":"9","9":"12","10":"e","11":"pickup","12":"19.109","13":"-7.109","14":"50.537881"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"5.2","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"r","11":"pickup","12":"17.344","13":"-2.344","14":"5.494336"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"5.2","4":"1999","5":"8","6":"manual(m5)","7":"4","8":"11","9":"16","10":"r","11":"pickup","12":"17.344","13":"-1.344","14":"1.806336"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"5.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"13","9":"17","10":"r","11":"pickup","12":"15.579","13":"1.421","14":"2.019241"},{"1":"dodge","2":"ram 1500 pickup 4wd","3":"5.9","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"r","11":"pickup","12":"14.873","13":"0.127","14":"0.016129"},{"1":"ford","2":"expedition 2wd","3":"4.6","4":"1999","5":"8","6":"auto(l4)","7":"r","8":"11","9":"17","10":"r","11":"suv","12":"19.462","13":"-2.462","14":"6.061444"},{"1":"ford","2":"expedition 2wd","3":"5.4","4":"1999","5":"8","6":"auto(l4)","7":"r","8":"11","9":"17","10":"r","11":"suv","12":"16.638","13":"0.362","14":"0.131044"},{"1":"ford","2":"expedition 2wd","3":"5.4","4":"2008","5":"8","6":"auto(l6)","7":"r","8":"12","9":"18","10":"r","11":"suv","12":"16.638","13":"1.362","14":"1.855044"},{"1":"ford","2":"explorer 4wd","3":"4.0","4":"1999","5":"6","6":"auto(l5)","7":"4","8":"14","9":"17","10":"r","11":"suv","12":"21.580","13":"-4.580","14":"20.976400"},{"1":"ford","2":"explorer 4wd","3":"4.0","4":"1999","5":"6","6":"manual(m5)","7":"4","8":"15","9":"19","10":"r","11":"suv","12":"21.580","13":"-2.580","14":"6.656400"},{"1":"ford","2":"explorer 4wd","3":"4.0","4":"1999","5":"6","6":"auto(l5)","7":"4","8":"14","9":"17","10":"r","11":"suv","12":"21.580","13":"-4.580","14":"20.976400"},{"1":"ford","2":"explorer 4wd","3":"4.0","4":"2008","5":"6","6":"auto(l5)","7":"4","8":"13","9":"19","10":"r","11":"suv","12":"21.580","13":"-2.580","14":"6.656400"},{"1":"ford","2":"explorer 4wd","3":"4.6","4":"2008","5":"8","6":"auto(l6)","7":"4","8":"13","9":"19","10":"r","11":"suv","12":"19.462","13":"-0.462","14":"0.213444"},{"1":"ford","2":"explorer 4wd","3":"5.0","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"13","9":"17","10":"r","11":"suv","12":"18.050","13":"-1.050","14":"1.102500"},{"1":"ford","2":"f150 pickup 4wd","3":"4.2","4":"1999","5":"6","6":"auto(l4)","7":"4","8":"14","9":"17","10":"r","11":"pickup","12":"20.874","13":"-3.874","14":"15.007876"},{"1":"ford","2":"f150 pickup 4wd","3":"4.2","4":"1999","5":"6","6":"manual(m5)","7":"4","8":"14","9":"17","10":"r","11":"pickup","12":"20.874","13":"-3.874","14":"15.007876"},{"1":"ford","2":"f150 pickup 4wd","3":"4.6","4":"1999","5":"8","6":"manual(m5)","7":"4","8":"13","9":"16","10":"r","11":"pickup","12":"19.462","13":"-3.462","14":"11.985444"},{"1":"ford","2":"f150 pickup 4wd","3":"4.6","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"13","9":"16","10":"r","11":"pickup","12":"19.462","13":"-3.462","14":"11.985444"},{"1":"ford","2":"f150 pickup 4wd","3":"4.6","4":"2008","5":"8","6":"auto(l4)","7":"4","8":"13","9":"17","10":"r","11":"pickup","12":"19.462","13":"-2.462","14":"6.061444"},{"1":"ford","2":"f150 pickup 4wd","3":"5.4","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"r","11":"pickup","12":"16.638","13":"-1.638","14":"2.683044"},{"1":"ford","2":"f150 pickup 4wd","3":"5.4","4":"2008","5":"8","6":"auto(l4)","7":"4","8":"13","9":"17","10":"r","11":"pickup","12":"16.638","13":"0.362","14":"0.131044"},{"1":"ford","2":"mustang","3":"3.8","4":"1999","5":"6","6":"manual(m5)","7":"r","8":"18","9":"26","10":"r","11":"subcompact","12":"22.286","13":"3.714","14":"13.793796"},{"1":"ford","2":"mustang","3":"3.8","4":"1999","5":"6","6":"auto(l4)","7":"r","8":"18","9":"25","10":"r","11":"subcompact","12":"22.286","13":"2.714","14":"7.365796"},{"1":"ford","2":"mustang","3":"4.0","4":"2008","5":"6","6":"manual(m5)","7":"r","8":"17","9":"26","10":"r","11":"subcompact","12":"21.580","13":"4.420","14":"19.536400"},{"1":"ford","2":"mustang","3":"4.0","4":"2008","5":"6","6":"auto(l5)","7":"r","8":"16","9":"24","10":"r","11":"subcompact","12":"21.580","13":"2.420","14":"5.856400"},{"1":"ford","2":"mustang","3":"4.6","4":"1999","5":"8","6":"auto(l4)","7":"r","8":"15","9":"21","10":"r","11":"subcompact","12":"19.462","13":"1.538","14":"2.365444"},{"1":"ford","2":"mustang","3":"4.6","4":"1999","5":"8","6":"manual(m5)","7":"r","8":"15","9":"22","10":"r","11":"subcompact","12":"19.462","13":"2.538","14":"6.441444"},{"1":"ford","2":"mustang","3":"4.6","4":"2008","5":"8","6":"manual(m5)","7":"r","8":"15","9":"23","10":"r","11":"subcompact","12":"19.462","13":"3.538","14":"12.517444"},{"1":"ford","2":"mustang","3":"4.6","4":"2008","5":"8","6":"auto(l5)","7":"r","8":"15","9":"22","10":"r","11":"subcompact","12":"19.462","13":"2.538","14":"6.441444"},{"1":"ford","2":"mustang","3":"5.4","4":"2008","5":"8","6":"manual(m6)","7":"r","8":"14","9":"20","10":"p","11":"subcompact","12":"16.638","13":"3.362","14":"11.303044"},{"1":"honda","2":"civic","3":"1.6","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"28","9":"33","10":"r","11":"subcompact","12":"30.052","13":"2.948","14":"8.690704"},{"1":"honda","2":"civic","3":"1.6","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"24","9":"32","10":"r","11":"subcompact","12":"30.052","13":"1.948","14":"3.794704"},{"1":"honda","2":"civic","3":"1.6","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"25","9":"32","10":"r","11":"subcompact","12":"30.052","13":"1.948","14":"3.794704"},{"1":"honda","2":"civic","3":"1.6","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"23","9":"29","10":"p","11":"subcompact","12":"30.052","13":"-1.052","14":"1.106704"},{"1":"honda","2":"civic","3":"1.6","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"24","9":"32","10":"r","11":"subcompact","12":"30.052","13":"1.948","14":"3.794704"},{"1":"honda","2":"civic","3":"1.8","4":"2008","5":"4","6":"manual(m5)","7":"f","8":"26","9":"34","10":"r","11":"subcompact","12":"29.346","13":"4.654","14":"21.659716"},{"1":"honda","2":"civic","3":"1.8","4":"2008","5":"4","6":"auto(l5)","7":"f","8":"25","9":"36","10":"r","11":"subcompact","12":"29.346","13":"6.654","14":"44.275716"},{"1":"honda","2":"civic","3":"1.8","4":"2008","5":"4","6":"auto(l5)","7":"f","8":"24","9":"36","10":"c","11":"subcompact","12":"29.346","13":"6.654","14":"44.275716"},{"1":"honda","2":"civic","3":"2.0","4":"2008","5":"4","6":"manual(m6)","7":"f","8":"21","9":"29","10":"p","11":"subcompact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"hyundai","2":"sonata","3":"2.4","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"18","9":"26","10":"r","11":"midsize","12":"27.228","13":"-1.228","14":"1.507984"},{"1":"hyundai","2":"sonata","3":"2.4","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"18","9":"27","10":"r","11":"midsize","12":"27.228","13":"-0.228","14":"0.051984"},{"1":"hyundai","2":"sonata","3":"2.4","4":"2008","5":"4","6":"auto(l4)","7":"f","8":"21","9":"30","10":"r","11":"midsize","12":"27.228","13":"2.772","14":"7.683984"},{"1":"hyundai","2":"sonata","3":"2.4","4":"2008","5":"4","6":"manual(m5)","7":"f","8":"21","9":"31","10":"r","11":"midsize","12":"27.228","13":"3.772","14":"14.227984"},{"1":"hyundai","2":"sonata","3":"2.5","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"18","9":"26","10":"r","11":"midsize","12":"26.875","13":"-0.875","14":"0.765625"},{"1":"hyundai","2":"sonata","3":"2.5","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"18","9":"26","10":"r","11":"midsize","12":"26.875","13":"-0.875","14":"0.765625"},{"1":"hyundai","2":"sonata","3":"3.3","4":"2008","5":"6","6":"auto(l5)","7":"f","8":"19","9":"28","10":"r","11":"midsize","12":"24.051","13":"3.949","14":"15.594601"},{"1":"hyundai","2":"tiburon","3":"2.0","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"19","9":"26","10":"r","11":"subcompact","12":"28.640","13":"-2.640","14":"6.969600"},{"1":"hyundai","2":"tiburon","3":"2.0","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"19","9":"29","10":"r","11":"subcompact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"hyundai","2":"tiburon","3":"2.0","4":"2008","5":"4","6":"manual(m5)","7":"f","8":"20","9":"28","10":"r","11":"subcompact","12":"28.640","13":"-0.640","14":"0.409600"},{"1":"hyundai","2":"tiburon","3":"2.0","4":"2008","5":"4","6":"auto(l4)","7":"f","8":"20","9":"27","10":"r","11":"subcompact","12":"28.640","13":"-1.640","14":"2.689600"},{"1":"hyundai","2":"tiburon","3":"2.7","4":"2008","5":"6","6":"auto(l4)","7":"f","8":"17","9":"24","10":"r","11":"subcompact","12":"26.169","13":"-2.169","14":"4.704561"},{"1":"hyundai","2":"tiburon","3":"2.7","4":"2008","5":"6","6":"manual(m6)","7":"f","8":"16","9":"24","10":"r","11":"subcompact","12":"26.169","13":"-2.169","14":"4.704561"},{"1":"hyundai","2":"tiburon","3":"2.7","4":"2008","5":"6","6":"manual(m5)","7":"f","8":"17","9":"24","10":"r","11":"subcompact","12":"26.169","13":"-2.169","14":"4.704561"},{"1":"jeep","2":"grand cherokee 4wd","3":"3.0","4":"2008","5":"6","6":"auto(l5)","7":"4","8":"17","9":"22","10":"d","11":"suv","12":"25.110","13":"-3.110","14":"9.672100"},{"1":"jeep","2":"grand cherokee 4wd","3":"3.7","4":"2008","5":"6","6":"auto(l5)","7":"4","8":"15","9":"19","10":"r","11":"suv","12":"22.639","13":"-3.639","14":"13.242321"},{"1":"jeep","2":"grand cherokee 4wd","3":"4.0","4":"1999","5":"6","6":"auto(l4)","7":"4","8":"15","9":"20","10":"r","11":"suv","12":"21.580","13":"-1.580","14":"2.496400"},{"1":"jeep","2":"grand cherokee 4wd","3":"4.7","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"14","9":"17","10":"r","11":"suv","12":"19.109","13":"-2.109","14":"4.447881"},{"1":"jeep","2":"grand cherokee 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"9","9":"12","10":"e","11":"suv","12":"19.109","13":"-7.109","14":"50.537881"},{"1":"jeep","2":"grand cherokee 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"14","9":"19","10":"r","11":"suv","12":"19.109","13":"-0.109","14":"0.011881"},{"1":"jeep","2":"grand cherokee 4wd","3":"5.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"13","9":"18","10":"r","11":"suv","12":"15.579","13":"2.421","14":"5.861241"},{"1":"jeep","2":"grand cherokee 4wd","3":"6.1","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"11","9":"14","10":"p","11":"suv","12":"14.167","13":"-0.167","14":"0.027889"},{"1":"land rover","2":"range rover","3":"4.0","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"p","11":"suv","12":"21.580","13":"-6.580","14":"43.296400"},{"1":"land rover","2":"range rover","3":"4.2","4":"2008","5":"8","6":"auto(s6)","7":"4","8":"12","9":"18","10":"r","11":"suv","12":"20.874","13":"-2.874","14":"8.259876"},{"1":"land rover","2":"range rover","3":"4.4","4":"2008","5":"8","6":"auto(s6)","7":"4","8":"12","9":"18","10":"r","11":"suv","12":"20.168","13":"-2.168","14":"4.700224"},{"1":"land rover","2":"range rover","3":"4.6","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"p","11":"suv","12":"19.462","13":"-4.462","14":"19.909444"},{"1":"lincoln","2":"navigator 2wd","3":"5.4","4":"1999","5":"8","6":"auto(l4)","7":"r","8":"11","9":"17","10":"r","11":"suv","12":"16.638","13":"0.362","14":"0.131044"},{"1":"lincoln","2":"navigator 2wd","3":"5.4","4":"1999","5":"8","6":"auto(l4)","7":"r","8":"11","9":"16","10":"p","11":"suv","12":"16.638","13":"-0.638","14":"0.407044"},{"1":"lincoln","2":"navigator 2wd","3":"5.4","4":"2008","5":"8","6":"auto(l6)","7":"r","8":"12","9":"18","10":"r","11":"suv","12":"16.638","13":"1.362","14":"1.855044"},{"1":"mercury","2":"mountaineer 4wd","3":"4.0","4":"1999","5":"6","6":"auto(l5)","7":"4","8":"14","9":"17","10":"r","11":"suv","12":"21.580","13":"-4.580","14":"20.976400"},{"1":"mercury","2":"mountaineer 4wd","3":"4.0","4":"2008","5":"6","6":"auto(l5)","7":"4","8":"13","9":"19","10":"r","11":"suv","12":"21.580","13":"-2.580","14":"6.656400"},{"1":"mercury","2":"mountaineer 4wd","3":"4.6","4":"2008","5":"8","6":"auto(l6)","7":"4","8":"13","9":"19","10":"r","11":"suv","12":"19.462","13":"-0.462","14":"0.213444"},{"1":"mercury","2":"mountaineer 4wd","3":"5.0","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"13","9":"17","10":"r","11":"suv","12":"18.050","13":"-1.050","14":"1.102500"},{"1":"nissan","2":"altima","3":"2.4","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"r","11":"compact","12":"27.228","13":"1.772","14":"3.139984"},{"1":"nissan","2":"altima","3":"2.4","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"19","9":"27","10":"r","11":"compact","12":"27.228","13":"-0.228","14":"0.051984"},{"1":"nissan","2":"altima","3":"2.5","4":"2008","5":"4","6":"auto(av)","7":"f","8":"23","9":"31","10":"r","11":"midsize","12":"26.875","13":"4.125","14":"17.015625"},{"1":"nissan","2":"altima","3":"2.5","4":"2008","5":"4","6":"manual(m6)","7":"f","8":"23","9":"32","10":"r","11":"midsize","12":"26.875","13":"5.125","14":"26.265625"},{"1":"nissan","2":"altima","3":"3.5","4":"2008","5":"6","6":"manual(m6)","7":"f","8":"19","9":"27","10":"p","11":"midsize","12":"23.345","13":"3.655","14":"13.359025"},{"1":"nissan","2":"altima","3":"3.5","4":"2008","5":"6","6":"auto(av)","7":"f","8":"19","9":"26","10":"p","11":"midsize","12":"23.345","13":"2.655","14":"7.049025"},{"1":"nissan","2":"maxima","3":"3.0","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"18","9":"26","10":"r","11":"midsize","12":"25.110","13":"0.890","14":"0.792100"},{"1":"nissan","2":"maxima","3":"3.0","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"19","9":"25","10":"r","11":"midsize","12":"25.110","13":"-0.110","14":"0.012100"},{"1":"nissan","2":"maxima","3":"3.5","4":"2008","5":"6","6":"auto(av)","7":"f","8":"19","9":"25","10":"p","11":"midsize","12":"23.345","13":"1.655","14":"2.739025"},{"1":"nissan","2":"pathfinder 4wd","3":"3.3","4":"1999","5":"6","6":"auto(l4)","7":"4","8":"14","9":"17","10":"r","11":"suv","12":"24.051","13":"-7.051","14":"49.716601"},{"1":"nissan","2":"pathfinder 4wd","3":"3.3","4":"1999","5":"6","6":"manual(m5)","7":"4","8":"15","9":"17","10":"r","11":"suv","12":"24.051","13":"-7.051","14":"49.716601"},{"1":"nissan","2":"pathfinder 4wd","3":"4.0","4":"2008","5":"6","6":"auto(l5)","7":"4","8":"14","9":"20","10":"p","11":"suv","12":"21.580","13":"-1.580","14":"2.496400"},{"1":"nissan","2":"pathfinder 4wd","3":"5.6","4":"2008","5":"8","6":"auto(s5)","7":"4","8":"12","9":"18","10":"p","11":"suv","12":"15.932","13":"2.068","14":"4.276624"},{"1":"pontiac","2":"grand prix","3":"3.1","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"18","9":"26","10":"r","11":"midsize","12":"24.757","13":"1.243","14":"1.545049"},{"1":"pontiac","2":"grand prix","3":"3.8","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"16","9":"26","10":"p","11":"midsize","12":"22.286","13":"3.714","14":"13.793796"},{"1":"pontiac","2":"grand prix","3":"3.8","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"17","9":"27","10":"r","11":"midsize","12":"22.286","13":"4.714","14":"22.221796"},{"1":"pontiac","2":"grand prix","3":"3.8","4":"2008","5":"6","6":"auto(l4)","7":"f","8":"18","9":"28","10":"r","11":"midsize","12":"22.286","13":"5.714","14":"32.649796"},{"1":"pontiac","2":"grand prix","3":"5.3","4":"2008","5":"8","6":"auto(s4)","7":"f","8":"16","9":"25","10":"p","11":"midsize","12":"16.991","13":"8.009","14":"64.144081"},{"1":"subaru","2":"forester awd","3":"2.5","4":"1999","5":"4","6":"manual(m5)","7":"4","8":"18","9":"25","10":"r","11":"suv","12":"26.875","13":"-1.875","14":"3.515625"},{"1":"subaru","2":"forester awd","3":"2.5","4":"1999","5":"4","6":"auto(l4)","7":"4","8":"18","9":"24","10":"r","11":"suv","12":"26.875","13":"-2.875","14":"8.265625"},{"1":"subaru","2":"forester awd","3":"2.5","4":"2008","5":"4","6":"manual(m5)","7":"4","8":"20","9":"27","10":"r","11":"suv","12":"26.875","13":"0.125","14":"0.015625"},{"1":"subaru","2":"forester awd","3":"2.5","4":"2008","5":"4","6":"manual(m5)","7":"4","8":"19","9":"25","10":"p","11":"suv","12":"26.875","13":"-1.875","14":"3.515625"},{"1":"subaru","2":"forester awd","3":"2.5","4":"2008","5":"4","6":"auto(l4)","7":"4","8":"20","9":"26","10":"r","11":"suv","12":"26.875","13":"-0.875","14":"0.765625"},{"1":"subaru","2":"forester awd","3":"2.5","4":"2008","5":"4","6":"auto(l4)","7":"4","8":"18","9":"23","10":"p","11":"suv","12":"26.875","13":"-3.875","14":"15.015625"},{"1":"subaru","2":"impreza awd","3":"2.2","4":"1999","5":"4","6":"auto(l4)","7":"4","8":"21","9":"26","10":"r","11":"subcompact","12":"27.934","13":"-1.934","14":"3.740356"},{"1":"subaru","2":"impreza awd","3":"2.2","4":"1999","5":"4","6":"manual(m5)","7":"4","8":"19","9":"26","10":"r","11":"subcompact","12":"27.934","13":"-1.934","14":"3.740356"},{"1":"subaru","2":"impreza awd","3":"2.5","4":"1999","5":"4","6":"manual(m5)","7":"4","8":"19","9":"26","10":"r","11":"subcompact","12":"26.875","13":"-0.875","14":"0.765625"},{"1":"subaru","2":"impreza awd","3":"2.5","4":"1999","5":"4","6":"auto(l4)","7":"4","8":"19","9":"26","10":"r","11":"subcompact","12":"26.875","13":"-0.875","14":"0.765625"},{"1":"subaru","2":"impreza awd","3":"2.5","4":"2008","5":"4","6":"auto(s4)","7":"4","8":"20","9":"25","10":"p","11":"compact","12":"26.875","13":"-1.875","14":"3.515625"},{"1":"subaru","2":"impreza awd","3":"2.5","4":"2008","5":"4","6":"auto(s4)","7":"4","8":"20","9":"27","10":"r","11":"compact","12":"26.875","13":"0.125","14":"0.015625"},{"1":"subaru","2":"impreza awd","3":"2.5","4":"2008","5":"4","6":"manual(m5)","7":"4","8":"19","9":"25","10":"p","11":"compact","12":"26.875","13":"-1.875","14":"3.515625"},{"1":"subaru","2":"impreza awd","3":"2.5","4":"2008","5":"4","6":"manual(m5)","7":"4","8":"20","9":"27","10":"r","11":"compact","12":"26.875","13":"0.125","14":"0.015625"},{"1":"toyota","2":"4runner 4wd","3":"2.7","4":"1999","5":"4","6":"manual(m5)","7":"4","8":"15","9":"20","10":"r","11":"suv","12":"26.169","13":"-6.169","14":"38.056561"},{"1":"toyota","2":"4runner 4wd","3":"2.7","4":"1999","5":"4","6":"auto(l4)","7":"4","8":"16","9":"20","10":"r","11":"suv","12":"26.169","13":"-6.169","14":"38.056561"},{"1":"toyota","2":"4runner 4wd","3":"3.4","4":"1999","5":"6","6":"auto(l4)","7":"4","8":"15","9":"19","10":"r","11":"suv","12":"23.698","13":"-4.698","14":"22.071204"},{"1":"toyota","2":"4runner 4wd","3":"3.4","4":"1999","5":"6","6":"manual(m5)","7":"4","8":"15","9":"17","10":"r","11":"suv","12":"23.698","13":"-6.698","14":"44.863204"},{"1":"toyota","2":"4runner 4wd","3":"4.0","4":"2008","5":"6","6":"auto(l5)","7":"4","8":"16","9":"20","10":"r","11":"suv","12":"21.580","13":"-1.580","14":"2.496400"},{"1":"toyota","2":"4runner 4wd","3":"4.7","4":"2008","5":"8","6":"auto(l5)","7":"4","8":"14","9":"17","10":"r","11":"suv","12":"19.109","13":"-2.109","14":"4.447881"},{"1":"toyota","2":"camry","3":"2.2","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"r","11":"midsize","12":"27.934","13":"1.066","14":"1.136356"},{"1":"toyota","2":"camry","3":"2.2","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"21","9":"27","10":"r","11":"midsize","12":"27.934","13":"-0.934","14":"0.872356"},{"1":"toyota","2":"camry","3":"2.4","4":"2008","5":"4","6":"manual(m5)","7":"f","8":"21","9":"31","10":"r","11":"midsize","12":"27.228","13":"3.772","14":"14.227984"},{"1":"toyota","2":"camry","3":"2.4","4":"2008","5":"4","6":"auto(l5)","7":"f","8":"21","9":"31","10":"r","11":"midsize","12":"27.228","13":"3.772","14":"14.227984"},{"1":"toyota","2":"camry","3":"3.0","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"18","9":"26","10":"r","11":"midsize","12":"25.110","13":"0.890","14":"0.792100"},{"1":"toyota","2":"camry","3":"3.0","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"18","9":"26","10":"r","11":"midsize","12":"25.110","13":"0.890","14":"0.792100"},{"1":"toyota","2":"camry","3":"3.5","4":"2008","5":"6","6":"auto(s6)","7":"f","8":"19","9":"28","10":"r","11":"midsize","12":"23.345","13":"4.655","14":"21.669025"},{"1":"toyota","2":"camry solara","3":"2.2","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"21","9":"27","10":"r","11":"compact","12":"27.934","13":"-0.934","14":"0.872356"},{"1":"toyota","2":"camry solara","3":"2.2","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"r","11":"compact","12":"27.934","13":"1.066","14":"1.136356"},{"1":"toyota","2":"camry solara","3":"2.4","4":"2008","5":"4","6":"manual(m5)","7":"f","8":"21","9":"31","10":"r","11":"compact","12":"27.228","13":"3.772","14":"14.227984"},{"1":"toyota","2":"camry solara","3":"2.4","4":"2008","5":"4","6":"auto(s5)","7":"f","8":"22","9":"31","10":"r","11":"compact","12":"27.228","13":"3.772","14":"14.227984"},{"1":"toyota","2":"camry solara","3":"3.0","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"18","9":"26","10":"r","11":"compact","12":"25.110","13":"0.890","14":"0.792100"},{"1":"toyota","2":"camry solara","3":"3.0","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"18","9":"26","10":"r","11":"compact","12":"25.110","13":"0.890","14":"0.792100"},{"1":"toyota","2":"camry solara","3":"3.3","4":"2008","5":"6","6":"auto(s5)","7":"f","8":"18","9":"27","10":"r","11":"compact","12":"24.051","13":"2.949","14":"8.696601"},{"1":"toyota","2":"corolla","3":"1.8","4":"1999","5":"4","6":"auto(l3)","7":"f","8":"24","9":"30","10":"r","11":"compact","12":"29.346","13":"0.654","14":"0.427716"},{"1":"toyota","2":"corolla","3":"1.8","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"24","9":"33","10":"r","11":"compact","12":"29.346","13":"3.654","14":"13.351716"},{"1":"toyota","2":"corolla","3":"1.8","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"26","9":"35","10":"r","11":"compact","12":"29.346","13":"5.654","14":"31.967716"},{"1":"toyota","2":"corolla","3":"1.8","4":"2008","5":"4","6":"manual(m5)","7":"f","8":"28","9":"37","10":"r","11":"compact","12":"29.346","13":"7.654","14":"58.583716"},{"1":"toyota","2":"corolla","3":"1.8","4":"2008","5":"4","6":"auto(l4)","7":"f","8":"26","9":"35","10":"r","11":"compact","12":"29.346","13":"5.654","14":"31.967716"},{"1":"toyota","2":"land cruiser wagon 4wd","3":"4.7","4":"1999","5":"8","6":"auto(l4)","7":"4","8":"11","9":"15","10":"r","11":"suv","12":"19.109","13":"-4.109","14":"16.883881"},{"1":"toyota","2":"land cruiser wagon 4wd","3":"5.7","4":"2008","5":"8","6":"auto(s6)","7":"4","8":"13","9":"18","10":"r","11":"suv","12":"15.579","13":"2.421","14":"5.861241"},{"1":"toyota","2":"toyota tacoma 4wd","3":"2.7","4":"1999","5":"4","6":"manual(m5)","7":"4","8":"15","9":"20","10":"r","11":"pickup","12":"26.169","13":"-6.169","14":"38.056561"},{"1":"toyota","2":"toyota tacoma 4wd","3":"2.7","4":"1999","5":"4","6":"auto(l4)","7":"4","8":"16","9":"20","10":"r","11":"pickup","12":"26.169","13":"-6.169","14":"38.056561"},{"1":"toyota","2":"toyota tacoma 4wd","3":"2.7","4":"2008","5":"4","6":"manual(m5)","7":"4","8":"17","9":"22","10":"r","11":"pickup","12":"26.169","13":"-4.169","14":"17.380561"},{"1":"toyota","2":"toyota tacoma 4wd","3":"3.4","4":"1999","5":"6","6":"manual(m5)","7":"4","8":"15","9":"17","10":"r","11":"pickup","12":"23.698","13":"-6.698","14":"44.863204"},{"1":"toyota","2":"toyota tacoma 4wd","3":"3.4","4":"1999","5":"6","6":"auto(l4)","7":"4","8":"15","9":"19","10":"r","11":"pickup","12":"23.698","13":"-4.698","14":"22.071204"},{"1":"toyota","2":"toyota tacoma 4wd","3":"4.0","4":"2008","5":"6","6":"manual(m6)","7":"4","8":"15","9":"18","10":"r","11":"pickup","12":"21.580","13":"-3.580","14":"12.816400"},{"1":"toyota","2":"toyota tacoma 4wd","3":"4.0","4":"2008","5":"6","6":"auto(l5)","7":"4","8":"16","9":"20","10":"r","11":"pickup","12":"21.580","13":"-1.580","14":"2.496400"},{"1":"volkswagen","2":"gti","3":"2.0","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"r","11":"compact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"volkswagen","2":"gti","3":"2.0","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"19","9":"26","10":"r","11":"compact","12":"28.640","13":"-2.640","14":"6.969600"},{"1":"volkswagen","2":"gti","3":"2.0","4":"2008","5":"4","6":"manual(m6)","7":"f","8":"21","9":"29","10":"p","11":"compact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"volkswagen","2":"gti","3":"2.0","4":"2008","5":"4","6":"auto(s6)","7":"f","8":"22","9":"29","10":"p","11":"compact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"volkswagen","2":"gti","3":"2.8","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"17","9":"24","10":"r","11":"compact","12":"25.816","13":"-1.816","14":"3.297856"},{"1":"volkswagen","2":"jetta","3":"1.9","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"33","9":"44","10":"d","11":"compact","12":"28.993","13":"15.007","14":"225.210049"},{"1":"volkswagen","2":"jetta","3":"2.0","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"r","11":"compact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"volkswagen","2":"jetta","3":"2.0","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"19","9":"26","10":"r","11":"compact","12":"28.640","13":"-2.640","14":"6.969600"},{"1":"volkswagen","2":"jetta","3":"2.0","4":"2008","5":"4","6":"auto(s6)","7":"f","8":"22","9":"29","10":"p","11":"compact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"volkswagen","2":"jetta","3":"2.0","4":"2008","5":"4","6":"manual(m6)","7":"f","8":"21","9":"29","10":"p","11":"compact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"volkswagen","2":"jetta","3":"2.5","4":"2008","5":"5","6":"auto(s6)","7":"f","8":"21","9":"29","10":"r","11":"compact","12":"26.875","13":"2.125","14":"4.515625"},{"1":"volkswagen","2":"jetta","3":"2.5","4":"2008","5":"5","6":"manual(m5)","7":"f","8":"21","9":"29","10":"r","11":"compact","12":"26.875","13":"2.125","14":"4.515625"},{"1":"volkswagen","2":"jetta","3":"2.8","4":"1999","5":"6","6":"auto(l4)","7":"f","8":"16","9":"23","10":"r","11":"compact","12":"25.816","13":"-2.816","14":"7.929856"},{"1":"volkswagen","2":"jetta","3":"2.8","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"17","9":"24","10":"r","11":"compact","12":"25.816","13":"-1.816","14":"3.297856"},{"1":"volkswagen","2":"new beetle","3":"1.9","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"35","9":"44","10":"d","11":"subcompact","12":"28.993","13":"15.007","14":"225.210049"},{"1":"volkswagen","2":"new beetle","3":"1.9","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"29","9":"41","10":"d","11":"subcompact","12":"28.993","13":"12.007","14":"144.168049"},{"1":"volkswagen","2":"new beetle","3":"2.0","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"r","11":"subcompact","12":"28.640","13":"0.360","14":"0.129600"},{"1":"volkswagen","2":"new beetle","3":"2.0","4":"1999","5":"4","6":"auto(l4)","7":"f","8":"19","9":"26","10":"r","11":"subcompact","12":"28.640","13":"-2.640","14":"6.969600"},{"1":"volkswagen","2":"new beetle","3":"2.5","4":"2008","5":"5","6":"manual(m5)","7":"f","8":"20","9":"28","10":"r","11":"subcompact","12":"26.875","13":"1.125","14":"1.265625"},{"1":"volkswagen","2":"new beetle","3":"2.5","4":"2008","5":"5","6":"auto(s6)","7":"f","8":"20","9":"29","10":"r","11":"subcompact","12":"26.875","13":"2.125","14":"4.515625"},{"1":"volkswagen","2":"passat","3":"1.8","4":"1999","5":"4","6":"manual(m5)","7":"f","8":"21","9":"29","10":"p","11":"midsize","12":"29.346","13":"-0.346","14":"0.119716"},{"1":"volkswagen","2":"passat","3":"1.8","4":"1999","5":"4","6":"auto(l5)","7":"f","8":"18","9":"29","10":"p","11":"midsize","12":"29.346","13":"-0.346","14":"0.119716"},{"1":"volkswagen","2":"passat","3":"2.0","4":"2008","5":"4","6":"auto(s6)","7":"f","8":"19","9":"28","10":"p","11":"midsize","12":"28.640","13":"-0.640","14":"0.409600"},{"1":"volkswagen","2":"passat","3":"2.0","4":"2008","5":"4","6":"manual(m6)","7":"f","8":"21","9":"29","10":"p","11":"midsize","12":"28.640","13":"0.360","14":"0.129600"},{"1":"volkswagen","2":"passat","3":"2.8","4":"1999","5":"6","6":"auto(l5)","7":"f","8":"16","9":"26","10":"p","11":"midsize","12":"25.816","13":"0.184","14":"0.033856"},{"1":"volkswagen","2":"passat","3":"2.8","4":"1999","5":"6","6":"manual(m5)","7":"f","8":"18","9":"26","10":"p","11":"midsize","12":"25.816","13":"0.184","14":"0.033856"},{"1":"volkswagen","2":"passat","3":"3.6","4":"2008","5":"6","6":"auto(s6)","7":"f","8":"17","9":"26","10":"p","11":"midsize","12":"22.992","13":"3.008","14":"9.048064"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>stats_best %&gt;% 
+  summarize(rss_best = sum(resid_squared))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["rss_best"],"name":[1],"type":["dbl"],"align":["right"]}],"data":[{"1":"3413.834"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>In the two graphs above, what do you notice about the size of the residuals, in general?</p></li>
+<li><p>How could we represent the squared residuals on the graph?</p></li>
+<li><p>Modify the code above to compute the sum of the squared residuals for the model from the graph on the right? How does that compare to the sum of the squared residuals from the least squares line?</p></li>
+<li><p>In the code below, try modifying the <code>my_y_int</code> and <code>my_slope</code> values, which are your intercept and slope for the line. When you run the code, the residual sum of squares (RSS) will be shown in the title. Play around with this for awhile. Are there any other lines you can fit that are very unlike the best fit line but still have small RSS?</p></li>
+</ol>
+</div>
+<pre class="r"><code>my_y_int = 50 #put your y-intercept here
+my_slope = -5 #put your slope here
+
+rss &lt;- mpg %&gt;% 
+  summarize(rss = sum((hwy - (my_y_int + my_slope*displ))^2)) %&gt;% 
+  pull(rss)
+
+mpg %&gt;% 
+  ggplot(aes(x = displ, y = hwy)) +
+  geom_point() + 
+  geom_abline(slope = my_slope, intercept = my_y_int, color = &quot;blue&quot;, size = .5) +
+  geom_point(aes(x = displ, y = my_y_int + my_slope*displ), color = &quot;blue&quot;) +
+  geom_segment(aes(xend = displ, 
+                   yend = my_y_int + my_slope*displ), 
+               color = &quot;red&quot;) +
+  labs(title = bquote(RSS == .(rss)))</code></pre>
+<p><img src="05_model_fitting_eval_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>Let’s also take a little bit of time exploring <a href="http://setosa.io/ev/ordinary-least-squares-regression/">this website</a>.</p>
+</div>
+<div id="evaluation" class="section level1">
+<h1>Evaluation</h1>
+<ul>
+<li>Is our model accurate?<br />
+</li>
+<li>Does it predict new observations well?</li>
+</ul>
+<div id="variance-explained-in-response-r2" class="section level2">
+<h2>Variance explained in response: <span class="math inline">\(R^2\)</span></h2>
+<p>Recall that one of our goals in building a model is to better explain the variation in our response variable, <span class="math inline">\(y\)</span>.</p>
+<p>Let’s take a look at the <code>mpg</code> data again. First, let’s just look at a distribution of highway mpg, <code>hwy</code>.</p>
+<pre class="r"><code>ggplot(mpg) +
+  geom_histogram(aes(x = hwy), bins = 30) +
+  geom_vline(aes(xintercept = mean(hwy)), color = &quot;darkred&quot;) +
+  theme_minimal()</code></pre>
+<p><img src="05_model_fitting_eval_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>The standard deviation of <code>hwy</code> is 5.9546434 and the variance is 35.4577785. These are ways we’ve talked about measuring variation. We could also use the sum of the squared deviations from the mean, SST (total sum of squares):</p>
+<pre class="r"><code>mpg %&gt;% 
+  summarize(sst = sum((hwy - mean(hwy))^2))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["sst"],"name":[1],"type":["dbl"],"align":["right"]}],"data":[{"1":"8261.662"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Why do we like this measure?! It is going to give us a good way to compare to our fitted values after fitting a model.</p>
+<p>Now, let’s fit the simple model that uses engine displacement, <code>displ</code>, to explain <code>hwy</code>.</p>
+<pre class="r"><code>lm_displ &lt;- lm(hwy ~ displ,
+               data=mpg)
+get_regression_table(lm_displ)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std_error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p_value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["lower_ci"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["upper_ci"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"intercept","2":"35.698","3":"0.720","4":"49.555","5":"0","6":"34.278","7":"37.117"},{"1":"displ","2":"-3.531","3":"0.195","4":"-18.151","5":"0","6":"-3.914","7":"-3.147"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>We can compare the variation in <code>hwy</code> after accounting for <code>displ</code> to the variation of <code>hwy</code> accounting for no variables. These are shown in the plots below.</p>
+<pre class="r"><code>g1 &lt;- augment(lm_displ, data=mpg) %&gt;% 
+  ggplot(aes(x = displ, y = hwy)) +
+  geom_point() +
+  geom_line(aes(x = displ, y = .fitted), color = &quot;darkred&quot;) +
+  geom_segment(aes(xend = displ, 
+                   yend = 35.70 - 3.53*displ), 
+               color = &quot;darkred&quot;) +
+  labs(title = &quot;Best Line&quot;)
+
+g2 &lt;- mpg %&gt;% 
+  ggplot(aes(x = displ, y = hwy)) +
+  geom_point() +
+  geom_hline(aes(yintercept = mean(hwy)), color = &quot;darkred&quot;) +
+  geom_segment(aes(xend = displ, 
+                   yend = mean(hwy)), 
+               color = &quot;darkred&quot;) +
+  labs(title = &quot;Mean of hwy&quot;)
+
+grid.arrange(g1, g2, nrow = 1)</code></pre>
+<p><img src="05_model_fitting_eval_files/figure-html/unnamed-chunk-8-1.png" width="768" /></p>
+<p>We would like to know if there is less variation in <code>hwy</code> after using <code>displ</code> to help explain <code>hwy</code>. Or, once I know <code>displ</code>, can I predict <code>hwy</code> better? We can evaluate this by the sum of the squared residuals, RSS (yes, this is the same quantity that gets minimized when we find the “best” coefficient).</p>
+<pre class="r"><code>augment(lm_displ, data=mpg) %&gt;% 
+  summarize(rss = sum(.resid^2))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["rss"],"name":[1],"type":["dbl"],"align":["right"]}],"data":[{"1":"3413.829"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>How does this compare to SST?</p>
+<p>We define <span class="math inline">\(R^2\)</span> as</p>
+<p><span class="math display">\[
+R^2  = 1 - \frac{RSS}{SST} = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}.
+\]</span> It is the fraction of variation in <span class="math inline">\(y\)</span> accounted for or explained by the model.</p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li>How small can <span class="math inline">\(R^2\)</span> be? When will <span class="math inline">\(R^2\)</span> be small?<br />
+</li>
+<li>How large can <span class="math inline">\(R^2\)</span> be? When will <span class="math inline">\(R^2\)</span> be large?<br />
+</li>
+<li>What are the units of <span class="math inline">\(R^2\)</span>?</li>
+</ol>
+</div>
+<p>We can use the <code>get_regression_summaries</code> or <code>glance</code> to find the <span class="math inline">\(R^2\)</span> value. It is called <code>r_squared</code> or <code>r.squared</code>, respectively.</p>
+<pre class="r"><code>get_regression_summaries(lm_displ)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["r_squared"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["adj_r_squared"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mse"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["rmse"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["sigma"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["p_value"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["df"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["nobs"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"0.587","2":"0.585","3":"14.58901","4":"3.819557","5":"3.836","6":"329.453","7":"0","8":"1","9":"234","_row":"value"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>glance(lm_displ)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["r.squared"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["adj.r.squared"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["sigma"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["df"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["logLik"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["AIC"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["BIC"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["deviance"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["df.residual"],"name":[11],"type":["int"],"align":["right"]},{"label":["nobs"],"name":[12],"type":["int"],"align":["right"]}],"data":[{"1":"0.5867867","2":"0.5850056","3":"3.835985","4":"329.4533","5":"2.038974e-46","6":"1","7":"-645.6231","8":"1297.246","9":"1307.612","10":"3413.829","11":"232","12":"234","_row":"value"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><span class="math inline">\(R^2\)</span> can be used to compare models with the same response variable and the same number of explanatory variables.</p>
+<p>For example, let’s fit another model that uses city mpg, <em>cty</em>, to predict <code>hwy</code>. How does this model compare to the one with only <code>displ</code>?</p>
+<pre class="r"><code>mpg %&gt;% 
+  ggplot(aes(x = cty, y = hwy)) +
+  geom_jitter() +
+  theme_minimal()</code></pre>
+<p><img src="05_model_fitting_eval_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<pre class="r"><code>lm_cty &lt;- lm(hwy ~ cty, 
+              data=mpg)
+get_regression_table(lm_cty)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std_error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p_value"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["lower_ci"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["upper_ci"],"name":[7],"type":["dbl"],"align":["right"]}],"data":[{"1":"intercept","2":"0.892","3":"0.469","4":"1.902","5":"0.058","6":"-0.032","7":"1.816"},{"1":"cty","2":"1.337","3":"0.027","4":"49.585","5":"0.000","6":"1.284","7":"1.391"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>get_regression_summaries(lm_cty)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["r_squared"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["adj_r_squared"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["mse"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["rmse"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["sigma"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[6],"type":["dbl"],"align":["right"]},{"label":["p_value"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["df"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["nobs"],"name":[9],"type":["dbl"],"align":["right"]}],"data":[{"1":"0.914","2":"0.913","3":"3.044273","4":"1.744785","5":"1.752","6":"2458.642","7":"0","8":"1","9":"234","_row":"value"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><strong>NOTE</strong>: We CANNOT use <span class="math inline">\(R^2\)</span> to compare models with different numbers of explanatory variables. I will not go into details, but here is an example of adding a variable of “noise” to the model. What happens to the <span class="math inline">\(R^2\)</span> value? Adding a new variable, even one that is complete nonsense will never decrease the <span class="math inline">\(R^2\)</span> value.</p>
+<pre class="r"><code>lm_displ_noise &lt;- lm(hwy ~ displ + rnorm(n = nrow(mpg)),
+                     data=mpg)
+glance(lm_displ_noise) %&gt;% 
+  select(r.squared)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["r.squared"],"name":[1],"type":["dbl"],"align":["right"]}],"data":[{"1":"0.5868132"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>glance(lm_displ) %&gt;% 
+  select(r.squared)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["r.squared"],"name":[1],"type":["dbl"],"align":["right"]}],"data":[{"1":"0.5867867"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>We can use the adjusted <span class="math inline">\(R^2\)</span> to compare models with different numbers of variables. This can also be found in the output from <code>glance</code> or <code>get_regression_summaries</code>. Read more about adjusted <span class="math inline">\(R^2\)</span> <a href="https://en.wikipedia.org/wiki/Coefficient_of_determination#Adjusted_R2">here</a>.</p>
+</div>
+<div id="standard-error-of-regression-hatsigma" class="section level2">
+<h2>Standard error of regression: <span class="math inline">\(\hat{\sigma}\)</span></h2>
+<p>The standard error of the regression, <span class="math inline">\(\hat{\sigma}\)</span>, is defined as</p>
+<p><span class="math display">\[
+\hat{\sigma} = \sqrt{\frac{\sum_{i=1}^n (y_i - \hat{y}_i)^2}{n-p}}.
+\]</span></p>
+<p>This can be found in the <code>glance</code> output, called <code>sigma</code>. It is another statistic that describes how well the model fits., telling us <em>approximately</em> how far the predictions are from their actual values, on average.</p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<p>Use the <code>hsb2</code> dataset from the <code>openintro</code> library to answer the following questions.</p>
+<ol style="list-style-type: decimal">
+<li><p>First, look at a distribution of <code>math</code>. Compute the SST.</p></li>
+<li><p>Compute the <span class="math inline">\(R^2\)</span> for the model that uses only <code>ses</code> to explain <code>math</code>. Describe what this means in the context of the data.</p></li>
+<li><p>Find <span class="math inline">\(\hat{\sigma}\)</span> for this model. Interpret it in the context of the data.</p></li>
+<li><p>Compute the <span class="math inline">\(R^2\)</span> for the model that uses only <code>prog</code>. So, does <code>prog</code> or <code>ses</code> explain more of the variation in <code>math</code>?</p></li>
+<li><p>Fit a model with both <code>ses</code> and <code>prog</code>. Use the adjusted <span class="math inline">\(R^2\)</span> to decide if adding a second variable to the model seems useful.</p></li>
+<li><p>Now try adding an interaction effect. Use the adjusted <span class="math inline">\(R^2\)</span> to decided if adding that is useful. Compare the plots you created in your most recent homework assignment of the fitted models with and without an interaction effect to help illustrate why you are seeing these results.</p></li>
+</ol>
+</div>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiTW9kZWwgRml0dGluZyBhbmQgRXZhbHVhdGlvbiIKb3V0cHV0OgogIGh0bWxfZG9jdW1lbnQ6CiAgICB0b2M6IHRydWUKICAgIHRvY19mbG9hdDogdHJ1ZQogICAgZGZfcHJpbnQ6IHBhZ2VkCiAgICBjb2RlX2Rvd25sb2FkOiB0cnVlCi0tLQoKYGBge3IsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9CmxpYnJhcnkodGlkeXZlcnNlKSAjZm9yIHBsb3R0aW5nIGFuZCBzdW1tYXJpemluZwpsaWJyYXJ5KG1vZGVybmRpdmUpICNmb3IgbmljZSBtb2RlbCBvdXRwdXQKbGlicmFyeShicm9vbSkgI2ZvciBuaWNlIG1vZGVsIG91dHB1dCAKbGlicmFyeShncmlkRXh0cmEpICNmb3IgbmljZWx5IG9yZ2FuaXppbmcgcGxvdHMKbGlicmFyeShvcGVuaW50cm8pICNmb3IgZGF0YQp0aGVtZV9zZXQodGhlbWVfbWluaW1hbCgpKSAjY2hhbmdlcyB0aGUgdGhlbWUgb2YgZ2dwbG90cyB0byB0aGVtZV9taW5pbWFsLCBteSBwZXJzb25hbCBmYXZvcml0ZQpgYGAKCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LXN1Y2Nlc3MiPgogIDxzdHJvbmc+R09BTDo8L3N0cm9uZz4KCkJ5IHRoZSBlbmQgb2YgdGhlc2Ugbm90ZXMgYW5kIGFjdGl2aXRpZXMsIHlvdSBzaG91bGQgYmUgYWJsZSB0byBwZXJmb3JtIHRoZSBmb2xsb3dpbmcgdGFza3MuCgoqIEhhdmUgYSBoaWdoLWxldmVsIHVuZGVyc3RhbmRpbmcgb2YgaG93IGxpbmVhciBtb2RlbCBjb2VmZmljaWVudHMgYXJlIGVzdGltYXRlZC4gIAoqIFVzZSAkUl4yJCB0byBkZXNjcmliZSBob3cgd2VsbCB5b3VyIHJlc3BvbnNlIHZhcmlhYmxlIGNhbiBiZSBleHBsYWluZWQgYnkgdGhlIG1vZGVsLiAgCiogVXNlICRcaGF0e1xzaWdtYX0kIChhbHNvIGNhbGxlZCAkc19lJCBvciByZXNpZHVhbCBzdGFuZGFyZCBlcnJvcikgdG8gZXN0aW1hdGUgaG93IHZhcmlhYmxlIHRoZSBwcmVkaWN0aW9ucyBtYXkgYmUuIAoKPC9kaXY+CgojIE1vZGVsIEZpdHRpbmcKClVwIHVudGlsIG5vdywgd2UgaGF2ZSBtb3N0bHkgYmVlbiBjb25jZXJuZWQgd2l0aCBpbnRlcnByZXRpbmcgY29lZmZpY2llbnRzIGZyb20gbGluZWFyIG1vZGVscywgYnV0IHdoZXJlIGRvIHRoZXkgY29tZSBmcm9tPwoKVGhlICJiZXN0IiBjb2VmZmljaWVudHMgYXJlIHRob3NlIHRoYXQgbWluaW1pemUgdGhlIHN1bSBvZiB0aGUgc3F1YXJlZCByZXNpZHVhbHMuIFRoaXMgaXMgcmVmZXJyZWQgdG8gYXMgdGhlIGxlYXN0IHNxdWFyZXMgY3JpdGVyaW9uLiBJZiB5b3UgbGlrZSBtYXRoZW1hdGljYWwgZXF1YXRpb25zLCBpdCBjYW4gYmUgd3JpdHRlbiBtYXRoZW1hdGljYWxseSwgYXM6CgokJApcdGV4dHttaW59X3tcYmZ7XGJldGF9fSBcc3VtX3tpPTF9Xm5beV9pIC0gKFxiZXRhXzAgKyBcYmV0YV8xIHhfe2kxfSArIC4uLiArIFxiZXRhX3AgeF97aXB9KV1eMgokJAoKQ2FsY3VsdXMgYW5kIGxpbmVhciBhbGdlYnJhIGNhbiBiZSB1c2VkIHRvIHNvbHZlIHRoZSBtaW5pbWl6YXRpb24gcHJvYmxlbSBleHBsaWNpdGx5LiBXZSB3aWxsIG5vdCBnbyB0aHJvdWdoIHRoYXQgaW4gdGhpcyBjbGFzcywgYnV0IEkgZW5jb3VyYWdlIHlvdSB0byB0YWtlIExpbmVhciBBbGdlYnJhIGFuZCBDb21wdXRhdGlvbmFsIExpbmVhciBBbGdlYnJhIGlmIGxlYXJuaW5nIHRob3NlIGRldGFpbHMgaXMgb2YgaW50ZXJlc3QgdG8geW91LiAKCkluc3RlYWQgbGV0J3MgbG9vayBhdCB0aGlzIGluIGEgcGljdHVyZS4gVGhlIGdyYXBoIG9uIHRoZSBsZWZ0IGlzIHRoZSBsZWFzdCBzcXVhcmVzIHNvbHV0aW9uLiBUaGUgb25lIG9uIHRoZSByaWdodCBpcyBqdXN0IGFub3RoZXIgbGluZSBJIG1hZGUgdXAuIAoKYGBge3IsIGZpZy53aWR0aD04LCBmaWcuaGVpZ2h0PTR9CmxtX2Rpc3BsIDwtIGxtKGh3eSB+IGRpc3BsLAogICAgICAgICAgICAgICBkYXRhPW1wZykKCnAxIDwtIGF1Z21lbnQobG1fZGlzcGwsIGRhdGEgPSBtcGcpICU+JSAKICBnZ3Bsb3QoYWVzKHggPSBkaXNwbCwgeSA9IGh3eSkpICsKICBnZW9tX3BvaW50KCkgKyAKICBnZW9tX2xpbmUoYWVzKHggPSBkaXNwbCwgeSA9IC5maXR0ZWQpLCBjb2xvciA9ICJibHVlIiwgc2l6ZSA9IC41KSArCiAgZ2VvbV9wb2ludChhZXMoeCA9IGRpc3BsLCB5ID0gLmZpdHRlZCksIGNvbG9yID0gImJsdWUiKSArCiAgZ2VvbV9zZWdtZW50KGFlcyh4ZW5kID0gZGlzcGwsIAogICAgICAgICAgICAgICAgICAgeWVuZCA9IDM1LjcwIC0gMy41MypkaXNwbCksIAogICAgICAgICAgICAgICBjb2xvciA9ICJyZWQiKSArCiAgc2NhbGVfeF9jb250aW51b3VzKGJyZWFrcyA9IDE6OCkgKwogIHNjYWxlX3lfY29udGludW91cyhicmVha3MgPSBzZXEoMTAsNjAsMTApKSArCiAgbGFicyh0aXRsZSA9ICJCZXN0IG1vZGVsIiwgc3VidGl0bGUgPSAiQWN0dWFsIChibGFjayksIEZpdHRlZCAoYmx1ZSksIGFuZCByZXNpZHVhbHMgKHJlZCkiKQoKcDIgPC0gbXBnICU+JSAKICBnZ3Bsb3QoYWVzKHggPSBkaXNwbCwgeSA9IGh3eSkpICsKICBnZW9tX3BvaW50KCkgKyAKICBnZW9tX2FibGluZShzbG9wZSA9IC41LCBpbnRlcmNlcHQgPSAxNSwgY29sb3IgPSAiYmx1ZSIsIHNpemUgPSAuNSkgKwogIGdlb21fcG9pbnQoYWVzKHggPSBkaXNwbCwgeSA9IDE1ICsgLjUqZGlzcGwpLCBjb2xvciA9ICJibHVlIikgKwogIGdlb21fc2VnbWVudChhZXMoeGVuZCA9IGRpc3BsLCAKICAgICAgICAgICAgICAgICAgIHllbmQgPSAxNSArIC41KmRpc3BsKSwgCiAgICAgICAgICAgICAgIGNvbG9yID0gInJlZCIpICsKICBzY2FsZV94X2NvbnRpbnVvdXMoYnJlYWtzID0gMTo4KSArCiAgc2NhbGVfeV9jb250aW51b3VzKGJyZWFrcyA9IHNlcSgxMCw2MCwxMCkpICsKICBsYWJzKHRpdGxlID0gIkFub3RoZXIgbW9kZWwiKQoKZ3JpZC5hcnJhbmdlKHAxLCBwMiwgbnJvdyA9IDEpCmBgYAoKQmVsb3cgSSBjb21wdXRlIHRoZSBzdW0gb2YgdGhlIHNxdWFyZWQgcmVzaWR1YWxzIGZvciB0aGUgYmVzdCBmaXQgbGluZSAoSSBoYXZlIHJvdW5kZWQgdGhlIGNvZWZmaWNpZW50cyBzbyB0aGlzIGlzIG5vdCBleGFjdCkuCgpgYGB7cn0Kc3RhdHNfYmVzdCA8LSBtcGcgJT4lIAogIG11dGF0ZShmaXR0ZWQgPSAzNS43MCAtIDMuNTMqZGlzcGwsCiAgICAgICAgIHJlc2lkID0gaHd5IC0gZml0dGVkLAogICAgICAgICByZXNpZF9zcXVhcmVkID0gcmVzaWReMikKCnN0YXRzX2Jlc3QKCnN0YXRzX2Jlc3QgJT4lIAogIHN1bW1hcml6ZShyc3NfYmVzdCA9IHN1bShyZXNpZF9zcXVhcmVkKSkKYGBgCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1pbmZvIj4KICA8c3Ryb25nPllPVVIgVFVSTiE8L3N0cm9uZz4KICAKMS4gSW4gdGhlIHR3byBncmFwaHMgYWJvdmUsIHdoYXQgZG8geW91IG5vdGljZSBhYm91dCB0aGUgc2l6ZSBvZiB0aGUgcmVzaWR1YWxzLCBpbiBnZW5lcmFsPyAgCgoyLiBIb3cgY291bGQgd2UgcmVwcmVzZW50IHRoZSBzcXVhcmVkIHJlc2lkdWFscyBvbiB0aGUgZ3JhcGg/ICAKCjMuIE1vZGlmeSB0aGUgY29kZSBhYm92ZSB0byBjb21wdXRlIHRoZSBzdW0gb2YgdGhlIHNxdWFyZWQgcmVzaWR1YWxzIGZvciB0aGUgbW9kZWwgZnJvbSB0aGUgZ3JhcGggb24gdGhlIHJpZ2h0PyBIb3cgZG9lcyB0aGF0IGNvbXBhcmUgdG8gdGhlIHN1bSBvZiB0aGUgc3F1YXJlZCByZXNpZHVhbHMgZnJvbSB0aGUgbGVhc3Qgc3F1YXJlcyBsaW5lPwoKNC4gSW4gdGhlIGNvZGUgYmVsb3csIHRyeSBtb2RpZnlpbmcgdGhlIGBteV95X2ludGAgYW5kIGBteV9zbG9wZWAgdmFsdWVzLCB3aGljaCBhcmUgeW91ciBpbnRlcmNlcHQgYW5kIHNsb3BlIGZvciB0aGUgbGluZS4gV2hlbiB5b3UgcnVuIHRoZSBjb2RlLCB0aGUgcmVzaWR1YWwgc3VtIG9mIHNxdWFyZXMgKFJTUykgd2lsbCBiZSBzaG93biBpbiB0aGUgdGl0bGUuIFBsYXkgYXJvdW5kIHdpdGggdGhpcyBmb3IgYXdoaWxlLiBBcmUgdGhlcmUgYW55IG90aGVyIGxpbmVzIHlvdSBjYW4gZml0IHRoYXQgYXJlIHZlcnkgdW5saWtlIHRoZSBiZXN0IGZpdCBsaW5lIGJ1dCBzdGlsbCBoYXZlIHNtYWxsIFJTUz8KCjwvZGl2PgoKYGBge3J9Cm15X3lfaW50ID0gNTAgI3B1dCB5b3VyIHktaW50ZXJjZXB0IGhlcmUKbXlfc2xvcGUgPSAtNSAjcHV0IHlvdXIgc2xvcGUgaGVyZQoKcnNzIDwtIG1wZyAlPiUgCiAgc3VtbWFyaXplKHJzcyA9IHN1bSgoaHd5IC0gKG15X3lfaW50ICsgbXlfc2xvcGUqZGlzcGwpKV4yKSkgJT4lIAogIHB1bGwocnNzKQoKbXBnICU+JSAKICBnZ3Bsb3QoYWVzKHggPSBkaXNwbCwgeSA9IGh3eSkpICsKICBnZW9tX3BvaW50KCkgKyAKICBnZW9tX2FibGluZShzbG9wZSA9IG15X3Nsb3BlLCBpbnRlcmNlcHQgPSBteV95X2ludCwgY29sb3IgPSAiYmx1ZSIsIHNpemUgPSAuNSkgKwogIGdlb21fcG9pbnQoYWVzKHggPSBkaXNwbCwgeSA9IG15X3lfaW50ICsgbXlfc2xvcGUqZGlzcGwpLCBjb2xvciA9ICJibHVlIikgKwogIGdlb21fc2VnbWVudChhZXMoeGVuZCA9IGRpc3BsLCAKICAgICAgICAgICAgICAgICAgIHllbmQgPSBteV95X2ludCArIG15X3Nsb3BlKmRpc3BsKSwgCiAgICAgICAgICAgICAgIGNvbG9yID0gInJlZCIpICsKICBsYWJzKHRpdGxlID0gYnF1b3RlKFJTUyA9PSAuKHJzcykpKQoKYGBgCgpMZXQncyBhbHNvIHRha2UgYSBsaXR0bGUgYml0IG9mIHRpbWUgZXhwbG9yaW5nIFt0aGlzIHdlYnNpdGVdKGh0dHA6Ly9zZXRvc2EuaW8vZXYvb3JkaW5hcnktbGVhc3Qtc3F1YXJlcy1yZWdyZXNzaW9uLykuCgojIEV2YWx1YXRpb24KCiogSXMgb3VyIG1vZGVsIGFjY3VyYXRlPyAgCiogRG9lcyBpdCBwcmVkaWN0IG5ldyBvYnNlcnZhdGlvbnMgd2VsbD8gIAoKIyMgVmFyaWFuY2UgZXhwbGFpbmVkIGluIHJlc3BvbnNlOiAkUl4yJAoKUmVjYWxsIHRoYXQgb25lIG9mIG91ciBnb2FscyBpbiBidWlsZGluZyBhIG1vZGVsIGlzIHRvIGJldHRlciBleHBsYWluIHRoZSB2YXJpYXRpb24gaW4gb3VyIHJlc3BvbnNlIHZhcmlhYmxlLCAkeSQuIAoKTGV0J3MgdGFrZSBhIGxvb2sgYXQgdGhlIGBtcGdgIGRhdGEgYWdhaW4uIEZpcnN0LCBsZXQncyBqdXN0IGxvb2sgYXQgYSBkaXN0cmlidXRpb24gb2YgaGlnaHdheSBtcGcsIGBod3lgLgoKYGBge3J9CmdncGxvdChtcGcpICsKICBnZW9tX2hpc3RvZ3JhbShhZXMoeCA9IGh3eSksIGJpbnMgPSAzMCkgKwogIGdlb21fdmxpbmUoYWVzKHhpbnRlcmNlcHQgPSBtZWFuKGh3eSkpLCBjb2xvciA9ICJkYXJrcmVkIikgKwogIHRoZW1lX21pbmltYWwoKQpgYGAKClRoZSBzdGFuZGFyZCBkZXZpYXRpb24gb2YgYGh3eWAgaXMgYHIgc2QobXBnJGh3eSlgIGFuZCB0aGUgdmFyaWFuY2UgaXMgYHIgdmFyKG1wZyRod3kpYC4gVGhlc2UgYXJlIHdheXMgd2UndmUgdGFsa2VkIGFib3V0IG1lYXN1cmluZyB2YXJpYXRpb24uIFdlIGNvdWxkIGFsc28gdXNlIHRoZSBzdW0gb2YgdGhlIHNxdWFyZWQgZGV2aWF0aW9ucyBmcm9tIHRoZSBtZWFuLCBTU1QgKHRvdGFsIHN1bSBvZiBzcXVhcmVzKToKCmBgYHtyfQptcGcgJT4lIAogIHN1bW1hcml6ZShzc3QgPSBzdW0oKGh3eSAtIG1lYW4oaHd5KSleMikpCmBgYAoKV2h5IGRvIHdlIGxpa2UgdGhpcyBtZWFzdXJlPyEgSXQgaXMgZ29pbmcgdG8gZ2l2ZSB1cyBhIGdvb2Qgd2F5IHRvIGNvbXBhcmUgdG8gb3VyIGZpdHRlZCB2YWx1ZXMgYWZ0ZXIgZml0dGluZyBhIG1vZGVsLgoKTm93LCBsZXQncyBmaXQgdGhlIHNpbXBsZSBtb2RlbCB0aGF0IHVzZXMgZW5naW5lIGRpc3BsYWNlbWVudCwgYGRpc3BsYCwgdG8gZXhwbGFpbiBgaHd5YC4KCmBgYHtyfQpsbV9kaXNwbCA8LSBsbShod3kgfiBkaXNwbCwKICAgICAgICAgICAgICAgZGF0YT1tcGcpCmdldF9yZWdyZXNzaW9uX3RhYmxlKGxtX2Rpc3BsKQpgYGAKCldlIGNhbiBjb21wYXJlIHRoZSB2YXJpYXRpb24gaW4gYGh3eWAgYWZ0ZXIgYWNjb3VudGluZyBmb3IgYGRpc3BsYCB0byB0aGUgdmFyaWF0aW9uIG9mIGBod3lgIGFjY291bnRpbmcgZm9yIG5vIHZhcmlhYmxlcy4gVGhlc2UgYXJlIHNob3duIGluIHRoZSBwbG90cyBiZWxvdy4KCmBgYHtyLCBmaWcud2lkdGg9OCwgZmlnLmhlaWdodD00fQpnMSA8LSBhdWdtZW50KGxtX2Rpc3BsLCBkYXRhPW1wZykgJT4lIAogIGdncGxvdChhZXMoeCA9IGRpc3BsLCB5ID0gaHd5KSkgKwogIGdlb21fcG9pbnQoKSArCiAgZ2VvbV9saW5lKGFlcyh4ID0gZGlzcGwsIHkgPSAuZml0dGVkKSwgY29sb3IgPSAiZGFya3JlZCIpICsKICBnZW9tX3NlZ21lbnQoYWVzKHhlbmQgPSBkaXNwbCwgCiAgICAgICAgICAgICAgICAgICB5ZW5kID0gMzUuNzAgLSAzLjUzKmRpc3BsKSwgCiAgICAgICAgICAgICAgIGNvbG9yID0gImRhcmtyZWQiKSArCiAgbGFicyh0aXRsZSA9ICJCZXN0IExpbmUiKQoKZzIgPC0gbXBnICU+JSAKICBnZ3Bsb3QoYWVzKHggPSBkaXNwbCwgeSA9IGh3eSkpICsKICBnZW9tX3BvaW50KCkgKwogIGdlb21faGxpbmUoYWVzKHlpbnRlcmNlcHQgPSBtZWFuKGh3eSkpLCBjb2xvciA9ICJkYXJrcmVkIikgKwogIGdlb21fc2VnbWVudChhZXMoeGVuZCA9IGRpc3BsLCAKICAgICAgICAgICAgICAgICAgIHllbmQgPSBtZWFuKGh3eSkpLCAKICAgICAgICAgICAgICAgY29sb3IgPSAiZGFya3JlZCIpICsKICBsYWJzKHRpdGxlID0gIk1lYW4gb2YgaHd5IikKCmdyaWQuYXJyYW5nZShnMSwgZzIsIG5yb3cgPSAxKQpgYGAKCgpXZSB3b3VsZCBsaWtlIHRvIGtub3cgaWYgdGhlcmUgaXMgbGVzcyB2YXJpYXRpb24gaW4gYGh3eWAgIGFmdGVyIHVzaW5nIGBkaXNwbGAgdG8gaGVscCBleHBsYWluIGBod3lgLiBPciwgb25jZSBJIGtub3cgYGRpc3BsYCwgY2FuIEkgcHJlZGljdCBgaHd5YCBiZXR0ZXI/IFdlIGNhbiBldmFsdWF0ZSB0aGlzIGJ5IHRoZSBzdW0gb2YgdGhlIHNxdWFyZWQgcmVzaWR1YWxzLCBSU1MgKHllcywgdGhpcyBpcyB0aGUgc2FtZSBxdWFudGl0eSB0aGF0IGdldHMgbWluaW1pemVkIHdoZW4gd2UgZmluZCB0aGUgImJlc3QiIGNvZWZmaWNpZW50KS4KCgpgYGB7cn0KYXVnbWVudChsbV9kaXNwbCwgZGF0YT1tcGcpICU+JSAKICBzdW1tYXJpemUocnNzID0gc3VtKC5yZXNpZF4yKSkKYGBgCgpIb3cgZG9lcyB0aGlzIGNvbXBhcmUgdG8gU1NUPwoKV2UgZGVmaW5lICRSXjIkIGFzCgokJApSXjIgID0gMSAtIFxmcmFje1JTU317U1NUfSA9IDEgLSBcZnJhY3tcc3VtKHlfaSAtIFxoYXR7eX1faSleMn17XHN1bSh5X2kgLSBcYmFye3l9KV4yfS4KJCQKSXQgaXMgdGhlIGZyYWN0aW9uIG9mIHZhcmlhdGlvbiBpbiAkeSQgYWNjb3VudGVkIGZvciBvciBleHBsYWluZWQgYnkgdGhlIG1vZGVsLiAKCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1pbmZvIj4KICA8c3Ryb25nPllPVVIgVFVSTiE8L3N0cm9uZz4KCjEuIEhvdyBzbWFsbCBjYW4gJFJeMiQgYmU/IFdoZW4gd2lsbCAkUl4yJCBiZSBzbWFsbD8gIAoyLiBIb3cgbGFyZ2UgY2FuICRSXjIkIGJlPyBXaGVuIHdpbGwgJFJeMiQgYmUgbGFyZ2U/ICAKMy4gV2hhdCBhcmUgdGhlIHVuaXRzIG9mICRSXjIkPwoKPC9kaXY+CgpXZSBjYW4gdXNlIHRoZSBgZ2V0X3JlZ3Jlc3Npb25fc3VtbWFyaWVzYCBvciBgZ2xhbmNlYCB0byBmaW5kIHRoZSAkUl4yJCB2YWx1ZS4gSXQgaXMgY2FsbGVkIGByX3NxdWFyZWRgIG9yIGByLnNxdWFyZWRgLCByZXNwZWN0aXZlbHkuIAoKYGBge3J9CmdldF9yZWdyZXNzaW9uX3N1bW1hcmllcyhsbV9kaXNwbCkKZ2xhbmNlKGxtX2Rpc3BsKQpgYGAKCiRSXjIkIGNhbiBiZSB1c2VkIHRvIGNvbXBhcmUgbW9kZWxzIHdpdGggdGhlIHNhbWUgcmVzcG9uc2UgdmFyaWFibGUgYW5kIHRoZSBzYW1lIG51bWJlciBvZiBleHBsYW5hdG9yeSB2YXJpYWJsZXMuCgpGb3IgZXhhbXBsZSwgbGV0J3MgZml0IGFub3RoZXIgbW9kZWwgdGhhdCB1c2VzIGNpdHkgbXBnLCAqY3R5KiwgdG8gcHJlZGljdCBgaHd5YC4gSG93IGRvZXMgdGhpcyBtb2RlbCBjb21wYXJlIHRvIHRoZSBvbmUgd2l0aCBvbmx5IGBkaXNwbGA/CgpgYGB7cn0KbXBnICU+JSAKICBnZ3Bsb3QoYWVzKHggPSBjdHksIHkgPSBod3kpKSArCiAgZ2VvbV9qaXR0ZXIoKSArCiAgdGhlbWVfbWluaW1hbCgpCgpsbV9jdHkgPC0gbG0oaHd5IH4gY3R5LCAKICAgICAgICAgICAgICBkYXRhPW1wZykKZ2V0X3JlZ3Jlc3Npb25fdGFibGUobG1fY3R5KQpnZXRfcmVncmVzc2lvbl9zdW1tYXJpZXMobG1fY3R5KQpgYGAKCioqTk9URSoqOiBXZSBDQU5OT1QgdXNlICRSXjIkIHRvIGNvbXBhcmUgbW9kZWxzIHdpdGggZGlmZmVyZW50IG51bWJlcnMgb2YgZXhwbGFuYXRvcnkgdmFyaWFibGVzLiBJIHdpbGwgbm90IGdvIGludG8gZGV0YWlscywgYnV0IGhlcmUgaXMgYW4gZXhhbXBsZSBvZiBhZGRpbmcgYSB2YXJpYWJsZSBvZiAibm9pc2UiIHRvIHRoZSBtb2RlbC4gV2hhdCBoYXBwZW5zIHRvIHRoZSAkUl4yJCB2YWx1ZT8gQWRkaW5nIGEgbmV3IHZhcmlhYmxlLCBldmVuIG9uZSB0aGF0IGlzIGNvbXBsZXRlIG5vbnNlbnNlIHdpbGwgbmV2ZXIgZGVjcmVhc2UgdGhlICRSXjIkIHZhbHVlLgoKYGBge3J9CmxtX2Rpc3BsX25vaXNlIDwtIGxtKGh3eSB+IGRpc3BsICsgcm5vcm0obiA9IG5yb3cobXBnKSksCiAgICAgICAgICAgICAgICAgICAgIGRhdGE9bXBnKQpnbGFuY2UobG1fZGlzcGxfbm9pc2UpICU+JSAKICBzZWxlY3Qoci5zcXVhcmVkKQoKZ2xhbmNlKGxtX2Rpc3BsKSAlPiUgCiAgc2VsZWN0KHIuc3F1YXJlZCkKYGBgCgoKV2UgY2FuIHVzZSB0aGUgYWRqdXN0ZWQgJFJeMiQgdG8gY29tcGFyZSBtb2RlbHMgd2l0aCBkaWZmZXJlbnQgbnVtYmVycyBvZiB2YXJpYWJsZXMuIFRoaXMgY2FuIGFsc28gYmUgZm91bmQgaW4gdGhlIG91dHB1dCBmcm9tIGBnbGFuY2VgIG9yIGBnZXRfcmVncmVzc2lvbl9zdW1tYXJpZXNgLiBSZWFkIG1vcmUgYWJvdXQgYWRqdXN0ZWQgJFJeMiQgW2hlcmVdKGh0dHBzOi8vZW4ud2lraXBlZGlhLm9yZy93aWtpL0NvZWZmaWNpZW50X29mX2RldGVybWluYXRpb24jQWRqdXN0ZWRfUjIpLgoKCiMjIFN0YW5kYXJkIGVycm9yIG9mIHJlZ3Jlc3Npb246ICRcaGF0e1xzaWdtYX0kCgpUaGUgc3RhbmRhcmQgZXJyb3Igb2YgdGhlIHJlZ3Jlc3Npb24sICRcaGF0e1xzaWdtYX0kLCBpcyBkZWZpbmVkIGFzCgokJApcaGF0e1xzaWdtYX0gPSBcc3FydHtcZnJhY3tcc3VtX3tpPTF9Xm4gKHlfaSAtIFxoYXR7eX1faSleMn17bi1wfX0uCiQkCgpUaGlzIGNhbiBiZSBmb3VuZCBpbiB0aGUgYGdsYW5jZWAgb3V0cHV0LCBjYWxsZWQgYHNpZ21hYC4gSXQgaXMgYW5vdGhlciBzdGF0aXN0aWMgdGhhdCBkZXNjcmliZXMgaG93IHdlbGwgdGhlIG1vZGVsIGZpdHMuLCB0ZWxsaW5nIHVzICphcHByb3hpbWF0ZWx5KiBob3cgZmFyIHRoZSBwcmVkaWN0aW9ucyBhcmUgZnJvbSB0aGVpciBhY3R1YWwgdmFsdWVzLCBvbiBhdmVyYWdlLiAKCgoKCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LWluZm8iPgogIDxzdHJvbmc+WU9VUiBUVVJOITwvc3Ryb25nPgoKVXNlIHRoZSBgaHNiMmAgZGF0YXNldCBmcm9tIHRoZSBgb3BlbmludHJvYCBsaWJyYXJ5IHRvIGFuc3dlciB0aGUgZm9sbG93aW5nIHF1ZXN0aW9ucy4KCjEuIEZpcnN0LCBsb29rIGF0IGEgZGlzdHJpYnV0aW9uIG9mIGBtYXRoYC4gQ29tcHV0ZSB0aGUgU1NULgoKMi4gQ29tcHV0ZSB0aGUgJFJeMiQgZm9yIHRoZSBtb2RlbCB0aGF0IHVzZXMgb25seSBgc2VzYCB0byBleHBsYWluIGBtYXRoYC4gRGVzY3JpYmUgd2hhdCB0aGlzIG1lYW5zIGluIHRoZSBjb250ZXh0IG9mIHRoZSBkYXRhLgoKMy4gRmluZCAkXGhhdHtcc2lnbWF9JCBmb3IgdGhpcyBtb2RlbC4gSW50ZXJwcmV0IGl0IGluIHRoZSBjb250ZXh0IG9mIHRoZSBkYXRhLgoKNC4gQ29tcHV0ZSB0aGUgJFJeMiQgZm9yIHRoZSBtb2RlbCB0aGF0IHVzZXMgb25seSBgcHJvZ2AuIFNvLCBkb2VzIGBwcm9nYCBvciBgc2VzYCBleHBsYWluIG1vcmUgb2YgdGhlIHZhcmlhdGlvbiBpbiBgbWF0aGA/Cgo1LiBGaXQgYSBtb2RlbCB3aXRoIGJvdGggYHNlc2AgYW5kIGBwcm9nYC4gVXNlIHRoZSBhZGp1c3RlZCAkUl4yJCB0byBkZWNpZGUgaWYgYWRkaW5nIGEgc2Vjb25kIHZhcmlhYmxlIHRvIHRoZSBtb2RlbCBzZWVtcyB1c2VmdWwuCgo2LiBOb3cgdHJ5IGFkZGluZyBhbiBpbnRlcmFjdGlvbiBlZmZlY3QuIFVzZSB0aGUgYWRqdXN0ZWQgJFJeMiQgdG8gZGVjaWRlZCBpZiBhZGRpbmcgdGhhdCBpcyB1c2VmdWwuIENvbXBhcmUgdGhlIHBsb3RzIHlvdSBjcmVhdGVkIGluIHlvdXIgbW9zdCByZWNlbnQgaG9tZXdvcmsgYXNzaWdubWVudCBvZiB0aGUgZml0dGVkIG1vZGVscyB3aXRoIGFuZCB3aXRob3V0IGFuIGludGVyYWN0aW9uIGVmZmVjdCB0byBoZWxwIGlsbHVzdHJhdGUgd2h5IHlvdSBhcmUgc2VlaW5nIHRoZXNlIHJlc3VsdHMuCgo8L2Rpdj4KCgoK</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("05_model_fitting_eval.Rmd");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

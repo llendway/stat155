@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Sampling variation in Linear Models</title>
+
+<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">STAT 155</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Lessons
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01_univariate.html">Plotting data - univariate</a>
+    </li>
+    <li>
+      <a href="02_multivariate.html">Plotting data - multivariate</a>
+    </li>
+    <li>
+      <a href="03_slr_creating_interpreting_point_pred.html">Simple linear regression</a>
+    </li>
+    <li>
+      <a href="04_mlr_creating_interpreting_point_pred.html">Multiple linear regression</a>
+    </li>
+    <li>
+      <a href="05_model_fitting_eval.html">Model evaluation</a>
+    </li>
+    <li>
+      <a href="06_assumptions_transformations.html">Model assumptions &amp; transformations</a>
+    </li>
+    <li>
+      <a href="07_logistic_regression.html">Logistic regression</a>
+    </li>
+    <li>
+      <a href="08_sampling_reeses.html">Sampling variation with Reese's</a>
+    </li>
+    <li>
+      <a href="09_sampling_variation_models.html">Sampling variation in models</a>
+    </li>
+    <li>
+      <a href="10_confidence_intervals.html">Confidence intervals</a>
+    </li>
+    <li>
+      <a href="11_hypothesis_tests.html">Hypothesis tests</a>
+    </li>
+    <li>
+      <a href="12_hypothesis_testing_anova.html">Hypothesis tests - ANOVA</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Sampling variation in Linear Models</h1>
+
+</div>
+
+
+<pre class="r"><code>library(tidyverse) #for plotting and summarizing
+library(ggridges) #for ridge plots
+library(ggmosaic) #NEW! for mosaic plots
+library(moderndive) #for nice model output
+library(broom) #for nice model output 
+library(infer) #for making inferences about models
+theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite</code></pre>
+<div class="alert alert-success">
+<p><strong>GOAL:</strong></p>
+<p>By the end of these notes and activities, you should be able to perform the following tasks.</p>
+<ul>
+<li>Use a bootstrap distribution to understand how model coefficients vary from sample to sample.<br />
+</li>
+<li>Apply bootstrap code I have written to a new model.<br />
+</li>
+<li>Create a histogram to represent the bootstrap distribution for a model coefficient.</li>
+</ul>
+</div>
+<p>Previously we talked about how a sample proportion varies from sample to sample and were introduced to the bootstrap technique. Now, we would like to apply that to linear models to learn about how coefficient estimates vary from sample to sample.</p>
+<p>Let’s once again use the <code>kc_house_data</code>, a modified version of the <code>house_data</code> from the <code>moderndive</code> library. We are going to pretend that this is the entire <strong>population</strong> of houses.</p>
+<pre class="r"><code>kc_house_data &lt;-
+  house_prices %&gt;% 
+  filter(bedrooms&lt;=5, bedrooms&gt;0) %&gt;% 
+  mutate(grade_CAT = fct_relevel(ifelse(grade %in% &quot;1&quot;:&quot;7&quot;, &quot;Low&quot;,
+                                        ifelse(grade == &quot;8&quot;, &quot;Medium&quot;,&quot;High&quot;)),
+                                     &quot;Low&quot;, &quot;Medium&quot;, &quot;High&quot;),
+         age=2015-yr_built)</code></pre>
+<div id="sampling-distributions" class="section level1">
+<h1>Sampling Distributions</h1>
+<p>We will examine a really simple model that uses <code>log(sqft_living)</code> to explain <code>log(price)</code>. We are going to think of this as the “population model”.</p>
+<pre class="r"><code>kc_house_data %&gt;% 
+  ggplot(aes(x=log(sqft_living), y = log(price))) +
+  geom_point(alpha=.5, size = .2)</code></pre>
+<p><img src="09_sampling_variation_models_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>lm_simple &lt;- lm(log(price) ~ log(sqft_living),
+                data=kc_house_data)
+tidy(lm_simple)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std.error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"6.7431084","3":"0.047728108","4":"141.2817","5":"0"},{"1":"log(sqft_living)","2":"0.8351142","3":"0.006318074","4":"132.1786","5":"0"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Let’s plot that line on the scatterplot of the data.</p>
+<pre class="r"><code>augment(lm_simple, data=kc_house_data) %&gt;% 
+  ggplot(aes(x=log(sqft_living), y = log(price))) +
+  geom_point(alpha = .5, size = .2) +
+  geom_line(aes(y=.fitted), color=&quot;darkred&quot;)</code></pre>
+<p><img src="09_sampling_variation_models_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Now let’s say that I was going to collect this data myself and I didn’t have time (or the technical skills) to get all 21,613 observations. So, instead, I collect a sample of 500 observations.</p>
+<p>I will mimic this by sampling from the entire dataset using the <code>sample_n()</code> function. <em>Reminder</em>: The <code>set.seed()</code> function at the beginning allows you to replicate the random sampling process so that you get the same random sample everytime the code runs (including when you knit the document). This also means that if someone else uses that same seed, they will get the sampe result, as long as they started with the same data. It is very important to use <code>set.seed()</code> anytime we conduct a random process so that we can replicate it. It does not matter what number we put in there.</p>
+<p>Then, fit the model that uses <code>log(sqft_living)</code> to explain <code>log(price)</code>. <strong>How does this model compare to the model that used all the data?</strong></p>
+<pre class="r"><code>set.seed(327)
+
+samp1 &lt;- kc_house_data %&gt;% 
+  sample_n(size=500) 
+
+lm_samp1 &lt;- lm(log(price) ~ log(sqft_living), 
+               data=samp1)
+
+tidy(lm_samp1)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std.error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"6.5884796","3":"0.29085748","4":"22.65192","5":"1.302972e-78"},{"1":"log(sqft_living)","2":"0.8604483","3":"0.03829868","4":"22.46679","5":"1.032149e-77"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Let’s plot the lines. I am going to use the <code>geom_smooth</code> function to do this because it will come in handy later.</p>
+<pre class="r"><code>augment(lm_simple, data=kc_house_data) %&gt;% 
+  ggplot(aes(x=log(sqft_living), y = log(price))) +
+  geom_point(alpha=.2, size = .2) +
+  geom_point(data = samp1, color=&quot;lightblue&quot;, alpha = .2, size = .2) +
+  geom_line(aes(y=.fitted), color=&quot;darkred&quot;) +
+  geom_smooth(data = samp1, method = &quot;lm&quot;, se = FALSE, 
+              color=&quot;lightblue&quot;, size=.5)  +
+  theme_minimal()</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="09_sampling_variation_models_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Let’s take another sample of size 500 and fit another line. Use a different seed from the first sample so they are different random samples.</p>
+<pre class="r"><code>set.seed(300)
+
+samp2 &lt;- kc_house_data %&gt;% 
+  sample_n(size=500) 
+
+lm_samp2 &lt;- lm(log(price) ~ log(sqft_living), 
+               data=samp2)
+
+tidy(lm_samp2)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std.error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"6.7171947","3":"0.31400194","4":"21.39221","5":"1.699803e-72"},{"1":"log(sqft_living)","2":"0.8394525","3":"0.04158617","4":"20.18586","5":"1.185866e-66"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>And plot this line …</p>
+<pre class="r"><code>augment(lm_simple, data=kc_house_data) %&gt;% 
+  ggplot(aes(x=log(sqft_living), y = log(price))) +
+  geom_point(alpha=.2, size = .2) +
+  geom_line(aes(y=.fitted), color=&quot;darkred&quot;) +
+  geom_smooth(data = samp1, method = &quot;lm&quot;, se = FALSE, 
+              color=&quot;lightblue&quot;, size = .5) +
+  geom_smooth(data = samp2, method = &quot;lm&quot;, se = FALSE, 
+              color=&quot;lightblue&quot;, size = .5) +
+  theme_minimal()</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;
+## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="09_sampling_variation_models_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Now, in order to understand sampling variability we need to be able to this many times. Rather than having us run different models one by one to learn about the variability of the coefficients, we can use simulation to do that for us.</p>
+<p>Like in the Reese’s Pieces activity, we will use the <code>rep_sample_n()</code> function to take multiple repeated samples. Below we take 200 samples of size 500 from the “population”, <code>kc_house_data</code>. We are taking samples <em>without</em> replacement this time because we are pretending that we are sampling from the population, like when we sampled Reeses pieces using the applets. <strong>How many observations are in <code>samples_200</code>?</strong></p>
+<pre class="r"><code>set.seed(1113)
+samples_200 &lt;- rep_sample_n(kc_house_data, #data we&#39;re sampling from
+                            size = 500, #size of each sample
+                            reps = 200, #how many samples to take
+                            replace = FALSE #with or without
+                                            #replacement?
+                            )</code></pre>
+<p><em>GOAL</em>: For each sample, we would like to fit a model that uses <code>log(sqft_living)</code> to predict <code>log(price)</code>. We would like to understand how the intercept and slope vary from sample to sample.</p>
+<p>First, let’s do this graphically. <strong>What do you observe?</strong></p>
+<pre class="r"><code>#This first section just plots the points:
+augment(lm_simple, data=kc_house_data) %&gt;% 
+  ggplot(aes(x=log(sqft_living), y = log(price))) + 
+  geom_point(alpha=.2, color=&quot;darkgray&quot;, size = .2) + 
+#This code plots each of the lines  
+  geom_smooth(data = samples_200, #Use the samples_200 data
+              aes(group = replicate), #&quot;For each replicate&quot;
+              method = &quot;lm&quot;, se = FALSE, #Use lm() to fit a model
+                                         #where log(sqft_living)
+                                         #explains log(price)
+              color=&quot;lightblue&quot;, size = .5) + #color the lines lightblue
+  geom_line(aes(y=.fitted), color=&quot;darkred&quot;)  #add the &quot;population&quot; line</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="09_sampling_variation_models_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>Now, let’s actually fit the model 200 times. Look carefully at the output. <strong>What is the code doing on the line with “???”?</strong></p>
+<pre class="r"><code>model_200_times &lt;-
+  samples_200 %&gt;% #start with the 200 samples of size 500
+  group_by(replicate) %&gt;% #for each replicate 
+  do(lm(log(price) ~ log(sqft_living), data=.) %&gt;% tidy()) %&gt;% #???
+  ungroup() #ungroup the data - good to do this when finished with
+            #grouped calculations
+
+model_200_times</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["replicate"],"name":[1],"type":["int"],"align":["right"]},{"label":["term"],"name":[2],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["std.error"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"1","2":"(Intercept)","3":"6.5166212","4":"0.30351150","5":"21.47076","6":"7.067383e-73"},{"1":"1","2":"log(sqft_living)","3":"0.8643129","4":"0.04019644","5":"21.50222","6":"4.972153e-73"},{"1":"2","2":"(Intercept)","3":"6.7533735","4":"0.31377675","5":"21.52286","6":"3.948187e-73"},{"1":"2","2":"log(sqft_living)","3":"0.8328295","4":"0.04141913","5":"20.10736","6":"2.840314e-66"},{"1":"3","2":"(Intercept)","3":"6.4565491","4":"0.30074048","5":"21.46884","6":"7.220330e-73"},{"1":"3","2":"log(sqft_living)","3":"0.8692465","4":"0.03981215","5":"21.83370","6":"1.223466e-74"},{"1":"4","2":"(Intercept)","3":"6.9307597","4":"0.32676861","5":"21.20999","6":"1.301230e-71"},{"1":"4","2":"log(sqft_living)","3":"0.8097909","4":"0.04323126","5":"18.73160","6":"1.180311e-59"},{"1":"5","2":"(Intercept)","3":"6.4278396","4":"0.29868978","5":"21.52012","6":"4.071052e-73"},{"1":"5","2":"log(sqft_living)","3":"0.8716006","4":"0.03959155","5":"22.01482","6":"1.615343e-75"},{"1":"6","2":"(Intercept)","3":"6.7561574","4":"0.32950323","5":"20.50407","6":"3.427239e-68"},{"1":"6","2":"log(sqft_living)","3":"0.8331432","4":"0.04363665","5":"19.09274","6":"2.192476e-61"},{"1":"7","2":"(Intercept)","3":"7.0530908","4":"0.32823802","5":"21.48773","6":"5.846212e-73"},{"1":"7","2":"log(sqft_living)","3":"0.7909917","4":"0.04357716","5":"18.15152","6":"6.927260e-57"},{"1":"8","2":"(Intercept)","3":"6.2189134","4":"0.31412231","5":"19.79774","6":"8.872831e-65"},{"1":"8","2":"log(sqft_living)","3":"0.9039602","4":"0.04173447","5":"21.65980","6":"8.546342e-74"},{"1":"9","2":"(Intercept)","3":"6.7486478","4":"0.29702442","5":"22.72085","6":"6.029651e-79"},{"1":"9","2":"log(sqft_living)","3":"0.8332683","4":"0.03934465","5":"21.17869","6":"1.845739e-71"},{"1":"10","2":"(Intercept)","3":"6.9404721","4":"0.32451511","5":"21.38721","6":"1.797453e-72"},{"1":"10","2":"log(sqft_living)","3":"0.8068869","4":"0.04289585","5":"18.81037","6":"4.953190e-60"},{"1":"11","2":"(Intercept)","3":"6.1006047","4":"0.34060505","5":"17.91108","6":"9.619716e-56"},{"1":"11","2":"log(sqft_living)","3":"0.9246766","4":"0.04492847","5":"20.58108","6":"1.452641e-68"},{"1":"12","2":"(Intercept)","3":"6.7370427","4":"0.30772519","5":"21.89305","6":"6.301684e-75"},{"1":"12","2":"log(sqft_living)","3":"0.8346072","4":"0.04079235","5":"20.45989","6":"5.607046e-68"},{"1":"13","2":"(Intercept)","3":"6.9712200","4":"0.31220769","5":"22.32879","6":"4.827992e-77"},{"1":"13","2":"log(sqft_living)","3":"0.8068283","4":"0.04131611","5":"19.52818","6":"1.767090e-63"},{"1":"14","2":"(Intercept)","3":"6.6413431","4":"0.30257052","5":"21.94974","6":"3.343779e-75"},{"1":"14","2":"log(sqft_living)","3":"0.8463091","4":"0.04007437","5":"21.11846","6":"3.616288e-71"},{"1":"15","2":"(Intercept)","3":"6.7403631","4":"0.31569735","5":"21.35071","6":"2.702274e-72"},{"1":"15","2":"log(sqft_living)","3":"0.8374831","4":"0.04164654","5":"20.10931","6":"2.779511e-66"},{"1":"16","2":"(Intercept)","3":"7.2045083","4":"0.30707156","5":"23.46198","6":"1.529120e-82"},{"1":"16","2":"log(sqft_living)","3":"0.7721242","4":"0.04079389","5":"18.92745","6":"1.361125e-60"},{"1":"17","2":"(Intercept)","3":"6.6356229","4":"0.30947892","5":"21.44128","6":"9.824437e-73"},{"1":"17","2":"log(sqft_living)","3":"0.8485866","4":"0.04090588","5":"20.74485","6":"2.339119e-69"},{"1":"18","2":"(Intercept)","3":"5.9051507","4":"0.31285393","5":"18.87511","6":"2.425347e-60"},{"1":"18","2":"log(sqft_living)","3":"0.9459957","4":"0.04131013","5":"22.89985","6":"8.155739e-80"},{"1":"19","2":"(Intercept)","3":"6.5424547","4":"0.30143737","5":"21.70419","6":"5.203353e-74"},{"1":"19","2":"log(sqft_living)","3":"0.8632917","4":"0.03973361","5":"21.72699","6":"4.032873e-74"},{"1":"20","2":"(Intercept)","3":"6.5186905","4":"0.30379068","5":"21.45784","6":"8.164917e-73"},{"1":"20","2":"log(sqft_living)","3":"0.8633806","4":"0.04028044","5":"21.43424","6":"1.062805e-72"},{"1":"21","2":"(Intercept)","3":"6.7023835","4":"0.29752994","5":"22.52675","6":"5.279504e-78"},{"1":"21","2":"log(sqft_living)","3":"0.8394945","4":"0.03942426","5":"21.29386","6":"5.099908e-72"},{"1":"22","2":"(Intercept)","3":"7.2354160","4":"0.32073082","5":"22.55915","6":"3.675243e-78"},{"1":"22","2":"log(sqft_living)","3":"0.7704583","4":"0.04251950","5":"18.12012","6":"9.771709e-57"},{"1":"23","2":"(Intercept)","3":"6.6829094","4":"0.29202373","5":"22.88482","6":"9.647509e-80"},{"1":"23","2":"log(sqft_living)","3":"0.8427581","4":"0.03854833","5":"21.86238","6":"8.878975e-75"},{"1":"24","2":"(Intercept)","3":"6.8805941","4":"0.32059539","5":"21.46192","6":"7.800284e-73"},{"1":"24","2":"log(sqft_living)","3":"0.8161248","4":"0.04229829","5":"19.29451","6":"2.352806e-62"},{"1":"25","2":"(Intercept)","3":"7.2117910","4":"0.31025643","5":"23.24461","6":"1.732246e-81"},{"1":"25","2":"log(sqft_living)","3":"0.7725368","4":"0.04098971","5":"18.84709","6":"3.303771e-60"},{"1":"26","2":"(Intercept)","3":"6.7705889","4":"0.31839169","5":"21.26497","6":"7.042021e-72"},{"1":"26","2":"log(sqft_living)","3":"0.8320829","4":"0.04220583","5":"19.71488","6":"2.226611e-64"},{"1":"27","2":"(Intercept)","3":"6.8351276","4":"0.30271953","5":"22.57908","6":"2.941444e-78"},{"1":"27","2":"log(sqft_living)","3":"0.8278333","4":"0.04010257","5":"20.64290","6":"7.291987e-69"},{"1":"28","2":"(Intercept)","3":"6.3309345","4":"0.32064683","5":"19.74426","6":"1.606956e-64"},{"1":"28","2":"log(sqft_living)","3":"0.8875095","4":"0.04248504","5":"20.88993","6":"4.635906e-70"},{"1":"29","2":"(Intercept)","3":"6.1004142","4":"0.32103293","5":"19.00246","6":"5.945474e-61"},{"1":"29","2":"log(sqft_living)","3":"0.9221721","4":"0.04247251","5":"21.71221","6":"4.757204e-74"},{"1":"30","2":"(Intercept)","3":"6.8448325","4":"0.31200853","5":"21.93797","6":"3.814036e-75"},{"1":"30","2":"log(sqft_living)","3":"0.8189917","4":"0.04139214","5":"19.78617","6":"1.009029e-64"},{"1":"31","2":"(Intercept)","3":"6.3495363","4":"0.33366160","5":"19.02987","6":"4.392121e-61"},{"1":"31","2":"log(sqft_living)","3":"0.8877464","4":"0.04410575","5":"20.12768","6":"2.265629e-66"},{"1":"32","2":"(Intercept)","3":"6.4870614","4":"0.32078722","5":"20.22232","6":"7.903146e-67"},{"1":"32","2":"log(sqft_living)","3":"0.8709234","4":"0.04229076","5":"20.59370","6":"1.261992e-68"},{"1":"33","2":"(Intercept)","3":"6.5324843","4":"0.30809844","5":"21.20259","6":"1.413410e-71"},{"1":"33","2":"log(sqft_living)","3":"0.8622844","4":"0.04073998","5":"21.16556","6":"2.137270e-71"},{"1":"34","2":"(Intercept)","3":"6.9675604","4":"0.30740492","5":"22.66574","6":"1.116410e-78"},{"1":"34","2":"log(sqft_living)","3":"0.8035637","4":"0.04061776","5":"19.78355","6":"1.038740e-64"},{"1":"35","2":"(Intercept)","3":"6.8883758","4":"0.30396534","5":"22.66171","6":"1.167812e-78"},{"1":"35","2":"log(sqft_living)","3":"0.8155031","4":"0.04029806","5":"20.23678","6":"6.727958e-67"},{"1":"36","2":"(Intercept)","3":"7.1891860","4":"0.31725994","5":"22.66024","6":"1.187231e-78"},{"1":"36","2":"log(sqft_living)","3":"0.7774029","4":"0.04192772","5":"18.54150","6":"9.572607e-59"},{"1":"37","2":"(Intercept)","3":"6.4670118","4":"0.31896847","5":"20.27477","6":"4.407825e-67"},{"1":"37","2":"log(sqft_living)","3":"0.8738519","4":"0.04212130","5":"20.74608","6":"2.307362e-69"},{"1":"38","2":"(Intercept)","3":"7.0157911","4":"0.29893717","5":"23.46912","6":"1.412102e-82"},{"1":"38","2":"log(sqft_living)","3":"0.8003279","4":"0.03967188","5":"20.17368","6":"1.358000e-66"},{"1":"39","2":"(Intercept)","3":"6.8747385","4":"0.30253446","5":"22.72382","6":"5.832867e-79"},{"1":"39","2":"log(sqft_living)","3":"0.8161882","4":"0.04005088","5":"20.37878","6":"1.384131e-67"},{"1":"40","2":"(Intercept)","3":"6.5293032","4":"0.31362524","5":"20.81881","6":"1.025131e-69"},{"1":"40","2":"log(sqft_living)","3":"0.8648160","4":"0.04131423","5":"20.93265","6":"2.878118e-70"},{"1":"41","2":"(Intercept)","3":"7.0109406","4":"0.30577685","5":"22.92829","6":"5.934957e-80"},{"1":"41","2":"log(sqft_living)","3":"0.7992194","4":"0.04034727","5":"19.80851","6":"7.872949e-65"},{"1":"42","2":"(Intercept)","3":"7.0540139","4":"0.31110661","5":"22.67394","6":"1.018594e-78"},{"1":"42","2":"log(sqft_living)","3":"0.7947311","4":"0.04128104","5":"19.25172","6":"3.778111e-62"},{"1":"43","2":"(Intercept)","3":"6.8071720","4":"0.31153472","5":"21.85044","6":"1.014612e-74"},{"1":"43","2":"log(sqft_living)","3":"0.8232763","4":"0.04129420","5":"19.93685","6":"1.891527e-65"},{"1":"44","2":"(Intercept)","3":"7.5795500","4":"0.32400245","5":"23.39350","6":"3.284977e-82"},{"1":"44","2":"log(sqft_living)","3":"0.7281009","4":"0.04312625","5":"16.88301","6":"6.752952e-51"},{"1":"45","2":"(Intercept)","3":"6.6978594","4":"0.32617804","5":"20.53437","6":"2.445139e-68"},{"1":"45","2":"log(sqft_living)","3":"0.8424577","4":"0.04301008","5":"19.58745","6":"9.157915e-64"},{"1":"46","2":"(Intercept)","3":"7.3649472","4":"0.29560635","5":"24.91471","6":"1.434126e-89"},{"1":"46","2":"log(sqft_living)","3":"0.7534156","4":"0.03937837","5":"19.13273","6":"1.409106e-61"},{"1":"47","2":"(Intercept)","3":"6.9635518","4":"0.30891820","5":"22.54173","6":"4.465418e-78"},{"1":"47","2":"log(sqft_living)","3":"0.8043779","4":"0.04104223","5":"19.59879","6":"8.075331e-64"},{"1":"48","2":"(Intercept)","3":"6.6352752","4":"0.32104234","5":"20.66791","6":"5.517181e-69"},{"1":"48","2":"log(sqft_living)","3":"0.8501588","4":"0.04252092","5":"19.99390","6":"1.003265e-65"},{"1":"49","2":"(Intercept)","3":"7.3001958","4":"0.27825382","5":"26.23574","6":"6.383520e-96"},{"1":"49","2":"log(sqft_living)","3":"0.7616732","4":"0.03685190","5":"20.66849","6":"5.481864e-69"},{"1":"50","2":"(Intercept)","3":"5.9000211","4":"0.31562331","5":"18.69324","6":"1.801340e-59"},{"1":"50","2":"log(sqft_living)","3":"0.9505229","4":"0.04159309","5":"22.85290","6":"1.378217e-79"},{"1":"51","2":"(Intercept)","3":"6.6602554","4":"0.31132178","5":"21.39348","6":"1.675864e-72"},{"1":"51","2":"log(sqft_living)","3":"0.8460605","4":"0.04120886","5":"20.53103","6":"2.537709e-68"},{"1":"52","2":"(Intercept)","3":"6.7691125","4":"0.31385411","5":"21.56770","6":"2.392039e-73"},{"1":"52","2":"log(sqft_living)","3":"0.8324446","4":"0.04146226","5":"20.07716","6":"3.974221e-66"},{"1":"53","2":"(Intercept)","3":"6.7479308","4":"0.33128636","5":"20.36888","6":"1.545588e-67"},{"1":"53","2":"log(sqft_living)","3":"0.8343419","4":"0.04371207","5":"19.08722","6":"2.330420e-61"},{"1":"54","2":"(Intercept)","3":"6.7443266","4":"0.28736784","5":"23.46932","6":"1.408952e-82"},{"1":"54","2":"log(sqft_living)","3":"0.8338410","4":"0.03806576","5":"21.90527","6":"5.496827e-75"},{"1":"55","2":"(Intercept)","3":"6.5236078","4":"0.31078829","5":"20.99052","6":"1.508606e-70"},{"1":"55","2":"log(sqft_living)","3":"0.8702411","4":"0.04130614","5":"21.06808","6":"6.346734e-71"},{"1":"56","2":"(Intercept)","3":"6.7861574","4":"0.31234343","5":"21.72659","6":"4.051020e-74"},{"1":"56","2":"log(sqft_living)","3":"0.8267967","4":"0.04137270","5":"19.98411","6":"1.118545e-65"},{"1":"57","2":"(Intercept)","3":"6.7404152","4":"0.30911478","5":"21.80554","6":"1.676073e-74"},{"1":"57","2":"log(sqft_living)","3":"0.8356018","4":"0.04106661","5":"20.34748","6":"1.961581e-67"},{"1":"58","2":"(Intercept)","3":"7.2386732","4":"0.30755812","5":"23.53595","6":"6.696413e-83"},{"1":"58","2":"log(sqft_living)","3":"0.7696517","4":"0.04077096","5":"18.87745","6":"2.363366e-60"},{"1":"59","2":"(Intercept)","3":"7.3881739","4":"0.33132888","5":"22.29861","6":"6.765481e-77"},{"1":"59","2":"log(sqft_living)","3":"0.7502932","4":"0.04398367","5":"17.05845","6":"1.017281e-51"},{"1":"60","2":"(Intercept)","3":"7.4464081","4":"0.32469844","5":"22.93330","6":"5.611605e-80"},{"1":"60","2":"log(sqft_living)","3":"0.7442656","4":"0.04296723","5":"17.32170","6":"5.886923e-53"},{"1":"61","2":"(Intercept)","3":"6.6318531","4":"0.32412492","5":"20.46079","6":"5.551113e-68"},{"1":"61","2":"log(sqft_living)","3":"0.8489160","4":"0.04289043","5":"19.79267","6":"9.387613e-65"},{"1":"62","2":"(Intercept)","3":"6.9516352","4":"0.31976821","5":"21.73961","6":"3.502431e-74"},{"1":"62","2":"log(sqft_living)","3":"0.8062089","4":"0.04227544","5":"19.07038","6":"2.807048e-61"},{"1":"63","2":"(Intercept)","3":"7.3390136","4":"0.30376325","5":"24.16031","6":"6.335524e-86"},{"1":"63","2":"log(sqft_living)","3":"0.7575605","4":"0.04023379","5":"18.82896","6":"4.035072e-60"},{"1":"64","2":"(Intercept)","3":"7.1628649","4":"0.32366429","5":"22.13054","6":"4.429795e-76"},{"1":"64","2":"log(sqft_living)","3":"0.7776401","4":"0.04295939","5":"18.10175","6":"1.194876e-56"},{"1":"65","2":"(Intercept)","3":"6.3684135","4":"0.28962782","5":"21.98827","6":"2.173556e-75"},{"1":"65","2":"log(sqft_living)","3":"0.8862443","4":"0.03825318","5":"23.16786","6":"4.082741e-81"},{"1":"66","2":"(Intercept)","3":"6.8935481","4":"0.32248290","5":"21.37648","6":"2.026401e-72"},{"1":"66","2":"log(sqft_living)","3":"0.8150965","4":"0.04260267","5":"19.13252","6":"1.412306e-61"},{"1":"67","2":"(Intercept)","3":"6.5743190","4":"0.32032324","5":"20.52401","6":"2.744168e-68"},{"1":"67","2":"log(sqft_living)","3":"0.8610014","4":"0.04237833","5":"20.31702","6":"2.753678e-67"},{"1":"68","2":"(Intercept)","3":"6.9207320","4":"0.31555012","5":"21.93227","6":"4.064588e-75"},{"1":"68","2":"log(sqft_living)","3":"0.8101487","4":"0.04176332","5":"19.39857","6":"7.432045e-63"},{"1":"69","2":"(Intercept)","3":"6.2530899","4":"0.31235814","5":"20.01898","6":"7.591133e-66"},{"1":"69","2":"log(sqft_living)","3":"0.9000991","4":"0.04133911","5":"21.77354","6":"2.396759e-74"},{"1":"70","2":"(Intercept)","3":"6.9133840","4":"0.30691069","5":"22.52572","6":"5.340870e-78"},{"1":"70","2":"log(sqft_living)","3":"0.8127979","4":"0.04059742","5":"20.02093","6":"7.428267e-66"},{"1":"71","2":"(Intercept)","3":"7.0105710","4":"0.31338549","5":"22.37044","6":"3.030697e-77"},{"1":"71","2":"log(sqft_living)","3":"0.7971702","4":"0.04154901","5":"19.18626","6":"7.795324e-62"},{"1":"72","2":"(Intercept)","3":"6.8589127","4":"0.31115718","5":"22.04324","6":"1.175566e-75"},{"1":"72","2":"log(sqft_living)","3":"0.8193936","4":"0.04128333","5":"19.84805","6":"5.074190e-65"},{"1":"73","2":"(Intercept)","3":"6.5925103","4":"0.31793473","5":"20.73542","6":"2.598686e-69"},{"1":"73","2":"log(sqft_living)","3":"0.8562715","4":"0.04195275","5":"20.41038","6":"9.734801e-68"},{"1":"74","2":"(Intercept)","3":"5.7005353","4":"0.30834922","5":"18.48727","6":"1.738040e-58"},{"1":"74","2":"log(sqft_living)","3":"0.9712574","4":"0.04086229","5":"23.76904","6":"4.968696e-84"},{"1":"75","2":"(Intercept)","3":"6.8985425","4":"0.30986822","5":"22.26283","6":"1.009379e-76"},{"1":"75","2":"log(sqft_living)","3":"0.8148397","4":"0.04108628","5":"19.83240","6":"6.037748e-65"},{"1":"76","2":"(Intercept)","3":"6.6983259","4":"0.31336146","5":"21.37572","6":"2.043666e-72"},{"1":"76","2":"log(sqft_living)","3":"0.8418486","4":"0.04160781","5":"20.23295","6":"7.021385e-67"},{"1":"77","2":"(Intercept)","3":"6.7480971","4":"0.29802527","5":"22.64270","6":"1.444359e-78"},{"1":"77","2":"log(sqft_living)","3":"0.8318759","4":"0.03965709","5":"20.97673","6":"1.759701e-70"},{"1":"78","2":"(Intercept)","3":"6.6503884","4":"0.31591968","5":"21.05088","6":"7.690073e-71"},{"1":"78","2":"log(sqft_living)","3":"0.8533080","4":"0.04181412","5":"20.40717","6":"1.008860e-67"},{"1":"79","2":"(Intercept)","3":"7.1562255","4":"0.31434188","5":"22.76574","6":"3.650827e-79"},{"1":"79","2":"log(sqft_living)","3":"0.7857288","4":"0.04182240","5":"18.78727","6":"6.390066e-60"},{"1":"80","2":"(Intercept)","3":"6.6963610","4":"0.29965740","5":"22.34672","6":"3.950864e-77"},{"1":"80","2":"log(sqft_living)","3":"0.8405160","4":"0.03959003","5":"21.23050","6":"1.034895e-71"},{"1":"81","2":"(Intercept)","3":"7.1143783","4":"0.30967489","5":"22.97370","6":"3.573075e-80"},{"1":"81","2":"log(sqft_living)","3":"0.7875960","4":"0.04098698","5":"19.21576","6":"5.624676e-62"},{"1":"82","2":"(Intercept)","3":"6.6516647","4":"0.32978073","5":"20.16996","6":"1.415373e-66"},{"1":"82","2":"log(sqft_living)","3":"0.8431298","4":"0.04365847","5":"19.31194","6":"1.939952e-62"},{"1":"83","2":"(Intercept)","3":"6.7476782","4":"0.31993018","5":"21.09110","6":"4.908543e-71"},{"1":"83","2":"log(sqft_living)","3":"0.8360765","4":"0.04215537","5":"19.83321","6":"5.983555e-65"},{"1":"84","2":"(Intercept)","3":"6.1943025","4":"0.29977073","5":"20.66347","6":"5.797626e-69"},{"1":"84","2":"log(sqft_living)","3":"0.9027092","4":"0.03963650","5":"22.77470","6":"3.303057e-79"},{"1":"85","2":"(Intercept)","3":"7.2460273","4":"0.28871484","5":"25.09752","6":"1.883769e-90"},{"1":"85","2":"log(sqft_living)","3":"0.7697574","4":"0.03838547","5":"20.05335","6":"5.179249e-66"},{"1":"86","2":"(Intercept)","3":"6.6722953","4":"0.32362516","5":"20.61736","6":"9.694635e-69"},{"1":"86","2":"log(sqft_living)","3":"0.8456512","4":"0.04261904","5":"19.84210","6":"5.421294e-65"},{"1":"87","2":"(Intercept)","3":"6.8921798","4":"0.31892435","5":"21.61070","6":"1.479338e-73"},{"1":"87","2":"log(sqft_living)","3":"0.8169418","4":"0.04228223","5":"19.32116","6":"1.751650e-62"},{"1":"88","2":"(Intercept)","3":"6.9495413","4":"0.30126004","5":"23.06825","6":"1.242357e-80"},{"1":"88","2":"log(sqft_living)","3":"0.8110627","4":"0.03991241","5":"20.32106","6":"2.632368e-67"},{"1":"89","2":"(Intercept)","3":"7.0922958","4":"0.31089699","5":"22.81237","6":"2.168054e-79"},{"1":"89","2":"log(sqft_living)","3":"0.7914052","4":"0.04113316","5":"19.24008","6":"4.297759e-62"},{"1":"90","2":"(Intercept)","3":"6.8997709","4":"0.30689034","5":"22.48285","6":"8.624416e-78"},{"1":"90","2":"log(sqft_living)","3":"0.8116340","4":"0.04055607","5":"20.01264","6":"8.145317e-66"},{"1":"91","2":"(Intercept)","3":"6.8017303","4":"0.31756653","5":"21.41828","6":"1.270192e-72"},{"1":"91","2":"log(sqft_living)","3":"0.8286020","4":"0.04196492","5":"19.74511","6":"1.591840e-64"},{"1":"92","2":"(Intercept)","3":"6.5288440","4":"0.33316629","5":"19.59635","6":"8.296453e-64"},{"1":"92","2":"log(sqft_living)","3":"0.8666109","4":"0.04405239","5":"19.67228","6":"3.572897e-64"},{"1":"93","2":"(Intercept)","3":"7.4263392","4":"0.29974678","5":"24.77538","6":"6.745224e-89"},{"1":"93","2":"log(sqft_living)","3":"0.7425295","4":"0.03974905","5":"18.68043","6":"2.074165e-59"},{"1":"94","2":"(Intercept)","3":"7.0728714","4":"0.32079776","5":"22.04776","6":"1.117673e-75"},{"1":"94","2":"log(sqft_living)","3":"0.7888383","4":"0.04245148","5":"18.58211","6":"6.123015e-59"},{"1":"95","2":"(Intercept)","3":"6.7075795","4":"0.31481113","5":"21.30668","6":"4.419315e-72"},{"1":"95","2":"log(sqft_living)","3":"0.8382413","4":"0.04174202","5":"20.08148","6":"3.788136e-66"},{"1":"96","2":"(Intercept)","3":"6.6699826","4":"0.31242165","5":"21.34930","6":"2.745328e-72"},{"1":"96","2":"log(sqft_living)","3":"0.8471114","4":"0.04109119","5":"20.61540","6":"9.907906e-69"},{"1":"97","2":"(Intercept)","3":"6.5515832","4":"0.32334244","5":"20.26206","6":"5.077876e-67"},{"1":"97","2":"log(sqft_living)","3":"0.8569476","4":"0.04265927","5":"20.08819","6":"3.515393e-66"},{"1":"98","2":"(Intercept)","3":"6.1957688","4":"0.31563316","5":"19.62965","6":"5.733961e-64"},{"1":"98","2":"log(sqft_living)","3":"0.9090014","4":"0.04175922","5":"21.76768","6":"2.559075e-74"},{"1":"99","2":"(Intercept)","3":"6.5965840","4":"0.29906777","5":"22.05715","6":"1.006219e-75"},{"1":"99","2":"log(sqft_living)","3":"0.8559255","4":"0.03981574","5":"21.49716","6":"5.261496e-73"},{"1":"100","2":"(Intercept)","3":"5.8553133","4":"0.31751180","5":"18.44125","6":"2.882544e-58"},{"1":"100","2":"log(sqft_living)","3":"0.9527648","4":"0.04187797","5":"22.75098","6":"4.305697e-79"},{"1":"101","2":"(Intercept)","3":"6.4458449","4":"0.30497882","5":"21.13539","6":"2.993545e-71"},{"1":"101","2":"log(sqft_living)","3":"0.8731383","4":"0.04030518","5":"21.66318","6":"8.229311e-74"},{"1":"102","2":"(Intercept)","3":"6.2055296","4":"0.29527449","5":"21.01614","6":"1.133391e-70"},{"1":"102","2":"log(sqft_living)","3":"0.9064844","4":"0.03901349","5":"23.23515","6":"1.925405e-81"},{"1":"103","2":"(Intercept)","3":"6.9031057","4":"0.30895076","5":"22.34371","6":"4.086301e-77"},{"1":"103","2":"log(sqft_living)","3":"0.8136084","4":"0.04090384","5":"19.89076","6":"3.157172e-65"},{"1":"104","2":"(Intercept)","3":"6.2022736","4":"0.31170738","5":"19.89774","6":"2.921342e-65"},{"1":"104","2":"log(sqft_living)","3":"0.9038313","4":"0.04124771","5":"21.91228","6":"5.082899e-75"},{"1":"105","2":"(Intercept)","3":"6.9240349","4":"0.33451148","5":"20.69895","6":"3.903231e-69"},{"1":"105","2":"log(sqft_living)","3":"0.8092479","4":"0.04415432","5":"18.32772","6":"1.003041e-57"},{"1":"106","2":"(Intercept)","3":"7.1073038","4":"0.30343581","5":"23.42276","6":"2.369397e-82"},{"1":"106","2":"log(sqft_living)","3":"0.7856156","4":"0.04001509","5":"19.63298","6":"5.525824e-64"},{"1":"107","2":"(Intercept)","3":"6.6821162","4":"0.30989450","5":"21.56255","6":"2.533804e-73"},{"1":"107","2":"log(sqft_living)","3":"0.8451361","4":"0.04114665","5":"20.53961","6":"2.306308e-68"},{"1":"108","2":"(Intercept)","3":"6.3516800","4":"0.28976477","5":"21.92012","6":"4.655918e-75"},{"1":"108","2":"log(sqft_living)","3":"0.8871323","4":"0.03827572","5":"23.17741","6":"3.669443e-81"},{"1":"109","2":"(Intercept)","3":"6.8359185","4":"0.30548404","5":"22.37733","6":"2.805835e-77"},{"1":"109","2":"log(sqft_living)","3":"0.8210684","4":"0.04037468","5":"20.33622","6":"2.223499e-67"},{"1":"110","2":"(Intercept)","3":"6.6981522","4":"0.32214995","5":"20.79203","6":"1.381984e-69"},{"1":"110","2":"log(sqft_living)","3":"0.8406938","4":"0.04287384","5":"19.60855","6":"7.246776e-64"},{"1":"111","2":"(Intercept)","3":"6.6756928","4":"0.32027574","5":"20.84358","6":"7.775830e-70"},{"1":"111","2":"log(sqft_living)","3":"0.8451994","4":"0.04230247","5":"19.97991","6":"1.172111e-65"},{"1":"112","2":"(Intercept)","3":"7.3676664","4":"0.31682068","5":"23.25500","6":"1.542441e-81"},{"1":"112","2":"log(sqft_living)","3":"0.7539459","4":"0.04186000","5":"18.01113","6":"3.221779e-56"},{"1":"113","2":"(Intercept)","3":"7.0075192","4":"0.32272643","5":"21.71350","6":"4.689439e-74"},{"1":"113","2":"log(sqft_living)","3":"0.7973856","4":"0.04264678","5":"18.69744","6":"1.719794e-59"},{"1":"114","2":"(Intercept)","3":"6.5405688","4":"0.30564009","5":"21.39958","6":"1.565452e-72"},{"1":"114","2":"log(sqft_living)","3":"0.8648367","4":"0.04044021","5":"21.38556","6":"1.830767e-72"},{"1":"115","2":"(Intercept)","3":"6.9295133","4":"0.29910086","5":"23.16781","6":"4.084778e-81"},{"1":"115","2":"log(sqft_living)","3":"0.8073308","4":"0.03978451","5":"20.29259","6":"3.614427e-67"},{"1":"116","2":"(Intercept)","3":"6.8597398","4":"0.31178279","5":"22.00166","6":"1.871209e-75"},{"1":"116","2":"log(sqft_living)","3":"0.8216976","4":"0.04122421","5":"19.93241","6":"1.987376e-65"},{"1":"117","2":"(Intercept)","3":"6.1231940","4":"0.31530847","5":"19.41969","6":"5.881330e-63"},{"1":"117","2":"log(sqft_living)","3":"0.9150121","4":"0.04151432","5":"22.04088","6":"1.207073e-75"},{"1":"118","2":"(Intercept)","3":"7.4684883","4":"0.32249176","5":"23.15870","6":"4.522819e-81"},{"1":"118","2":"log(sqft_living)","3":"0.7384236","4":"0.04273683","5":"17.27839","6":"9.414920e-53"},{"1":"119","2":"(Intercept)","3":"7.1162223","4":"0.30248307","5":"23.52602","6":"7.481639e-83"},{"1":"119","2":"log(sqft_living)","3":"0.7888375","4":"0.03992408","5":"19.75844","6":"1.372859e-64"},{"1":"120","2":"(Intercept)","3":"6.1902100","4":"0.33125950","5":"18.68689","6":"1.931766e-59"},{"1":"120","2":"log(sqft_living)","3":"0.9061804","4":"0.04369411","5":"20.73919","6":"2.491660e-69"},{"1":"121","2":"(Intercept)","3":"7.4216937","4":"0.31777571","5":"23.35513","6":"5.041710e-82"},{"1":"121","2":"log(sqft_living)","3":"0.7451987","4":"0.04220873","5":"17.65508","6":"1.570917e-54"},{"1":"122","2":"(Intercept)","3":"7.2433648","4":"0.28062382","5":"25.81165","6":"6.903227e-94"},{"1":"122","2":"log(sqft_living)","3":"0.7713552","4":"0.03727471","5":"20.69379","6":"4.134062e-69"},{"1":"123","2":"(Intercept)","3":"6.7612331","4":"0.34294616","5":"19.71514","6":"2.220178e-64"},{"1":"123","2":"log(sqft_living)","3":"0.8278023","4":"0.04535096","5":"18.25325","6":"2.271010e-57"},{"1":"124","2":"(Intercept)","3":"6.3684786","4":"0.30122619","5":"21.14185","6":"2.785097e-71"},{"1":"124","2":"log(sqft_living)","3":"0.8819845","4":"0.03985629","5":"22.12912","6":"4.500822e-76"},{"1":"125","2":"(Intercept)","3":"6.8987639","4":"0.32818571","5":"21.02091","6":"1.074547e-70"},{"1":"125","2":"log(sqft_living)","3":"0.8158643","4":"0.04348234","5":"18.76312","6":"8.339581e-60"},{"1":"126","2":"(Intercept)","3":"7.0018810","4":"0.30692066","5":"22.81333","6":"2.144912e-79"},{"1":"126","2":"log(sqft_living)","3":"0.8027448","4":"0.04076704","5":"19.69102","6":"2.901767e-64"},{"1":"127","2":"(Intercept)","3":"6.4843168","4":"0.34526960","5":"18.78044","6":"6.889658e-60"},{"1":"127","2":"log(sqft_living)","3":"0.8706280","4":"0.04567894","5":"19.05973","6":"3.157860e-61"},{"1":"128","2":"(Intercept)","3":"6.6967510","4":"0.32642879","5":"20.51520","6":"3.027541e-68"},{"1":"128","2":"log(sqft_living)","3":"0.8412469","4":"0.04318166","5":"19.48158","6":"2.962264e-63"},{"1":"129","2":"(Intercept)","3":"7.4201208","4":"0.31803081","5":"23.33145","6":"6.567766e-82"},{"1":"129","2":"log(sqft_living)","3":"0.7439762","4":"0.04217155","5":"17.64166","6":"1.818248e-54"},{"1":"130","2":"(Intercept)","3":"6.9133005","4":"0.30316068","5":"22.80408","6":"2.378408e-79"},{"1":"130","2":"log(sqft_living)","3":"0.8149874","4":"0.04008882","5":"20.32954","6":"2.395188e-67"},{"1":"131","2":"(Intercept)","3":"6.3193627","4":"0.30261177","5":"20.88274","6":"5.023212e-70"},{"1":"131","2":"log(sqft_living)","3":"0.8904422","4":"0.04008287","5":"22.21503","6":"1.722365e-76"},{"1":"132","2":"(Intercept)","3":"6.3799848","4":"0.32110447","5":"19.86888","6":"4.026187e-65"},{"1":"132","2":"log(sqft_living)","3":"0.8862600","4":"0.04231553","5":"20.94408","6":"2.533170e-70"},{"1":"133","2":"(Intercept)","3":"6.3164350","4":"0.31022136","5":"20.36106","6":"1.686217e-67"},{"1":"133","2":"log(sqft_living)","3":"0.8881720","4":"0.04091359","5":"21.70848","6":"4.959801e-74"},{"1":"134","2":"(Intercept)","3":"6.1127012","4":"0.31672869","5":"19.29949","6":"2.226738e-62"},{"1":"134","2":"log(sqft_living)","3":"0.9162086","4":"0.04188162","5":"21.87615","6":"7.612152e-75"},{"1":"135","2":"(Intercept)","3":"6.5306745","4":"0.30383683","5":"21.49402","6":"5.449626e-73"},{"1":"135","2":"log(sqft_living)","3":"0.8625087","4":"0.04028363","5":"21.41090","6":"1.379477e-72"},{"1":"136","2":"(Intercept)","3":"6.4463230","4":"0.31395212","5":"20.53282","6":"2.487608e-68"},{"1":"136","2":"log(sqft_living)","3":"0.8737019","4":"0.04169262","5":"20.95579","6":"2.222826e-70"},{"1":"137","2":"(Intercept)","3":"7.0972407","4":"0.29748323","5":"23.85762","6":"1.850024e-84"},{"1":"137","2":"log(sqft_living)","3":"0.7912011","4":"0.03935394","5":"20.10475","6":"2.924011e-66"},{"1":"138","2":"(Intercept)","3":"7.2371080","4":"0.29305289","5":"24.69557","6":"1.637985e-88"},{"1":"138","2":"log(sqft_living)","3":"0.7738343","4":"0.03873886","5":"19.97566","6":"1.228758e-65"},{"1":"139","2":"(Intercept)","3":"6.5180658","4":"0.30059465","5":"21.68390","6":"6.527709e-74"},{"1":"139","2":"log(sqft_living)","3":"0.8662373","4":"0.03981277","5":"21.75778","6":"2.858688e-74"},{"1":"140","2":"(Intercept)","3":"6.9838171","4":"0.31603204","5":"22.09845","6":"6.341650e-76"},{"1":"140","2":"log(sqft_living)","3":"0.8043753","4":"0.04164984","5":"19.31281","6":"1.921407e-62"},{"1":"141","2":"(Intercept)","3":"6.8087718","4":"0.30174476","5":"22.56467","6":"3.455342e-78"},{"1":"141","2":"log(sqft_living)","3":"0.8249776","4":"0.04007837","5":"20.58411","6":"1.404419e-68"},{"1":"142","2":"(Intercept)","3":"6.6845760","4":"0.35102045","5":"19.04327","6":"3.787789e-61"},{"1":"142","2":"log(sqft_living)","3":"0.8389340","4":"0.04609781","5":"18.19900","6":"4.116873e-57"},{"1":"143","2":"(Intercept)","3":"6.8865052","4":"0.29812149","5":"23.09966","6":"8.746434e-81"},{"1":"143","2":"log(sqft_living)","3":"0.8132294","4":"0.03956549","5":"20.55401","6":"1.964413e-68"},{"1":"144","2":"(Intercept)","3":"7.1976084","4":"0.32847515","5":"21.91219","6":"5.088074e-75"},{"1":"144","2":"log(sqft_living)","3":"0.7733543","4":"0.04361645","5":"17.73079","6":"6.883645e-55"},{"1":"145","2":"(Intercept)","3":"6.9103707","4":"0.29446741","5":"23.46735","6":"1.440171e-82"},{"1":"145","2":"log(sqft_living)","3":"0.8112604","4":"0.03909096","5":"20.75315","6":"2.132471e-69"},{"1":"146","2":"(Intercept)","3":"7.3902832","4":"0.32021833","5":"23.07889","6":"1.103102e-80"},{"1":"146","2":"log(sqft_living)","3":"0.7479614","4":"0.04243965","5":"17.62412","6":"2.201002e-54"},{"1":"147","2":"(Intercept)","3":"6.6335919","4":"0.30199130","5":"21.96617","6":"2.782641e-75"},{"1":"147","2":"log(sqft_living)","3":"0.8467563","4":"0.03990762","5":"21.21791","6":"1.191057e-71"},{"1":"148","2":"(Intercept)","3":"6.8437314","4":"0.31833143","5":"21.49876","6":"5.168364e-73"},{"1":"148","2":"log(sqft_living)","3":"0.8188938","4":"0.04219458","5":"19.40756","6":"6.727769e-63"},{"1":"149","2":"(Intercept)","3":"6.4000217","4":"0.31263511","5":"20.47122","6":"4.942335e-68"},{"1":"149","2":"log(sqft_living)","3":"0.8810549","4":"0.04134661","5":"21.30900","6":"4.306369e-72"},{"1":"150","2":"(Intercept)","3":"6.9051056","4":"0.32165360","5":"21.46752","6":"7.327396e-73"},{"1":"150","2":"log(sqft_living)","3":"0.8124776","4":"0.04252261","5":"19.10696","6":"1.873638e-61"},{"1":"151","2":"(Intercept)","3":"6.4620259","4":"0.32721433","5":"19.74860","6":"1.531307e-64"},{"1":"151","2":"log(sqft_living)","3":"0.8732101","4":"0.04306711","5":"20.27557","6":"4.368704e-67"},{"1":"152","2":"(Intercept)","3":"6.5901687","4":"0.29977577","5":"21.98366","6":"2.288401e-75"},{"1":"152","2":"log(sqft_living)","3":"0.8572913","4":"0.03973281","5":"21.57641","6":"2.170354e-73"},{"1":"153","2":"(Intercept)","3":"7.0503950","4":"0.30354727","5":"23.22668","6":"2.116461e-81"},{"1":"153","2":"log(sqft_living)","3":"0.7939218","4":"0.04008735","5":"19.80480","6":"8.204230e-65"},{"1":"154","2":"(Intercept)","3":"5.9925976","4":"0.31838654","5":"18.82177","6":"4.368231e-60"},{"1":"154","2":"log(sqft_living)","3":"0.9301250","4":"0.04211178","5":"22.08705","6":"7.203413e-76"},{"1":"155","2":"(Intercept)","3":"6.5483748","4":"0.31334115","5":"20.89855","6":"4.210858e-70"},{"1":"155","2":"log(sqft_living)","3":"0.8615171","4":"0.04167529","5":"20.67213","6":"5.263710e-69"},{"1":"156","2":"(Intercept)","3":"7.1045781","4":"0.32249273","5":"22.03020","6":"1.360142e-75"},{"1":"156","2":"log(sqft_living)","3":"0.7880122","4":"0.04265161","5":"18.47556","6":"1.976878e-58"},{"1":"157","2":"(Intercept)","3":"6.3382583","4":"0.32499431","5":"19.50267","6":"2.344545e-63"},{"1":"157","2":"log(sqft_living)","3":"0.8901809","4":"0.04310342","5":"20.65221","6":"6.572954e-69"},{"1":"158","2":"(Intercept)","3":"6.6842457","4":"0.31891909","5":"20.95906","6":"2.143156e-70"},{"1":"158","2":"log(sqft_living)","3":"0.8452785","4":"0.04237532","5":"19.94743","6":"1.681821e-65"},{"1":"159","2":"(Intercept)","3":"6.2656337","4":"0.31530379","5":"19.87174","6":"3.900261e-65"},{"1":"159","2":"log(sqft_living)","3":"0.8981812","4":"0.04158205","5":"21.60021","6":"1.663391e-73"},{"1":"160","2":"(Intercept)","3":"6.4382308","4":"0.31204383","5":"20.63246","6":"8.192472e-69"},{"1":"160","2":"log(sqft_living)","3":"0.8714780","4":"0.04136853","5":"21.06621","6":"6.481005e-71"},{"1":"161","2":"(Intercept)","3":"6.6928237","4":"0.30520271","5":"21.92911","6":"4.210968e-75"},{"1":"161","2":"log(sqft_living)","3":"0.8453196","4":"0.04037182","5":"20.93836","6":"2.700336e-70"},{"1":"162","2":"(Intercept)","3":"6.5799404","4":"0.31364134","5":"20.97919","6":"1.712028e-70"},{"1":"162","2":"log(sqft_living)","3":"0.8563205","4":"0.04149432","5":"20.63705","6":"7.783220e-69"},{"1":"163","2":"(Intercept)","3":"6.0937179","4":"0.30591430","5":"19.91969","6":"2.289087e-65"},{"1":"163","2":"log(sqft_living)","3":"0.9202759","4":"0.04049689","5":"22.72461","6":"5.781565e-79"},{"1":"164","2":"(Intercept)","3":"6.5012620","4":"0.31417827","5":"20.69291","6":"4.175078e-69"},{"1":"164","2":"log(sqft_living)","3":"0.8694793","4":"0.04162090","5":"20.89045","6":"4.609210e-70"},{"1":"165","2":"(Intercept)","3":"6.4598246","4":"0.30815410","5":"20.96297","6":"2.051792e-70"},{"1":"165","2":"log(sqft_living)","3":"0.8702854","4":"0.04103945","5":"21.20607","6":"1.359502e-71"},{"1":"166","2":"(Intercept)","3":"7.2949776","4":"0.30748735","5":"23.72448","6":"8.168417e-84"},{"1":"166","2":"log(sqft_living)","3":"0.7662245","4":"0.04064883","5":"18.84985","6":"3.204553e-60"},{"1":"167","2":"(Intercept)","3":"6.9797418","4":"0.29821181","5":"23.40532","6":"2.878829e-82"},{"1":"167","2":"log(sqft_living)","3":"0.8073878","4":"0.03952356","5":"20.42801","6":"7.998173e-68"},{"1":"168","2":"(Intercept)","3":"7.0897837","4":"0.31674301","5":"22.38339","6":"2.622031e-77"},{"1":"168","2":"log(sqft_living)","3":"0.7886063","4":"0.04194195","5":"18.80233","6":"5.412699e-60"},{"1":"169","2":"(Intercept)","3":"6.6219214","4":"0.30716405","5":"21.55826","6":"2.658373e-73"},{"1":"169","2":"log(sqft_living)","3":"0.8535574","4":"0.04061579","5":"21.01541","6":"1.142698e-70"},{"1":"170","2":"(Intercept)","3":"6.5852626","4":"0.33229635","5":"19.81744","6":"7.129599e-65"},{"1":"170","2":"log(sqft_living)","3":"0.8564953","4":"0.04403112","5":"19.45204","6":"4.109481e-63"},{"1":"171","2":"(Intercept)","3":"6.9892977","4":"0.32788114","5":"21.31656","6":"3.957498e-72"},{"1":"171","2":"log(sqft_living)","3":"0.8002669","4":"0.04343935","5":"18.42263","6":"3.537019e-58"},{"1":"172","2":"(Intercept)","3":"5.8457994","4":"0.29294052","5":"19.95559","6":"1.535981e-65"},{"1":"172","2":"log(sqft_living)","3":"0.9538713","4":"0.03866489","5":"24.67022","6":"2.171324e-88"},{"1":"173","2":"(Intercept)","3":"6.4634343","4":"0.30660115","5":"21.08092","6":"5.499161e-71"},{"1":"173","2":"log(sqft_living)","3":"0.8739211","4":"0.04064607","5":"21.50075","6":"5.054525e-73"},{"1":"174","2":"(Intercept)","3":"7.1396988","4":"0.32795281","5":"21.77051","6":"2.479538e-74"},{"1":"174","2":"log(sqft_living)","3":"0.7847637","4":"0.04332568","5":"18.11313","6":"1.054874e-56"},{"1":"175","2":"(Intercept)","3":"6.4321523","4":"0.31130876","5":"20.66165","6":"5.916334e-69"},{"1":"175","2":"log(sqft_living)","3":"0.8774721","4":"0.04115182","5":"21.32280","6":"3.690996e-72"},{"1":"176","2":"(Intercept)","3":"7.1144011","4":"0.32157912","5":"22.12333","6":"4.801516e-76"},{"1":"176","2":"log(sqft_living)","3":"0.7862374","4":"0.04264128","5":"18.43841","6":"2.973757e-58"},{"1":"177","2":"(Intercept)","3":"6.9388111","4":"0.31521787","5":"22.01275","6":"1.653142e-75"},{"1":"177","2":"log(sqft_living)","3":"0.8096633","4":"0.04171047","5":"19.41151","6":"6.439509e-63"},{"1":"178","2":"(Intercept)","3":"6.7364901","4":"0.30150337","5":"22.34300","6":"4.118754e-77"},{"1":"178","2":"log(sqft_living)","3":"0.8389624","4":"0.03992147","5":"21.01532","6":"1.143814e-70"},{"1":"179","2":"(Intercept)","3":"6.5758251","4":"0.30302204","5":"21.70081","6":"5.403536e-74"},{"1":"179","2":"log(sqft_living)","3":"0.8582451","4":"0.04019339","5":"21.35289","6":"2.637169e-72"},{"1":"180","2":"(Intercept)","3":"6.4051744","4":"0.30534027","5":"20.97717","6":"1.751038e-70"},{"1":"180","2":"log(sqft_living)","3":"0.8783459","4":"0.04043194","5":"21.72406","6":"4.167100e-74"},{"1":"181","2":"(Intercept)","3":"5.8226854","4":"0.30950258","5":"18.81304","6":"4.809427e-60"},{"1":"181","2":"log(sqft_living)","3":"0.9537915","4":"0.04064569","5":"23.46600","6":"1.462167e-82"},{"1":"182","2":"(Intercept)","3":"6.3293445","4":"0.32218878","5":"19.64483","6":"4.845075e-64"},{"1":"182","2":"log(sqft_living)","3":"0.8877894","4":"0.04261651","5":"20.83205","6":"8.842808e-70"},{"1":"183","2":"(Intercept)","3":"6.6384910","4":"0.34851541","5":"19.04791","6":"3.598242e-61"},{"1":"183","2":"log(sqft_living)","3":"0.8486462","4":"0.04626415","5":"18.34350","6":"8.435293e-58"},{"1":"184","2":"(Intercept)","3":"7.0652789","4":"0.31569705","5":"22.37993","6":"2.725489e-77"},{"1":"184","2":"log(sqft_living)","3":"0.7941871","4":"0.04178157","5":"19.00807","6":"5.587807e-61"},{"1":"185","2":"(Intercept)","3":"6.5761250","4":"0.31025923","5":"21.19558","6":"1.528433e-71"},{"1":"185","2":"log(sqft_living)","3":"0.8586577","4":"0.04098305","5":"20.95153","6":"2.331171e-70"},{"1":"186","2":"(Intercept)","3":"7.3002612","4":"0.29617157","5":"24.64876","6":"2.756640e-88"},{"1":"186","2":"log(sqft_living)","3":"0.7632381","4":"0.03914381","5":"19.49831","6":"2.460744e-63"},{"1":"187","2":"(Intercept)","3":"6.5421504","4":"0.32798301","5":"19.94661","6":"1.697054e-65"},{"1":"187","2":"log(sqft_living)","3":"0.8605344","4":"0.04323334","5":"19.90441","6":"2.712632e-65"},{"1":"188","2":"(Intercept)","3":"6.8681887","4":"0.30635641","5":"22.41895","6":"1.762007e-77"},{"1":"188","2":"log(sqft_living)","3":"0.8208505","4":"0.04061306","5":"20.21149","6":"8.915721e-67"},{"1":"189","2":"(Intercept)","3":"7.5754125","4":"0.33950181","5":"22.31332","6":"5.739601e-77"},{"1":"189","2":"log(sqft_living)","3":"0.7250818","4":"0.04497223","5":"16.12288","6":"2.311210e-47"},{"1":"190","2":"(Intercept)","3":"7.1443272","4":"0.31294755","5":"22.82915","6":"1.797174e-79"},{"1":"190","2":"log(sqft_living)","3":"0.7793162","4":"0.04136972","5":"18.83784","6":"3.658617e-60"},{"1":"191","2":"(Intercept)","3":"7.1213698","4":"0.30693079","5":"23.20188","6":"2.792106e-81"},{"1":"191","2":"log(sqft_living)","3":"0.7855483","4":"0.04076248","5":"19.27136","6":"3.040176e-62"},{"1":"192","2":"(Intercept)","3":"7.0791751","4":"0.32802309","5":"21.58133","6":"2.054113e-73"},{"1":"192","2":"log(sqft_living)","3":"0.7903607","4":"0.04333745","5":"18.23736","6":"2.703362e-57"},{"1":"193","2":"(Intercept)","3":"7.1007706","4":"0.29554331","5":"24.02616","6":"2.825205e-85"},{"1":"193","2":"log(sqft_living)","3":"0.7872152","4":"0.03910435","5":"20.13114","6":"2.180068e-66"},{"1":"194","2":"(Intercept)","3":"6.6784521","4":"0.32845796","5":"20.33275","6":"2.311278e-67"},{"1":"194","2":"log(sqft_living)","3":"0.8445023","4":"0.04362943","5":"19.35626","6":"1.187602e-62"},{"1":"195","2":"(Intercept)","3":"6.5964817","4":"0.28855579","5":"22.86033","6":"1.268363e-79"},{"1":"195","2":"log(sqft_living)","3":"0.8532238","4":"0.03814383","5":"22.36859","6":"3.093935e-77"},{"1":"196","2":"(Intercept)","3":"6.7234486","4":"0.31088490","5":"21.62681","6":"1.235645e-73"},{"1":"196","2":"log(sqft_living)","3":"0.8421375","4":"0.04123354","5":"20.42360","6":"8.400918e-68"},{"1":"197","2":"(Intercept)","3":"6.6172930","4":"0.30769817","5":"21.50579","6":"4.777830e-73"},{"1":"197","2":"log(sqft_living)","3":"0.8566300","4":"0.04065541","5":"21.07051","6":"6.177205e-71"},{"1":"198","2":"(Intercept)","3":"6.7142922","4":"0.32012305","5":"20.97410","6":"1.812105e-70"},{"1":"198","2":"log(sqft_living)","3":"0.8395956","4":"0.04239515","5":"19.80405","6":"8.272943e-65"},{"1":"199","2":"(Intercept)","3":"6.7057416","4":"0.30873907","5":"21.71977","6":"4.371862e-74"},{"1":"199","2":"log(sqft_living)","3":"0.8425171","4":"0.04082175","5":"20.63893","6":"7.622384e-69"},{"1":"200","2":"(Intercept)","3":"6.9600530","4":"0.31195739","5":"22.31091","6":"5.896421e-77"},{"1":"200","2":"log(sqft_living)","3":"0.8051102","4":"0.04118013","5":"19.55094","6":"1.372938e-63"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>We can now look at the <em>sampling distributions</em> of the etimated slope and intercept. These show us how we expect those statistics to vary from sample to sample. I also put vertical lines where the actual intercept and slope (from the “population model”) are located.</p>
+<pre class="r"><code>#slope
+model_200_times %&gt;% #200 models
+  filter(term == &quot;log(sqft_living)&quot;) %&gt;% #filter to the term we&#39;re interested in
+  ggplot(aes(x = estimate)) + 
+  geom_histogram(bins = 20) + #create a histogram of the coefficients
+  geom_vline(xintercept = 0.8351142, color = &quot;darkred&quot;) +
+  labs(title = bquote(&quot;Distribution of&quot; ~ hat(beta)[1]))</code></pre>
+<p><img src="09_sampling_variation_models_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<pre class="r"><code>#intercept
+model_200_times %&gt;% 
+  filter(term == &quot;(Intercept)&quot;) %&gt;% 
+  ggplot(aes(x = estimate)) +
+  geom_histogram(bins = 20) +
+  geom_vline(xintercept = 6.7431084, color = &quot;darkred&quot;) +
+  labs(title = bquote(&quot;Distribution of&quot; ~ hat(beta)[0]))</code></pre>
+<p><img src="09_sampling_variation_models_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>What is an observation in the histograms above?</p></li>
+<li><p>How would you describe these distributions in terms of shape?</p></li>
+<li><p>Compute the mean and standard deviation of the slope and intercept estimates. The standard deviation here has a special name, a <em>standard error</em>, or SE for short. A standard error is the standard deviation of a statistic.</p></li>
+<li><p>What would happen to the sampling distribution of the slope if, instead of taking samples of size 500, we took samples of size 100? Redo the simulation taking samples of size 100 rather than 500. I have started the code for you below. Fill in the “???”’s and also compute the mean and standard error.</p></li>
+</ol>
+<pre class="r"><code>#Sample from the &quot;population&quot;
+set.seed(327)
+size100_200 &lt;- rep_sample_n(kc_house_data, #data we&#39;re sampling from
+                            size = ???, #size of each sample
+                            reps = ???, #how many samples to take
+                            replace = ??? #with or without
+                                            #replacement?
+                            )
+
+#Fit the model 200 times
+model_size100_200_times &lt;-
+  size100_200 %&gt;% #start with the 200 samples of size 500
+  group_by(???) %&gt;% #for each replicate 
+  do(lm(??? ~ ???, data=.) %&gt;% tidy()) %&gt;% #???
+  ungroup() #ungroup the data - good to do this when finished with
+            #grouped calculations
+
+model_size100_200_times
+
+#Create the histogram of the slopes
+model_size100_200_times %&gt;% #200 models
+  filter(term == &quot;???&quot;) %&gt;% #filter to the term we&#39;re interested in
+  ggplot(aes(x = estimate)) + 
+  geom_histogram(bins = 20) + #create a histogram of the coefficients
+  geom_vline(xintercept = 0.8351142, color = &quot;darkred&quot;) +
+  labs(title = bquote(&quot;Distribution of&quot; ~ hat(beta)[1]))</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Now try doing what you did in #3 with samples of size 1000. How does that change the distribution?</li>
+</ol>
+</div>
+</div>
+<div id="bootstrap-distributions" class="section level1">
+<h1>Bootstrap Distributions</h1>
+<p>Remember initially I said to pretend that I couldn’t collect the entire population of data. I could only collect 500 observation. But, if I couldn’t collect the entire sample of data to begin with, why would I be able to collect 200 different samples of size 500? I couldn’t!</p>
+<p>This is where <strong>bootstrapping</strong> comes in to save the day! We can use bootstrapping to estimate the sampling distribution of the slope (we could also do this for the intercept, in a similar way) using only the original sample we took.</p>
+<p>Recall, the general bootstrapping algorithm:</p>
+<ul>
+<li>Collect a random sample. (The original sample, which in this class will always be given to you.)</li>
+<li>Take a sample, WITH REPLACEMENT, of the original sample that is the same size as the original sample. This is called the resample or the bootstrap sample.<br />
+</li>
+<li>Compute the statistic you are interested in on the bootstrap sample. <strong>What should that be in this example?</strong><br />
+</li>
+<li>Repeat the previous two steps a reasonable number of times, say at least 100 but more if you can. This is the number of samples or replicates.</li>
+</ul>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<p>Assume that we only have the initial sample we took, <em>samp1</em>. and construct the bootstrap distribution of the slope. How does it compare to the actual sampling distribution of the slope above? Find the mean and standard error of the slopes, in addition to plotting the distribution.</p>
+<p>I have started the code for you below.</p>
+<pre class="r"><code>set.seed(1113)
+resamples_200 &lt;- rep_sample_n(_____, 
+                            size = _____, 
+                            reps = _____, 
+                            replace = _____)
+
+boot_model_200_times &lt;-
+  resamples_200 %&gt;% 
+  group_by(_____) %&gt;%     
+  do(lm(_____ ~ _____, data = .) %&gt;% tidy())
+
+boot_model_200_times %&gt;% 
+  filter(term == &quot;_____&quot;) %&gt;% 
+  ggplot(aes(x = _____)) +
+  geom_histogram()</code></pre>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiU2FtcGxpbmcgdmFyaWF0aW9uIGluIExpbmVhciBNb2RlbHMiCm91dHB1dDoKICBodG1sX2RvY3VtZW50OgogICAgdG9jOiB0cnVlCiAgICB0b2NfZmxvYXQ6IHRydWUKICAgIGRmX3ByaW50OiBwYWdlZAogICAgY29kZV9kb3dubG9hZDogdHJ1ZQotLS0KCgpgYGB7ciwgbWVzc2FnZT1GQUxTRSwgd2FybmluZz1GQUxTRX0KbGlicmFyeSh0aWR5dmVyc2UpICNmb3IgcGxvdHRpbmcgYW5kIHN1bW1hcml6aW5nCmxpYnJhcnkoZ2dyaWRnZXMpICNmb3IgcmlkZ2UgcGxvdHMKbGlicmFyeShnZ21vc2FpYykgI05FVyEgZm9yIG1vc2FpYyBwbG90cwpsaWJyYXJ5KG1vZGVybmRpdmUpICNmb3IgbmljZSBtb2RlbCBvdXRwdXQKbGlicmFyeShicm9vbSkgI2ZvciBuaWNlIG1vZGVsIG91dHB1dCAKbGlicmFyeShpbmZlcikgI2ZvciBtYWtpbmcgaW5mZXJlbmNlcyBhYm91dCBtb2RlbHMKdGhlbWVfc2V0KHRoZW1lX21pbmltYWwoKSkgI2NoYW5nZXMgdGhlIHRoZW1lIG9mIGdncGxvdHMgdG8gdGhlbWVfbWluaW1hbCwgbXkgcGVyc29uYWwgZmF2b3JpdGUKYGBgCgoKPGRpdiBjbGFzcz0iYWxlcnQgYWxlcnQtc3VjY2VzcyI+CiAgPHN0cm9uZz5HT0FMOjwvc3Ryb25nPgoKQnkgdGhlIGVuZCBvZiB0aGVzZSBub3RlcyBhbmQgYWN0aXZpdGllcywgeW91IHNob3VsZCBiZSBhYmxlIHRvIHBlcmZvcm0gdGhlIGZvbGxvd2luZyB0YXNrcy4KCiogVXNlIGEgYm9vdHN0cmFwIGRpc3RyaWJ1dGlvbiB0byB1bmRlcnN0YW5kIGhvdyBtb2RlbCBjb2VmZmljaWVudHMgdmFyeSBmcm9tIHNhbXBsZSB0byBzYW1wbGUuICAKKiBBcHBseSBib290c3RyYXAgY29kZSBJIGhhdmUgd3JpdHRlbiB0byBhIG5ldyBtb2RlbC4gIAoqIENyZWF0ZSBhIGhpc3RvZ3JhbSB0byByZXByZXNlbnQgdGhlIGJvb3RzdHJhcCBkaXN0cmlidXRpb24gZm9yIGEgbW9kZWwgY29lZmZpY2llbnQuICAKCjwvZGl2PgoKClByZXZpb3VzbHkgd2UgdGFsa2VkIGFib3V0IGhvdyBhIHNhbXBsZSBwcm9wb3J0aW9uIHZhcmllcyBmcm9tIHNhbXBsZSB0byBzYW1wbGUgYW5kIHdlcmUgaW50cm9kdWNlZCB0byB0aGUgYm9vdHN0cmFwIHRlY2huaXF1ZS4gTm93LCB3ZSB3b3VsZCBsaWtlIHRvIGFwcGx5IHRoYXQgdG8gbGluZWFyIG1vZGVscyB0byBsZWFybiBhYm91dCBob3cgY29lZmZpY2llbnQgZXN0aW1hdGVzIHZhcnkgZnJvbSBzYW1wbGUgdG8gc2FtcGxlLiAKCgpMZXQncyBvbmNlIGFnYWluIHVzZSB0aGUgYGtjX2hvdXNlX2RhdGFgLCBhIG1vZGlmaWVkIHZlcnNpb24gb2YgdGhlIGBob3VzZV9kYXRhYCBmcm9tIHRoZSBgbW9kZXJuZGl2ZWAgbGlicmFyeS4gV2UgYXJlIGdvaW5nIHRvIHByZXRlbmQgdGhhdCB0aGlzIGlzIHRoZSBlbnRpcmUgKipwb3B1bGF0aW9uKiogb2YgaG91c2VzLgoKYGBge3IsIGVycm9yPUZBTFNFLCB3YXJuaW5nPUZBTFNFLCBtZXNzYWdlPUZBTFNFfQprY19ob3VzZV9kYXRhIDwtCiAgaG91c2VfcHJpY2VzICU+JSAKICBmaWx0ZXIoYmVkcm9vbXM8PTUsIGJlZHJvb21zPjApICU+JSAKICBtdXRhdGUoZ3JhZGVfQ0FUID0gZmN0X3JlbGV2ZWwoaWZlbHNlKGdyYWRlICVpbiUgIjEiOiI3IiwgIkxvdyIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpZmVsc2UoZ3JhZGUgPT0gIjgiLCAiTWVkaXVtIiwiSGlnaCIpKSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJMb3ciLCAiTWVkaXVtIiwgIkhpZ2giKSwKICAgICAgICAgYWdlPTIwMTUteXJfYnVpbHQpCgpgYGAKCgojIFNhbXBsaW5nIERpc3RyaWJ1dGlvbnMKCldlIHdpbGwgZXhhbWluZSBhIHJlYWxseSBzaW1wbGUgbW9kZWwgdGhhdCB1c2VzIGBsb2coc3FmdF9saXZpbmcpYCB0byBleHBsYWluIGBsb2cocHJpY2UpYC4gV2UgYXJlIGdvaW5nIHRvIHRoaW5rIG9mIHRoaXMgYXMgdGhlICJwb3B1bGF0aW9uIG1vZGVsIi4gCgpgYGB7cn0Ka2NfaG91c2VfZGF0YSAlPiUgCiAgZ2dwbG90KGFlcyh4PWxvZyhzcWZ0X2xpdmluZyksIHkgPSBsb2cocHJpY2UpKSkgKwogIGdlb21fcG9pbnQoYWxwaGE9LjUsIHNpemUgPSAuMikKYGBgCgoKYGBge3J9CmxtX3NpbXBsZSA8LSBsbShsb2cocHJpY2UpIH4gbG9nKHNxZnRfbGl2aW5nKSwKICAgICAgICAgICAgICAgIGRhdGE9a2NfaG91c2VfZGF0YSkKdGlkeShsbV9zaW1wbGUpCmBgYAoKCkxldCdzIHBsb3QgdGhhdCBsaW5lIG9uIHRoZSBzY2F0dGVycGxvdCBvZiB0aGUgZGF0YS4KCmBgYHtyfQphdWdtZW50KGxtX3NpbXBsZSwgZGF0YT1rY19ob3VzZV9kYXRhKSAlPiUgCiAgZ2dwbG90KGFlcyh4PWxvZyhzcWZ0X2xpdmluZyksIHkgPSBsb2cocHJpY2UpKSkgKwogIGdlb21fcG9pbnQoYWxwaGEgPSAuNSwgc2l6ZSA9IC4yKSArCiAgZ2VvbV9saW5lKGFlcyh5PS5maXR0ZWQpLCBjb2xvcj0iZGFya3JlZCIpCmBgYAoKCgpOb3cgbGV0J3Mgc2F5IHRoYXQgSSB3YXMgZ29pbmcgdG8gY29sbGVjdCB0aGlzIGRhdGEgbXlzZWxmIGFuZCBJIGRpZG4ndCBoYXZlIHRpbWUgKG9yIHRoZSB0ZWNobmljYWwgc2tpbGxzKSB0byBnZXQgYWxsIDIxLDYxMyBvYnNlcnZhdGlvbnMuIFNvLCBpbnN0ZWFkLCBJIGNvbGxlY3QgYSBzYW1wbGUgb2YgNTAwIG9ic2VydmF0aW9ucy4gCgpJIHdpbGwgbWltaWMgdGhpcyBieSBzYW1wbGluZyBmcm9tIHRoZSBlbnRpcmUgZGF0YXNldCB1c2luZyB0aGUgYHNhbXBsZV9uKClgIGZ1bmN0aW9uLiAqUmVtaW5kZXIqOiAgVGhlIGBzZXQuc2VlZCgpYCBmdW5jdGlvbiBhdCB0aGUgYmVnaW5uaW5nIGFsbG93cyB5b3UgdG8gcmVwbGljYXRlIHRoZSByYW5kb20gc2FtcGxpbmcgcHJvY2VzcyBzbyB0aGF0IHlvdSBnZXQgdGhlIHNhbWUgcmFuZG9tIHNhbXBsZSBldmVyeXRpbWUgdGhlIGNvZGUgcnVucyAoaW5jbHVkaW5nIHdoZW4geW91IGtuaXQgdGhlIGRvY3VtZW50KS4gVGhpcyBhbHNvIG1lYW5zIHRoYXQgaWYgc29tZW9uZSBlbHNlIHVzZXMgdGhhdCBzYW1lIHNlZWQsIHRoZXkgd2lsbCBnZXQgdGhlIHNhbXBlIHJlc3VsdCwgYXMgbG9uZyBhcyB0aGV5IHN0YXJ0ZWQgd2l0aCB0aGUgc2FtZSBkYXRhLiBJdCBpcyB2ZXJ5IGltcG9ydGFudCB0byB1c2UgYHNldC5zZWVkKClgIGFueXRpbWUgd2UgY29uZHVjdCBhIHJhbmRvbSBwcm9jZXNzIHNvIHRoYXQgd2UgY2FuIHJlcGxpY2F0ZSBpdC4gSXQgZG9lcyBub3QgbWF0dGVyIHdoYXQgbnVtYmVyIHdlIHB1dCBpbiB0aGVyZS4KClRoZW4sIGZpdCB0aGUgbW9kZWwgdGhhdCB1c2VzIGBsb2coc3FmdF9saXZpbmcpYCB0byBleHBsYWluIGBsb2cocHJpY2UpYC4gKipIb3cgZG9lcyB0aGlzIG1vZGVsIGNvbXBhcmUgdG8gdGhlIG1vZGVsIHRoYXQgdXNlZCBhbGwgdGhlIGRhdGE/KioKCmBgYHtyfQpzZXQuc2VlZCgzMjcpCgpzYW1wMSA8LSBrY19ob3VzZV9kYXRhICU+JSAKICBzYW1wbGVfbihzaXplPTUwMCkgCgpsbV9zYW1wMSA8LSBsbShsb2cocHJpY2UpIH4gbG9nKHNxZnRfbGl2aW5nKSwgCiAgICAgICAgICAgICAgIGRhdGE9c2FtcDEpCgp0aWR5KGxtX3NhbXAxKQpgYGAKCkxldCdzIHBsb3QgdGhlIGxpbmVzLiBJIGFtIGdvaW5nIHRvIHVzZSB0aGUgYGdlb21fc21vb3RoYCBmdW5jdGlvbiB0byBkbyB0aGlzIGJlY2F1c2UgaXQgd2lsbCBjb21lIGluIGhhbmR5IGxhdGVyLgoKYGBge3J9CmF1Z21lbnQobG1fc2ltcGxlLCBkYXRhPWtjX2hvdXNlX2RhdGEpICU+JSAKICBnZ3Bsb3QoYWVzKHg9bG9nKHNxZnRfbGl2aW5nKSwgeSA9IGxvZyhwcmljZSkpKSArCiAgZ2VvbV9wb2ludChhbHBoYT0uMiwgc2l6ZSA9IC4yKSArCiAgZ2VvbV9wb2ludChkYXRhID0gc2FtcDEsIGNvbG9yPSJsaWdodGJsdWUiLCBhbHBoYSA9IC4yLCBzaXplID0gLjIpICsKICBnZW9tX2xpbmUoYWVzKHk9LmZpdHRlZCksIGNvbG9yPSJkYXJrcmVkIikgKwogIGdlb21fc21vb3RoKGRhdGEgPSBzYW1wMSwgbWV0aG9kID0gImxtIiwgc2UgPSBGQUxTRSwgCiAgICAgICAgICAgICAgY29sb3I9ImxpZ2h0Ymx1ZSIsIHNpemU9LjUpICArCiAgdGhlbWVfbWluaW1hbCgpCmBgYAoKTGV0J3MgdGFrZSBhbm90aGVyIHNhbXBsZSBvZiBzaXplIDUwMCBhbmQgZml0IGFub3RoZXIgbGluZS4gVXNlIGEgZGlmZmVyZW50IHNlZWQgZnJvbSB0aGUgZmlyc3Qgc2FtcGxlIHNvIHRoZXkgYXJlIGRpZmZlcmVudCByYW5kb20gc2FtcGxlcy4KCmBgYHtyfQpzZXQuc2VlZCgzMDApCgpzYW1wMiA8LSBrY19ob3VzZV9kYXRhICU+JSAKICBzYW1wbGVfbihzaXplPTUwMCkgCgpsbV9zYW1wMiA8LSBsbShsb2cocHJpY2UpIH4gbG9nKHNxZnRfbGl2aW5nKSwgCiAgICAgICAgICAgICAgIGRhdGE9c2FtcDIpCgp0aWR5KGxtX3NhbXAyKQpgYGAKCkFuZCBwbG90IHRoaXMgbGluZSAuLi4KCmBgYHtyfQphdWdtZW50KGxtX3NpbXBsZSwgZGF0YT1rY19ob3VzZV9kYXRhKSAlPiUgCiAgZ2dwbG90KGFlcyh4PWxvZyhzcWZ0X2xpdmluZyksIHkgPSBsb2cocHJpY2UpKSkgKwogIGdlb21fcG9pbnQoYWxwaGE9LjIsIHNpemUgPSAuMikgKwogIGdlb21fbGluZShhZXMoeT0uZml0dGVkKSwgY29sb3I9ImRhcmtyZWQiKSArCiAgZ2VvbV9zbW9vdGgoZGF0YSA9IHNhbXAxLCBtZXRob2QgPSAibG0iLCBzZSA9IEZBTFNFLCAKICAgICAgICAgICAgICBjb2xvcj0ibGlnaHRibHVlIiwgc2l6ZSA9IC41KSArCiAgZ2VvbV9zbW9vdGgoZGF0YSA9IHNhbXAyLCBtZXRob2QgPSAibG0iLCBzZSA9IEZBTFNFLCAKICAgICAgICAgICAgICBjb2xvcj0ibGlnaHRibHVlIiwgc2l6ZSA9IC41KSArCiAgdGhlbWVfbWluaW1hbCgpCmBgYAoKTm93LCBpbiBvcmRlciB0byB1bmRlcnN0YW5kIHNhbXBsaW5nIHZhcmlhYmlsaXR5IHdlIG5lZWQgdG8gYmUgYWJsZSB0byB0aGlzIG1hbnkgdGltZXMuIFJhdGhlciB0aGFuIGhhdmluZyB1cyBydW4gZGlmZmVyZW50IG1vZGVscyBvbmUgYnkgb25lIHRvIGxlYXJuIGFib3V0IHRoZSB2YXJpYWJpbGl0eSBvZiB0aGUgY29lZmZpY2llbnRzLCB3ZSBjYW4gdXNlIHNpbXVsYXRpb24gdG8gZG8gdGhhdCBmb3IgdXMuIAoKTGlrZSBpbiB0aGUgUmVlc2UncyBQaWVjZXMgYWN0aXZpdHksIHdlIHdpbGwgdXNlIHRoZSBgcmVwX3NhbXBsZV9uKClgIGZ1bmN0aW9uIHRvIHRha2UgbXVsdGlwbGUgcmVwZWF0ZWQgc2FtcGxlcy4gQmVsb3cgd2UgdGFrZSAyMDAgc2FtcGxlcyBvZiBzaXplIDUwMCBmcm9tIHRoZSAicG9wdWxhdGlvbiIsIGBrY19ob3VzZV9kYXRhYC4gV2UgYXJlIHRha2luZyBzYW1wbGVzICp3aXRob3V0KiByZXBsYWNlbWVudCB0aGlzIHRpbWUgYmVjYXVzZSB3ZSBhcmUgcHJldGVuZGluZyB0aGF0IHdlIGFyZSBzYW1wbGluZyBmcm9tIHRoZSBwb3B1bGF0aW9uLCBsaWtlIHdoZW4gd2Ugc2FtcGxlZCBSZWVzZXMgcGllY2VzIHVzaW5nIHRoZSBhcHBsZXRzLiAqKkhvdyBtYW55IG9ic2VydmF0aW9ucyBhcmUgaW4gYHNhbXBsZXNfMjAwYD8qKiAKCmBgYHtyfQpzZXQuc2VlZCgxMTEzKQpzYW1wbGVzXzIwMCA8LSByZXBfc2FtcGxlX24oa2NfaG91c2VfZGF0YSwgI2RhdGEgd2UncmUgc2FtcGxpbmcgZnJvbQogICAgICAgICAgICAgICAgICAgICAgICAgICAgc2l6ZSA9IDUwMCwgI3NpemUgb2YgZWFjaCBzYW1wbGUKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlcHMgPSAyMDAsICNob3cgbWFueSBzYW1wbGVzIHRvIHRha2UKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlcGxhY2UgPSBGQUxTRSAjd2l0aCBvciB3aXRob3V0CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI3JlcGxhY2VtZW50PwogICAgICAgICAgICAgICAgICAgICAgICAgICAgKQpgYGAKCipHT0FMKjogRm9yIGVhY2ggc2FtcGxlLCB3ZSB3b3VsZCBsaWtlIHRvIGZpdCBhIG1vZGVsIHRoYXQgdXNlcyBgbG9nKHNxZnRfbGl2aW5nKWAgdG8gcHJlZGljdCBgbG9nKHByaWNlKWAuIFdlIHdvdWxkIGxpa2UgdG8gdW5kZXJzdGFuZCBob3cgdGhlIGludGVyY2VwdCBhbmQgc2xvcGUgdmFyeSBmcm9tIHNhbXBsZSB0byBzYW1wbGUuCgpGaXJzdCwgbGV0J3MgZG8gdGhpcyBncmFwaGljYWxseS4gKipXaGF0IGRvIHlvdSBvYnNlcnZlPyoqCgpgYGB7cn0KI1RoaXMgZmlyc3Qgc2VjdGlvbiBqdXN0IHBsb3RzIHRoZSBwb2ludHM6CmF1Z21lbnQobG1fc2ltcGxlLCBkYXRhPWtjX2hvdXNlX2RhdGEpICU+JSAKICBnZ3Bsb3QoYWVzKHg9bG9nKHNxZnRfbGl2aW5nKSwgeSA9IGxvZyhwcmljZSkpKSArIAogIGdlb21fcG9pbnQoYWxwaGE9LjIsIGNvbG9yPSJkYXJrZ3JheSIsIHNpemUgPSAuMikgKyAKI1RoaXMgY29kZSBwbG90cyBlYWNoIG9mIHRoZSBsaW5lcyAgCiAgZ2VvbV9zbW9vdGgoZGF0YSA9IHNhbXBsZXNfMjAwLCAjVXNlIHRoZSBzYW1wbGVzXzIwMCBkYXRhCiAgICAgICAgICAgICAgYWVzKGdyb3VwID0gcmVwbGljYXRlKSwgIyJGb3IgZWFjaCByZXBsaWNhdGUiCiAgICAgICAgICAgICAgbWV0aG9kID0gImxtIiwgc2UgPSBGQUxTRSwgI1VzZSBsbSgpIHRvIGZpdCBhIG1vZGVsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI3doZXJlIGxvZyhzcWZ0X2xpdmluZykKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjZXhwbGFpbnMgbG9nKHByaWNlKQogICAgICAgICAgICAgIGNvbG9yPSJsaWdodGJsdWUiLCBzaXplID0gLjUpICsgI2NvbG9yIHRoZSBsaW5lcyBsaWdodGJsdWUKICBnZW9tX2xpbmUoYWVzKHk9LmZpdHRlZCksIGNvbG9yPSJkYXJrcmVkIikgICNhZGQgdGhlICJwb3B1bGF0aW9uIiBsaW5lCmBgYAoKCk5vdywgbGV0J3MgYWN0dWFsbHkgZml0IHRoZSBtb2RlbCAyMDAgdGltZXMuIExvb2sgY2FyZWZ1bGx5IGF0IHRoZSBvdXRwdXQuICoqV2hhdCBpcyB0aGUgY29kZSBkb2luZyBvbiB0aGUgbGluZSB3aXRoICI/Pz8iPyoqCgpgYGB7cn0KbW9kZWxfMjAwX3RpbWVzIDwtCiAgc2FtcGxlc18yMDAgJT4lICNzdGFydCB3aXRoIHRoZSAyMDAgc2FtcGxlcyBvZiBzaXplIDUwMAogIGdyb3VwX2J5KHJlcGxpY2F0ZSkgJT4lICNmb3IgZWFjaCByZXBsaWNhdGUgCiAgZG8obG0obG9nKHByaWNlKSB+IGxvZyhzcWZ0X2xpdmluZyksIGRhdGE9LikgJT4lIHRpZHkoKSkgJT4lICM/Pz8KICB1bmdyb3VwKCkgI3VuZ3JvdXAgdGhlIGRhdGEgLSBnb29kIHRvIGRvIHRoaXMgd2hlbiBmaW5pc2hlZCB3aXRoCiAgICAgICAgICAgICNncm91cGVkIGNhbGN1bGF0aW9ucwoKbW9kZWxfMjAwX3RpbWVzCmBgYAoKCldlIGNhbiBub3cgbG9vayBhdCB0aGUgKnNhbXBsaW5nIGRpc3RyaWJ1dGlvbnMqIG9mIHRoZSBldGltYXRlZCBzbG9wZSBhbmQgaW50ZXJjZXB0LiBUaGVzZSBzaG93IHVzIGhvdyB3ZSBleHBlY3QgdGhvc2Ugc3RhdGlzdGljcyB0byB2YXJ5IGZyb20gc2FtcGxlIHRvIHNhbXBsZS4gSSBhbHNvIHB1dCB2ZXJ0aWNhbCBsaW5lcyB3aGVyZSB0aGUgYWN0dWFsIGludGVyY2VwdCBhbmQgc2xvcGUgKGZyb20gdGhlICJwb3B1bGF0aW9uIG1vZGVsIikgYXJlIGxvY2F0ZWQuIAoKYGBge3J9CiNzbG9wZQptb2RlbF8yMDBfdGltZXMgJT4lICMyMDAgbW9kZWxzCiAgZmlsdGVyKHRlcm0gPT0gImxvZyhzcWZ0X2xpdmluZykiKSAlPiUgI2ZpbHRlciB0byB0aGUgdGVybSB3ZSdyZSBpbnRlcmVzdGVkIGluCiAgZ2dwbG90KGFlcyh4ID0gZXN0aW1hdGUpKSArIAogIGdlb21faGlzdG9ncmFtKGJpbnMgPSAyMCkgKyAjY3JlYXRlIGEgaGlzdG9ncmFtIG9mIHRoZSBjb2VmZmljaWVudHMKICBnZW9tX3ZsaW5lKHhpbnRlcmNlcHQgPSAwLjgzNTExNDIsIGNvbG9yID0gImRhcmtyZWQiKSArCiAgbGFicyh0aXRsZSA9IGJxdW90ZSgiRGlzdHJpYnV0aW9uIG9mIiB+IGhhdChiZXRhKVsxXSkpCmBgYAoKYGBge3J9CiNpbnRlcmNlcHQKbW9kZWxfMjAwX3RpbWVzICU+JSAKICBmaWx0ZXIodGVybSA9PSAiKEludGVyY2VwdCkiKSAlPiUgCiAgZ2dwbG90KGFlcyh4ID0gZXN0aW1hdGUpKSArCiAgZ2VvbV9oaXN0b2dyYW0oYmlucyA9IDIwKSArCiAgZ2VvbV92bGluZSh4aW50ZXJjZXB0ID0gNi43NDMxMDg0LCBjb2xvciA9ICJkYXJrcmVkIikgKwogIGxhYnModGl0bGUgPSBicXVvdGUoIkRpc3RyaWJ1dGlvbiBvZiIgfiBoYXQoYmV0YSlbMF0pKQpgYGAKCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1pbmZvIj4KICA8c3Ryb25nPllPVVIgVFVSTiE8L3N0cm9uZz4KICAKMS4gV2hhdCBpcyBhbiBvYnNlcnZhdGlvbiBpbiB0aGUgaGlzdG9ncmFtcyBhYm92ZT8KCjIuIEhvdyB3b3VsZCB5b3UgZGVzY3JpYmUgdGhlc2UgZGlzdHJpYnV0aW9ucyBpbiB0ZXJtcyBvZiBzaGFwZT8KCjMuIENvbXB1dGUgdGhlIG1lYW4gYW5kIHN0YW5kYXJkIGRldmlhdGlvbiBvZiB0aGUgc2xvcGUgYW5kIGludGVyY2VwdCBlc3RpbWF0ZXMuIFRoZSBzdGFuZGFyZCBkZXZpYXRpb24gaGVyZSBoYXMgYSBzcGVjaWFsIG5hbWUsIGEgKnN0YW5kYXJkIGVycm9yKiwgb3IgU0UgZm9yIHNob3J0LiBBIHN0YW5kYXJkIGVycm9yIGlzIHRoZSBzdGFuZGFyZCBkZXZpYXRpb24gb2YgYSBzdGF0aXN0aWMuIAoKYGBge3J9CmBgYAoKMy4gV2hhdCB3b3VsZCBoYXBwZW4gdG8gdGhlIHNhbXBsaW5nIGRpc3RyaWJ1dGlvbiBvZiB0aGUgc2xvcGUgaWYsIGluc3RlYWQgb2YgdGFraW5nIHNhbXBsZXMgb2Ygc2l6ZSA1MDAsIHdlIHRvb2sgc2FtcGxlcyBvZiBzaXplIDEwMD8gUmVkbyB0aGUgc2ltdWxhdGlvbiB0YWtpbmcgc2FtcGxlcyBvZiBzaXplIDEwMCByYXRoZXIgdGhhbiA1MDAuIEkgaGF2ZSBzdGFydGVkIHRoZSBjb2RlIGZvciB5b3UgYmVsb3cuIEZpbGwgaW4gdGhlICI/Pz8iJ3MgYW5kIGFsc28gY29tcHV0ZSB0aGUgbWVhbiBhbmQgc3RhbmRhcmQgZXJyb3IuCgpgYGB7ciwgZXZhbD1GQUxTRX0KI1NhbXBsZSBmcm9tIHRoZSAicG9wdWxhdGlvbiIKc2V0LnNlZWQoMzI3KQpzaXplMTAwXzIwMCA8LSByZXBfc2FtcGxlX24oa2NfaG91c2VfZGF0YSwgI2RhdGEgd2UncmUgc2FtcGxpbmcgZnJvbQogICAgICAgICAgICAgICAgICAgICAgICAgICAgc2l6ZSA9ID8/PywgI3NpemUgb2YgZWFjaCBzYW1wbGUKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlcHMgPSA/Pz8sICNob3cgbWFueSBzYW1wbGVzIHRvIHRha2UKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlcGxhY2UgPSA/Pz8gI3dpdGggb3Igd2l0aG91dAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICNyZXBsYWNlbWVudD8KICAgICAgICAgICAgICAgICAgICAgICAgICAgICkKCiNGaXQgdGhlIG1vZGVsIDIwMCB0aW1lcwptb2RlbF9zaXplMTAwXzIwMF90aW1lcyA8LQogIHNpemUxMDBfMjAwICU+JSAjc3RhcnQgd2l0aCB0aGUgMjAwIHNhbXBsZXMgb2Ygc2l6ZSA1MDAKICBncm91cF9ieSg/Pz8pICU+JSAjZm9yIGVhY2ggcmVwbGljYXRlIAogIGRvKGxtKD8/PyB+ID8/PywgZGF0YT0uKSAlPiUgdGlkeSgpKSAlPiUgIz8/PwogIHVuZ3JvdXAoKSAjdW5ncm91cCB0aGUgZGF0YSAtIGdvb2QgdG8gZG8gdGhpcyB3aGVuIGZpbmlzaGVkIHdpdGgKICAgICAgICAgICAgI2dyb3VwZWQgY2FsY3VsYXRpb25zCgptb2RlbF9zaXplMTAwXzIwMF90aW1lcwoKI0NyZWF0ZSB0aGUgaGlzdG9ncmFtIG9mIHRoZSBzbG9wZXMKbW9kZWxfc2l6ZTEwMF8yMDBfdGltZXMgJT4lICMyMDAgbW9kZWxzCiAgZmlsdGVyKHRlcm0gPT0gIj8/PyIpICU+JSAjZmlsdGVyIHRvIHRoZSB0ZXJtIHdlJ3JlIGludGVyZXN0ZWQgaW4KICBnZ3Bsb3QoYWVzKHggPSBlc3RpbWF0ZSkpICsgCiAgZ2VvbV9oaXN0b2dyYW0oYmlucyA9IDIwKSArICNjcmVhdGUgYSBoaXN0b2dyYW0gb2YgdGhlIGNvZWZmaWNpZW50cwogIGdlb21fdmxpbmUoeGludGVyY2VwdCA9IDAuODM1MTE0MiwgY29sb3IgPSAiZGFya3JlZCIpICsKICBsYWJzKHRpdGxlID0gYnF1b3RlKCJEaXN0cmlidXRpb24gb2YiIH4gaGF0KGJldGEpWzFdKSkKYGBgCgo0LiBOb3cgdHJ5IGRvaW5nIHdoYXQgeW91IGRpZCBpbiAjMyB3aXRoIHNhbXBsZXMgb2Ygc2l6ZSAxMDAwLiBIb3cgZG9lcyB0aGF0IGNoYW5nZSB0aGUgZGlzdHJpYnV0aW9uPwoKPC9kaXY+CgoKIyBCb290c3RyYXAgRGlzdHJpYnV0aW9ucwoKUmVtZW1iZXIgaW5pdGlhbGx5IEkgc2FpZCB0byBwcmV0ZW5kIHRoYXQgSSBjb3VsZG4ndCBjb2xsZWN0IHRoZSBlbnRpcmUgcG9wdWxhdGlvbiBvZiBkYXRhLiBJIGNvdWxkIG9ubHkgY29sbGVjdCA1MDAgb2JzZXJ2YXRpb24uIEJ1dCwgaWYgSSBjb3VsZG4ndCBjb2xsZWN0IHRoZSBlbnRpcmUgc2FtcGxlIG9mIGRhdGEgdG8gYmVnaW4gd2l0aCwgd2h5IHdvdWxkIEkgYmUgYWJsZSB0byBjb2xsZWN0IDIwMCBkaWZmZXJlbnQgc2FtcGxlcyBvZiBzaXplIDUwMD8gSSBjb3VsZG4ndCEgCgpUaGlzIGlzIHdoZXJlICoqYm9vdHN0cmFwcGluZyoqIGNvbWVzIGluIHRvIHNhdmUgdGhlIGRheSEgV2UgY2FuIHVzZSBib290c3RyYXBwaW5nIHRvIGVzdGltYXRlIHRoZSBzYW1wbGluZyBkaXN0cmlidXRpb24gb2YgdGhlIHNsb3BlICh3ZSBjb3VsZCBhbHNvIGRvIHRoaXMgZm9yIHRoZSBpbnRlcmNlcHQsIGluIGEgc2ltaWxhciB3YXkpIHVzaW5nIG9ubHkgdGhlIG9yaWdpbmFsIHNhbXBsZSB3ZSB0b29rLgoKUmVjYWxsLCB0aGUgZ2VuZXJhbCBib290c3RyYXBwaW5nIGFsZ29yaXRobToKCiogQ29sbGVjdCBhIHJhbmRvbSBzYW1wbGUuIChUaGUgb3JpZ2luYWwgc2FtcGxlLCB3aGljaCBpbiB0aGlzIGNsYXNzIHdpbGwgYWx3YXlzIGJlIGdpdmVuIHRvIHlvdS4pIAoqIFRha2UgYSBzYW1wbGUsIFdJVEggUkVQTEFDRU1FTlQsIG9mIHRoZSBvcmlnaW5hbCBzYW1wbGUgdGhhdCBpcyB0aGUgc2FtZSBzaXplIGFzIHRoZSBvcmlnaW5hbCBzYW1wbGUuIFRoaXMgaXMgY2FsbGVkIHRoZSByZXNhbXBsZSBvciB0aGUgYm9vdHN0cmFwIHNhbXBsZS4gIAoqIENvbXB1dGUgdGhlIHN0YXRpc3RpYyB5b3UgYXJlIGludGVyZXN0ZWQgaW4gb24gdGhlIGJvb3RzdHJhcCBzYW1wbGUuICoqV2hhdCBzaG91bGQgdGhhdCBiZSBpbiB0aGlzIGV4YW1wbGU/KiogICAgCiogUmVwZWF0IHRoZSBwcmV2aW91cyB0d28gc3RlcHMgYSByZWFzb25hYmxlIG51bWJlciBvZiB0aW1lcywgc2F5IGF0IGxlYXN0IDEwMCBidXQgbW9yZSBpZiB5b3UgY2FuLiBUaGlzIGlzIHRoZSBudW1iZXIgb2Ygc2FtcGxlcyBvciByZXBsaWNhdGVzLgoKCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LWluZm8iPgogIDxzdHJvbmc+WU9VUiBUVVJOITwvc3Ryb25nPgoKQXNzdW1lIHRoYXQgd2Ugb25seSBoYXZlIHRoZSBpbml0aWFsIHNhbXBsZSB3ZSB0b29rLCAqc2FtcDEqLiBhbmQgY29uc3RydWN0IHRoZSBib290c3RyYXAgZGlzdHJpYnV0aW9uIG9mIHRoZSBzbG9wZS4gSG93IGRvZXMgaXQgY29tcGFyZSB0byB0aGUgYWN0dWFsIHNhbXBsaW5nIGRpc3RyaWJ1dGlvbiBvZiB0aGUgc2xvcGUgYWJvdmU/IEZpbmQgdGhlIG1lYW4gYW5kIHN0YW5kYXJkIGVycm9yIG9mIHRoZSBzbG9wZXMsIGluIGFkZGl0aW9uIHRvIHBsb3R0aW5nIHRoZSBkaXN0cmlidXRpb24uCgpJIGhhdmUgc3RhcnRlZCB0aGUgY29kZSBmb3IgeW91IGJlbG93LiAKCmBgYHtyLCBldmFsPUZBTFNFfQpzZXQuc2VlZCgxMTEzKQpyZXNhbXBsZXNfMjAwIDwtIHJlcF9zYW1wbGVfbihfX19fXywgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICBzaXplID0gX19fX18sIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVwcyA9IF9fX19fLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlcGxhY2UgPSBfX19fXykKCmJvb3RfbW9kZWxfMjAwX3RpbWVzIDwtCiAgcmVzYW1wbGVzXzIwMCAlPiUgCiAgZ3JvdXBfYnkoX19fX18pICU+JSAgICAgCiAgZG8obG0oX19fX18gfiBfX19fXywgZGF0YSA9IC4pICU+JSB0aWR5KCkpCgpib290X21vZGVsXzIwMF90aW1lcyAlPiUgCiAgZmlsdGVyKHRlcm0gPT0gIl9fX19fIikgJT4lIAogIGdncGxvdChhZXMoeCA9IF9fX19fKSkgKwogIGdlb21faGlzdG9ncmFtKCkKCmBgYAoKPC9kaXY+CgoKCgoKCgoKCgoKCgoKCgo=</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("09_sampling_variation_models.Rmd");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

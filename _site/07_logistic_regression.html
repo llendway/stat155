@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Logistic Regression</title>
+
+<script src="site_libs/header-attrs-2.9/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">STAT 155</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Lessons
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="01_univariate.html">Plotting data - univariate</a>
+    </li>
+    <li>
+      <a href="02_multivariate.html">Plotting data - multivariate</a>
+    </li>
+    <li>
+      <a href="03_slr_creating_interpreting_point_pred.html">Simple linear regression</a>
+    </li>
+    <li>
+      <a href="04_mlr_creating_interpreting_point_pred.html">Multiple linear regression</a>
+    </li>
+    <li>
+      <a href="05_model_fitting_eval.html">Model evaluation</a>
+    </li>
+    <li>
+      <a href="06_assumptions_transformations.html">Model assumptions &amp; transformations</a>
+    </li>
+    <li>
+      <a href="07_logistic_regression.html">Logistic regression</a>
+    </li>
+    <li>
+      <a href="08_sampling_reeses.html">Sampling variation with Reese's</a>
+    </li>
+    <li>
+      <a href="09_sampling_variation_models.html">Sampling variation in models</a>
+    </li>
+    <li>
+      <a href="10_confidence_intervals.html">Confidence intervals</a>
+    </li>
+    <li>
+      <a href="11_hypothesis_tests.html">Hypothesis tests</a>
+    </li>
+    <li>
+      <a href="12_hypothesis_testing_anova.html">Hypothesis tests - ANOVA</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Logistic Regression</h1>
+
+</div>
+
+
+<pre class="r"><code>library(tidyverse) #for plotting and summarizing
+library(ggridges) #for ridge plots
+library(ggmosaic) #NEW! for mosaic plots
+library(moderndive) #for nice model output
+library(broom) #for nice model output 
+library(Ecdat) #for data
+theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite</code></pre>
+<div class="alert alert-success">
+<p><strong>GOAL:</strong></p>
+<p>By the end of these notes and activities, you should be able to perform the following tasks.</p>
+<ul>
+<li>Create appropriate plots to explore the relationship between categorical or quantitative predictors and a binary response.<br />
+</li>
+<li>Know when a logistic regression model is appropriate.<br />
+</li>
+<li>Fit a logistic regression model using <code>glm()</code>. (Don’t forget <code>family = binomial(link = "logit")</code>.)<br />
+</li>
+<li>Interpret coefficients from a logistic regression model for both categorical and quantitative predictors.<br />
+</li>
+<li>Find the predicted probability of “success” for a new observation.<br />
+</li>
+<li>Plot the logistic model in simple cases.</li>
+</ul>
+</div>
+<p>So far all the modeling we have done in this course has used a quantitative response variable. Now, we are going to talk about how to model a different type of response variable, one with a binary response: yes/no, true/false, dead/alive, etc.</p>
+<p>Before we start, I would like to take some time to discuss some real-life examples. <strong>Can you think of any places where this might be used?</strong></p>
+<p>To introduce this concept, we will use the <code>Hmda</code> dataset from the <code>Ecdat</code> library. It contains data on mortgage application denials in Boston. The data are from 1997-98. You can learn more about the data by typing <code>Hmda</code> into help or <code>?Hmda</code> in the Console. The response variable is called <code>deny</code> and is a <code>yes</code> if the applicant was denied, and a <code>no</code> otherwise.</p>
+<p>We will filter out a couple outliers, so use <code>Hmda2</code> from now on.</p>
+<pre class="r"><code>Hmda2 &lt;- 
+  Hmda %&gt;% 
+  filter(hir &lt; 1, dir &lt; 1, ) %&gt;% 
+  mutate(deny_quant = ifelse(deny == &quot;yes&quot;, 1, 0))</code></pre>
+<div id="exploratory-analysis" class="section level1">
+<h1>Exploratory analysis</h1>
+<p>To examine relationships between quantitative variables and the binary response, <code>deny</code>, we can use boxplots along with scatterplots.</p>
+<pre class="r"><code>Hmda2 %&gt;% 
+  ggplot(aes(x = deny, y = dir)) +
+  geom_jitter(width = .1, size = .2, alpha = .5, color = &quot;darkgray&quot;) +
+  geom_boxplot(outlier.size = 0,varwidth = TRUE, alpha = .5) +
+  coord_flip()</code></pre>
+<p><img src="07_logistic_regression_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Or we could use ridge plots. There are other options, too. These are just some of my favorites.</p>
+<pre class="r"><code>Hmda2 %&gt;% 
+  ggplot(aes(x= dir, y = deny, fill = deny)) +
+  geom_density_ridges(alpha = .5)</code></pre>
+<pre><code>## Picking joint bandwidth of 0.0185</code></pre>
+<p><img src="07_logistic_regression_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data=Hmda2) +
+  geom_bar(aes(x=single, fill=deny), 
+           position = &quot;fill&quot;) +
+  ylab(&quot;&quot;)</code></pre>
+<p><img src="07_logistic_regression_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>A mosaic plot is an even more informative graph than the one above. The widths reflect the proportion in each level of the x-axis variable, in this case <code>single</code>. This function is a bit tedious because you have to do some labeling on your own.</p>
+<pre class="r"><code>Hmda2 %&gt;% 
+  ggplot() +
+  geom_mosaic(aes(x = product(single), 
+                  fill = deny)) +
+  labs(x = &quot;Single&quot;, y = &quot;Deny&quot;) +
+  guides(fill = &quot;none&quot;)</code></pre>
+<p><img src="07_logistic_regression_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<p>Explore some other potential predictor variables on your own. Do any variables seem to be good predictors of <code>deny</code>?</p>
+</div>
+</div>
+<div id="try-to-apply-regular-regression-techniques-bad-idea---do-not-ever-do-this" class="section level1">
+<h1>Try to apply regular regression techniques … (BAD IDEA - DO NOT EVER DO THIS!)</h1>
+<p>Since we know how to model data with a quantitative response, we might think of turning the <code>deny</code> variable into a quantitative variable. I did that when I created <code>Hmda2</code>; <code>deny_quant</code> is a 1 if the applicant was denied and 0 otherwise.</p>
+<p>Now, we could use this as our response variable in a linear model, same as we have been doing all semester. Let’s use <code>dir</code> and <code>single</code> as explanatory variables. <strong>Interpret each of the coefficients in the model below. Do you see an issue? (Hint, try predicting the response for non-single applicants with low debt payments to total income ratio, <code>dir</code>).</strong></p>
+<pre class="r"><code>lm_deny_WRONG &lt;- lm(deny_quant ~ dir + single, data = Hmda2)
+tidy(lm_deny_WRONG)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std.error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"-0.12992857","3":"0.02689624","4":"-4.830734","5":"1.447044e-06"},{"1":"dir","2":"0.70289918","3":"0.07866015","4":"8.935900","5":"7.920278e-19"},{"1":"singleyes","2":"0.04479116","3":"0.01332157","4":"3.362303","5":"7.852137e-04"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>It might also help to look at the plot.</p>
+<pre class="r"><code>augment(lm_deny_WRONG) %&gt;% 
+  ggplot(aes(x=dir, y=deny_quant, color=single)) +
+  geom_jitter(height = .05, size = .2, alpha = .5) +
+  geom_line(aes(y = .fitted))</code></pre>
+<p><img src="07_logistic_regression_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>How do we solve this problem? We want to guarantee that the model values are between 0 and 1. We are going to use something called a <em>link function</em>. We can think about this in two steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Fit a linear model the way we are used to, adding terms times their coefficients. (Note that the method isn’t exactly the same … I’ll talk about that later). Call this output <em>y</em>. This value is not a probability.</p></li>
+<li><p>Use a link function to translate the value <em>y</em> to a scale between 0 and 1, <em>p</em> (which stands for probability). The function that will be used is called the “logit link” or the logistic transformation and it is defined as</p></li>
+</ol>
+<p><span class="math display">\[
+p = \frac{e^y}{(1 + e^y)}
+\]</span></p>
+</div>
+<div id="fitting-the-logistic-regression-model-with-glm" class="section level1">
+<h1>Fitting the logistic regression model with <code>glm()</code></h1>
+<p>Let’s investigate how to do this in R. We can use a function called <code>glm()</code> (generalized linear model) to fit this model. Before explaining how the model is fit, let’s fit it and talk about interpreting the coefficients and predicting new values.</p>
+<pre class="r"><code>glm_deny &lt;- glm(deny ~ dir + single, 
+                data = Hmda2,
+                family = binomial(link = &quot;logit&quot;) #new!
+                ) 
+
+#NOTE: get_regression_table() doesn&#39;t work for glm&#39;s
+tidy(glm_deny) </code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["std.error"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["statistic"],"name":[4],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[5],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"-4.3392444","3":"0.2853551","4":"-15.206472","5":"3.203467e-52"},{"1":"dir","2":"6.2465861","3":"0.7664764","4":"8.149743","5":"3.646971e-16"},{"1":"singleyes","2":"0.4239286","3":"0.1302021","4":"3.255928","5":"1.130225e-03"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<div id="explanation" class="section level2">
+<h2>Explanation</h2>
+<p>Remember, the value that comes out of the linear model portion is <em>y</em> and <em>y</em> is the result of a linear equation. So,</p>
+<p><span class="math display">\[
+\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x_1 +\hat{\beta}_2 x_2 + ... + \hat{\beta}_p x_p
+\]</span></p>
+<p>Let’s also solve for <span class="math inline">\(y\)</span> in</p>
+<p><span class="math display">\[ 
+\hat{p} = \frac{e^{\hat{y}}}{(1 + e^{\hat{y}})},
+\]</span></p>
+<p>which, after a bit of math, gives: <span class="math display">\[
+\hat{y} = log\Big(\frac{\hat{p}}{1-\hat{p}}\Big)
+\]</span></p>
+<p>or <span class="math display">\[
+e^{\hat{y}} = \frac{\hat{p}}{1-\hat{p}}.
+\]</span></p>
+<p>Combining these, we have</p>
+<p><span class="math display">\[
+log\Big(\frac{\hat{p}}{1-\hat{p}}\Big) = \hat{\beta}_0 + \hat{\beta}_1 x_1 +\hat{\beta}_2 x_2 + ... + \hat{\beta}_p x_p
+\]</span></p>
+<p>or</p>
+<p><span class="math display">\[
+\frac{\hat{p}}{1-\hat{p}} = e^{\hat{\beta}_0}e^{\hat{\beta}_1x_1}e^{\hat{\beta}_2 x_2} \cdots e^{\hat{\beta}_p x_p}
+\]</span></p>
+<p>These equations give us nice ways to interpret the coefficients.</p>
+<p>The quantity <span class="math inline">\(\frac{\hat{p}}{1-\hat{p}}\)</span> is called the <em>odds</em>.</p>
+<div id="tangent-what-are-odds" class="section level3">
+<h3>Tangent: What are odds?</h3>
+<p>Before we move on to interpreting the results of our models, let’s first make sure we have an understanding of odds.</p>
+<p>Let x be some event (ie. getting a heads, winning the lottery, buying a shirt, passing this class, …). Then the odds of x, <span class="math inline">\(odds(x)\)</span>, is defined as:</p>
+<p><span class="math display">\[
+odds(x) = \frac{p(x)}{1 - p(x)},
+\]</span></p>
+<p>the probability of x divided by 1 minus the probability of x (which is the probability of of not x).</p>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<ol style="list-style-type: decimal">
+<li>Assume the probability of flipping heads on a coin is .5. Find the odds of flipping a head.<br />
+</li>
+<li>In a regular 52 card deck of cards, the odds of choosing a card that is hearts.<br />
+</li>
+<li>If the probability of survival is <span class="math inline">\(p=.80\)</span>, what are the odds of survival?<br />
+</li>
+<li>In the previous question, what are the log odds of survival?<br />
+</li>
+<li>Is it easy to think about the log odds scale? Or even the odds scale?</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="back-to-explanation" class="section level2">
+<h2>Back to explanation</h2>
+<p>Recall the model we were just looking at. A also added a column of the exponentiated coefficients (<span class="math inline">\(e^{coefficient}\)</span>).</p>
+<pre class="r"><code>tidy(glm_deny) %&gt;% 
+  select(term, estimate) %&gt;% 
+  mutate(exp_est = exp(estimate))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["term"],"name":[1],"type":["chr"],"align":["left"]},{"label":["estimate"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["exp_est"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"(Intercept)","2":"-4.3392444","3":"0.01304638"},{"1":"dir","2":"6.2465861","3":"516.24738389"},{"1":"singleyes","2":"0.4239286","3":"1.52795243"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>We should keep in mind:</p>
+<ol style="list-style-type: decimal">
+<li>The coefficients that are in the output are on the <code>log(odds)</code> scale - YUCK! We don’t usually want to interpret things on that scale.<br />
+</li>
+<li>The exponentiated equation is multiplicative on the odds scale. That’s a better way to interpret our results</li>
+</ol>
+<div class="alert alert-info">
+<p><strong>YOUR TURN!</strong></p>
+<p>Interpret/find the following:</p>
+<ol style="list-style-type: decimal">
+<li><span class="math inline">\(\hat{\beta}_0\)</span>, the intercept.</li>
+<li><span class="math inline">\(e^{\hat{\beta}_0}\)</span>, the exponentiated intercept.</li>
+<li><span class="math inline">\(\hat{\beta}_1\)</span>, the coefficient for <code>dir</code>. Why might this be a useless interpretation? In what units might we want to interpret this?</li>
+<li><span class="math inline">\(e^{\hat{\beta}_1}\)</span>.</li>
+<li><span class="math inline">\(\hat{\beta}_2\)</span>,</li>
+<li><span class="math inline">\(e^{\hat{\beta}_2}\)</span> Hint: compare the odds of denial for single and non-single with the same <code>dir</code>.<br />
+</li>
+<li>The probability of a denied mortgage application for a single applicant who has a debt payments to total income ratio of .2.<br />
+</li>
+<li>The probability of an accepted mortgage for a single applicant who has a debt payments to total income ratio of .2.</li>
+</ol>
+</div>
+</div>
+<div id="prediction" class="section level2">
+<h2>Prediction</h2>
+<p>We can use the <code>augment()</code> function to predict new values, similar to how we used it before. See <code>augment.glm</code> in the help for more details.</p>
+<p>Let’s show how to do that using problem 7 from above. <strong>What is .fitted?</strong></p>
+<pre class="r"><code>augment(glm_deny, 
+        newdata = tibble(single = &quot;yes&quot;, dir = .2))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["single"],"name":[1],"type":["chr"],"align":["left"]},{"label":["dir"],"name":[2],"type":["dbl"],"align":["right"]},{"label":[".fitted"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"yes","2":"0.2","3":"-2.665999"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Let’s put this in terms of probability:</p>
+<pre class="r"><code>augment(glm_deny, 
+        newdata = tibble(single = &quot;yes&quot;, dir = .2),
+        type.predict = &quot;response&quot;)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["single"],"name":[1],"type":["chr"],"align":["left"]},{"label":["dir"],"name":[2],"type":["dbl"],"align":["right"]},{"label":[".fitted"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"yes","2":"0.2","3":"0.06500976"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Just like with linear regression, in simple cases, we can plot the model values (the probabilities). This is one of those cases. <strong>How does this plot look different from when we used linear regression to model <code>deny</code>?</strong></p>
+<pre class="r"><code>augment(glm_deny, 
+        data = Hmda2,
+        type.predict=&quot;response&quot;) %&gt;% 
+  #I need to plot deny as a 0/1
+  ggplot(aes(x=dir, y=deny_quant, color=single)) +
+  geom_jitter(height = .05, size = .2, alpha = .5) +
+  geom_line(aes(y = .fitted))</code></pre>
+<p><img src="07_logistic_regression_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+</div>
+<div id="fitting-the-model" class="section level2">
+<h2>Fitting the model</h2>
+<p>We learned that linear models are fit by finding the coefficients that minimize the sum of the squared residuals. Coefficients in logistic regression maximize the likelihood function. In the case of logistic regression, the likelihood function is:</p>
+<p><span class="math display">\[
+\prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}.
+\]</span></p>
+<p>This formula may look complicated but it’s not too bad.</p>
+<p>The <span class="math inline">\(y_i\)</span> is the observed value for the <span class="math inline">\(i^{th}\)</span> observation. So, it is either 0 or 1.</p>
+<p>Notice that when <span class="math inline">\(y_i = 1\)</span>,</p>
+<p><span class="math display">\[
+p_i^{y_i}(1-p_i)^{1-y_i} = p_i
+\]</span></p>
+<p>and when <span class="math inline">\(y_i = 0\)</span>,</p>
+<p><span class="math display">\[
+p_i^{y_i}(1-p_i)^{1-y_i} = 1 - p_i.
+\]</span></p>
+<p>So, this is just a product of either the predicted probabilities (for cases when <span class="math inline">\(y_i = 1\)</span>) or one minus the predicted probabilities (for cases when <span class="math inline">\(y_i = 0\)</span>).</p>
+<p>The largest this value can be is <span class="math inline">\(1\)</span>, which would happen if all the 1’s had a predicted probability of 1 and all the 0’s would have a predicted probability of 0.</p>
+<p>This will never happen in real life, but in general, a “good” model would be one where the 1’s have predicted probabilities that are close to 1 and 0’s have predicted probabilities that are close to 0.</p>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiTG9naXN0aWMgUmVncmVzc2lvbiIKb3V0cHV0OgogIGh0bWxfZG9jdW1lbnQ6CiAgICB0b2M6IHRydWUKICAgIHRvY19mbG9hdDogdHJ1ZQogICAgZGZfcHJpbnQ6IHBhZ2VkCiAgICBjb2RlX2Rvd25sb2FkOiB0cnVlCi0tLQoKYGBge3IsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9CmxpYnJhcnkodGlkeXZlcnNlKSAjZm9yIHBsb3R0aW5nIGFuZCBzdW1tYXJpemluZwpsaWJyYXJ5KGdncmlkZ2VzKSAjZm9yIHJpZGdlIHBsb3RzCmxpYnJhcnkoZ2dtb3NhaWMpICNORVchIGZvciBtb3NhaWMgcGxvdHMKbGlicmFyeShtb2Rlcm5kaXZlKSAjZm9yIG5pY2UgbW9kZWwgb3V0cHV0CmxpYnJhcnkoYnJvb20pICNmb3IgbmljZSBtb2RlbCBvdXRwdXQgCmxpYnJhcnkoRWNkYXQpICNmb3IgZGF0YQp0aGVtZV9zZXQodGhlbWVfbWluaW1hbCgpKSAjY2hhbmdlcyB0aGUgdGhlbWUgb2YgZ2dwbG90cyB0byB0aGVtZV9taW5pbWFsLCBteSBwZXJzb25hbCBmYXZvcml0ZQpgYGAKCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LXN1Y2Nlc3MiPgogIDxzdHJvbmc+R09BTDo8L3N0cm9uZz4KCkJ5IHRoZSBlbmQgb2YgdGhlc2Ugbm90ZXMgYW5kIGFjdGl2aXRpZXMsIHlvdSBzaG91bGQgYmUgYWJsZSB0byBwZXJmb3JtIHRoZSBmb2xsb3dpbmcgdGFza3MuCgoqIENyZWF0ZSBhcHByb3ByaWF0ZSBwbG90cyB0byBleHBsb3JlIHRoZSByZWxhdGlvbnNoaXAgYmV0d2VlbiBjYXRlZ29yaWNhbCBvciBxdWFudGl0YXRpdmUgcHJlZGljdG9ycyBhbmQgYSBiaW5hcnkgcmVzcG9uc2UuICAKKiBLbm93IHdoZW4gYSBsb2dpc3RpYyByZWdyZXNzaW9uIG1vZGVsIGlzIGFwcHJvcHJpYXRlLiAgCiogRml0IGEgbG9naXN0aWMgcmVncmVzc2lvbiBtb2RlbCB1c2luZyBgZ2xtKClgLiAoRG9uJ3QgZm9yZ2V0IGBmYW1pbHkgPSBiaW5vbWlhbChsaW5rID0gImxvZ2l0IilgLikgIAoqIEludGVycHJldCBjb2VmZmljaWVudHMgZnJvbSBhIGxvZ2lzdGljIHJlZ3Jlc3Npb24gbW9kZWwgZm9yIGJvdGggY2F0ZWdvcmljYWwgYW5kIHF1YW50aXRhdGl2ZSBwcmVkaWN0b3JzLiAgCiogRmluZCB0aGUgcHJlZGljdGVkIHByb2JhYmlsaXR5IG9mICJzdWNjZXNzIiBmb3IgYSBuZXcgb2JzZXJ2YXRpb24uICAKKiBQbG90IHRoZSBsb2dpc3RpYyBtb2RlbCBpbiBzaW1wbGUgY2FzZXMuCgo8L2Rpdj4KClNvIGZhciBhbGwgdGhlIG1vZGVsaW5nIHdlIGhhdmUgZG9uZSBpbiB0aGlzIGNvdXJzZSBoYXMgdXNlZCBhIHF1YW50aXRhdGl2ZSByZXNwb25zZSB2YXJpYWJsZS4gTm93LCB3ZSBhcmUgZ29pbmcgdG8gdGFsayBhYm91dCBob3cgdG8gbW9kZWwgYSBkaWZmZXJlbnQgdHlwZSBvZiByZXNwb25zZSB2YXJpYWJsZSwgb25lIHdpdGggYSBiaW5hcnkgcmVzcG9uc2U6IHllcy9ubywgdHJ1ZS9mYWxzZSwgZGVhZC9hbGl2ZSwgZXRjLiAKCkJlZm9yZSB3ZSBzdGFydCwgSSB3b3VsZCBsaWtlIHRvIHRha2Ugc29tZSB0aW1lIHRvIGRpc2N1c3Mgc29tZSByZWFsLWxpZmUgZXhhbXBsZXMuICoqQ2FuIHlvdSB0aGluayBvZiBhbnkgcGxhY2VzIHdoZXJlIHRoaXMgbWlnaHQgYmUgdXNlZD8qKgoKVG8gaW50cm9kdWNlIHRoaXMgY29uY2VwdCwgd2Ugd2lsbCB1c2UgdGhlIGBIbWRhYCBkYXRhc2V0IGZyb20gdGhlIGBFY2RhdGAgbGlicmFyeS4gSXQgY29udGFpbnMgZGF0YSBvbiBtb3J0Z2FnZSBhcHBsaWNhdGlvbiBkZW5pYWxzIGluIEJvc3Rvbi4gVGhlIGRhdGEgYXJlIGZyb20gMTk5Ny05OC4gWW91IGNhbiBsZWFybiBtb3JlIGFib3V0IHRoZSBkYXRhIGJ5IHR5cGluZyBgSG1kYWAgaW50byBoZWxwIG9yIGA/SG1kYWAgaW4gdGhlIENvbnNvbGUuIFRoZSByZXNwb25zZSB2YXJpYWJsZSBpcyBjYWxsZWQgYGRlbnlgIGFuZCBpcyBhIGB5ZXNgIGlmIHRoZSBhcHBsaWNhbnQgd2FzIGRlbmllZCwgYW5kIGEgYG5vYCBvdGhlcndpc2UuCgpXZSB3aWxsIGZpbHRlciBvdXQgYSBjb3VwbGUgb3V0bGllcnMsIHNvIHVzZSBgSG1kYTJgIGZyb20gbm93IG9uLgoKYGBge3J9CkhtZGEyIDwtIAogIEhtZGEgJT4lIAogIGZpbHRlcihoaXIgPCAxLCBkaXIgPCAxLCApICU+JSAKICBtdXRhdGUoZGVueV9xdWFudCA9IGlmZWxzZShkZW55ID09ICJ5ZXMiLCAxLCAwKSkKYGBgCgoKIyBFeHBsb3JhdG9yeSBhbmFseXNpcwoKVG8gZXhhbWluZSByZWxhdGlvbnNoaXBzIGJldHdlZW4gcXVhbnRpdGF0aXZlIHZhcmlhYmxlcyBhbmQgdGhlIGJpbmFyeSByZXNwb25zZSwgYGRlbnlgLCB3ZSBjYW4gdXNlIGJveHBsb3RzIGFsb25nIHdpdGggc2NhdHRlcnBsb3RzLgoKYGBge3J9CkhtZGEyICU+JSAKICBnZ3Bsb3QoYWVzKHggPSBkZW55LCB5ID0gZGlyKSkgKwogIGdlb21faml0dGVyKHdpZHRoID0gLjEsIHNpemUgPSAuMiwgYWxwaGEgPSAuNSwgY29sb3IgPSAiZGFya2dyYXkiKSArCiAgZ2VvbV9ib3hwbG90KG91dGxpZXIuc2l6ZSA9IDAsdmFyd2lkdGggPSBUUlVFLCBhbHBoYSA9IC41KSArCiAgY29vcmRfZmxpcCgpCmBgYAoKT3Igd2UgY291bGQgdXNlIHJpZGdlIHBsb3RzLiBUaGVyZSBhcmUgb3RoZXIgb3B0aW9ucywgdG9vLiBUaGVzZSBhcmUganVzdCBzb21lIG9mIG15IGZhdm9yaXRlcy4KCmBgYHtyfQpIbWRhMiAlPiUgCiAgZ2dwbG90KGFlcyh4PSBkaXIsIHkgPSBkZW55LCBmaWxsID0gZGVueSkpICsKICBnZW9tX2RlbnNpdHlfcmlkZ2VzKGFscGhhID0gLjUpCmBgYAoKCmBgYHtyfQpnZ3Bsb3QoZGF0YT1IbWRhMikgKwogIGdlb21fYmFyKGFlcyh4PXNpbmdsZSwgZmlsbD1kZW55KSwgCiAgICAgICAgICAgcG9zaXRpb24gPSAiZmlsbCIpICsKICB5bGFiKCIiKQpgYGAKCkEgbW9zYWljIHBsb3QgaXMgYW4gZXZlbiBtb3JlIGluZm9ybWF0aXZlIGdyYXBoIHRoYW4gdGhlIG9uZSBhYm92ZS4gVGhlIHdpZHRocyByZWZsZWN0IHRoZSBwcm9wb3J0aW9uIGluIGVhY2ggbGV2ZWwgb2YgdGhlIHgtYXhpcyB2YXJpYWJsZSwgaW4gdGhpcyBjYXNlIGBzaW5nbGVgLiBUaGlzIGZ1bmN0aW9uIGlzIGEgYml0IHRlZGlvdXMgYmVjYXVzZSB5b3UgaGF2ZSB0byBkbyBzb21lIGxhYmVsaW5nIG9uIHlvdXIgb3duLgoKYGBge3J9CkhtZGEyICU+JSAKICBnZ3Bsb3QoKSArCiAgZ2VvbV9tb3NhaWMoYWVzKHggPSBwcm9kdWN0KHNpbmdsZSksIAogICAgICAgICAgICAgICAgICBmaWxsID0gZGVueSkpICsKICBsYWJzKHggPSAiU2luZ2xlIiwgeSA9ICJEZW55IikgKwogIGd1aWRlcyhmaWxsID0gIm5vbmUiKQoKYGBgCgo8ZGl2IGNsYXNzPSJhbGVydCBhbGVydC1pbmZvIj4KICA8c3Ryb25nPllPVVIgVFVSTiE8L3N0cm9uZz4KCkV4cGxvcmUgc29tZSBvdGhlciBwb3RlbnRpYWwgcHJlZGljdG9yIHZhcmlhYmxlcyBvbiB5b3VyIG93bi4gRG8gYW55IHZhcmlhYmxlcyBzZWVtIHRvIGJlIGdvb2QgcHJlZGljdG9ycyBvZiBgZGVueWA/IAoKPC9kaXY+CgojIFRyeSB0byBhcHBseSByZWd1bGFyIHJlZ3Jlc3Npb24gdGVjaG5pcXVlcyAuLi4gKEJBRCBJREVBIC0gRE8gTk9UIEVWRVIgRE8gVEhJUyEpCgpTaW5jZSB3ZSBrbm93IGhvdyB0byBtb2RlbCBkYXRhIHdpdGggYSBxdWFudGl0YXRpdmUgcmVzcG9uc2UsIHdlIG1pZ2h0IHRoaW5rIG9mIHR1cm5pbmcgdGhlIGBkZW55YCB2YXJpYWJsZSBpbnRvIGEgcXVhbnRpdGF0aXZlIHZhcmlhYmxlLiBJIGRpZCB0aGF0IHdoZW4gSSBjcmVhdGVkIGBIbWRhMmA7IGBkZW55X3F1YW50YCBpcyBhIDEgaWYgdGhlIGFwcGxpY2FudCB3YXMgZGVuaWVkIGFuZCAwIG90aGVyd2lzZS4KCk5vdywgd2UgY291bGQgdXNlIHRoaXMgYXMgb3VyIHJlc3BvbnNlIHZhcmlhYmxlIGluIGEgbGluZWFyIG1vZGVsLCBzYW1lIGFzIHdlIGhhdmUgYmVlbiBkb2luZyBhbGwgc2VtZXN0ZXIuIExldCdzIHVzZSBgZGlyYCBhbmQgYHNpbmdsZWAgYXMgZXhwbGFuYXRvcnkgdmFyaWFibGVzLiAqKkludGVycHJldCBlYWNoIG9mIHRoZSBjb2VmZmljaWVudHMgaW4gdGhlIG1vZGVsIGJlbG93LiBEbyB5b3Ugc2VlIGFuIGlzc3VlPyAoSGludCwgdHJ5IHByZWRpY3RpbmcgdGhlIHJlc3BvbnNlIGZvciBub24tc2luZ2xlIGFwcGxpY2FudHMgd2l0aCBsb3cgZGVidCBwYXltZW50cyB0byB0b3RhbCBpbmNvbWUgcmF0aW8sIGBkaXJgKS4qKgoKYGBge3J9CmxtX2RlbnlfV1JPTkcgPC0gbG0oZGVueV9xdWFudCB+IGRpciArIHNpbmdsZSwgZGF0YSA9IEhtZGEyKQp0aWR5KGxtX2RlbnlfV1JPTkcpCmBgYAoKSXQgbWlnaHQgYWxzbyBoZWxwIHRvIGxvb2sgYXQgdGhlIHBsb3QuCgpgYGB7cn0KYXVnbWVudChsbV9kZW55X1dST05HKSAlPiUgCiAgZ2dwbG90KGFlcyh4PWRpciwgeT1kZW55X3F1YW50LCBjb2xvcj1zaW5nbGUpKSArCiAgZ2VvbV9qaXR0ZXIoaGVpZ2h0ID0gLjA1LCBzaXplID0gLjIsIGFscGhhID0gLjUpICsKICBnZW9tX2xpbmUoYWVzKHkgPSAuZml0dGVkKSkKYGBgCgoKSG93IGRvIHdlIHNvbHZlIHRoaXMgcHJvYmxlbT8gV2Ugd2FudCB0byBndWFyYW50ZWUgdGhhdCB0aGUgbW9kZWwgdmFsdWVzIGFyZSBiZXR3ZWVuIDAgYW5kIDEuIFdlIGFyZSBnb2luZyB0byB1c2Ugc29tZXRoaW5nIGNhbGxlZCBhICpsaW5rIGZ1bmN0aW9uKi4gV2UgY2FuIHRoaW5rIGFib3V0IHRoaXMgaW4gdHdvIHN0ZXBzOgoKMS4gRml0IGEgbGluZWFyIG1vZGVsIHRoZSB3YXkgd2UgYXJlIHVzZWQgdG8sIGFkZGluZyB0ZXJtcyB0aW1lcyB0aGVpciBjb2VmZmljaWVudHMuIChOb3RlIHRoYXQgdGhlIG1ldGhvZCBpc24ndCBleGFjdGx5IHRoZSBzYW1lIC4uLiBJJ2xsIHRhbGsgYWJvdXQgdGhhdCBsYXRlcikuIENhbGwgdGhpcyBvdXRwdXQgKnkqLiBUaGlzIHZhbHVlIGlzIG5vdCBhIHByb2JhYmlsaXR5LgoKMi4gVXNlIGEgbGluayBmdW5jdGlvbiB0byB0cmFuc2xhdGUgdGhlIHZhbHVlICp5KiB0byBhIHNjYWxlIGJldHdlZW4gMCBhbmQgMSwgKnAqICh3aGljaCBzdGFuZHMgZm9yIHByb2JhYmlsaXR5KS4gVGhlIGZ1bmN0aW9uIHRoYXQgd2lsbCBiZSB1c2VkIGlzIGNhbGxlZCB0aGUgImxvZ2l0IGxpbmsiIG9yIHRoZSBsb2dpc3RpYyB0cmFuc2Zvcm1hdGlvbiBhbmQgaXQgaXMgZGVmaW5lZCBhcyAKCiQkCnAgPSBcZnJhY3tlXnl9eygxICsgZV55KX0KJCQKCiMgRml0dGluZyB0aGUgbG9naXN0aWMgcmVncmVzc2lvbiBtb2RlbCB3aXRoIGBnbG0oKWAKCkxldCdzIGludmVzdGlnYXRlIGhvdyB0byBkbyB0aGlzIGluIFIuIFdlIGNhbiB1c2UgYSBmdW5jdGlvbiBjYWxsZWQgYGdsbSgpYCAoZ2VuZXJhbGl6ZWQgbGluZWFyIG1vZGVsKSB0byBmaXQgdGhpcyBtb2RlbC4gQmVmb3JlIGV4cGxhaW5pbmcgaG93IHRoZSBtb2RlbCBpcyBmaXQsIGxldCdzIGZpdCBpdCBhbmQgdGFsayBhYm91dCBpbnRlcnByZXRpbmcgdGhlIGNvZWZmaWNpZW50cyBhbmQgcHJlZGljdGluZyBuZXcgdmFsdWVzLiAKCgpgYGB7cn0KCmdsbV9kZW55IDwtIGdsbShkZW55IH4gZGlyICsgc2luZ2xlLCAKICAgICAgICAgICAgICAgIGRhdGEgPSBIbWRhMiwKICAgICAgICAgICAgICAgIGZhbWlseSA9IGJpbm9taWFsKGxpbmsgPSAibG9naXQiKSAjbmV3IQogICAgICAgICAgICAgICAgKSAKCiNOT1RFOiBnZXRfcmVncmVzc2lvbl90YWJsZSgpIGRvZXNuJ3Qgd29yayBmb3IgZ2xtJ3MKdGlkeShnbG1fZGVueSkgCmBgYAoKIyMgRXhwbGFuYXRpb24KClJlbWVtYmVyLCB0aGUgdmFsdWUgdGhhdCBjb21lcyBvdXQgb2YgdGhlIGxpbmVhciBtb2RlbCBwb3J0aW9uIGlzICp5KiBhbmQgKnkqIGlzIHRoZSByZXN1bHQgb2YgYSBsaW5lYXIgZXF1YXRpb24uIFNvLCAKCiQkClxoYXR7eX0gPSBcaGF0e1xiZXRhfV8wICsgXGhhdHtcYmV0YX1fMSB4XzEgK1xoYXR7XGJldGF9XzIgeF8yICsgLi4uICsgXGhhdHtcYmV0YX1fcCB4X3AKJCQKCkxldCdzIGFsc28gc29sdmUgZm9yICR5JCBpbiAKCiQkIApcaGF0e3B9ID0gXGZyYWN7ZV57XGhhdHt5fX19eygxICsgZV57XGhhdHt5fX0pfSwKJCQKCndoaWNoLCBhZnRlciBhIGJpdCBvZiBtYXRoLCBnaXZlczoKJCQKXGhhdHt5fSA9IGxvZ1xCaWcoXGZyYWN7XGhhdHtwfX17MS1caGF0e3B9fVxCaWcpCiQkIAoKb3IgCiQkCmVee1xoYXR7eX19ID0gXGZyYWN7XGhhdHtwfX17MS1caGF0e3B9fS4KJCQKCkNvbWJpbmluZyB0aGVzZSwgd2UgaGF2ZSAKCiQkCmxvZ1xCaWcoXGZyYWN7XGhhdHtwfX17MS1caGF0e3B9fVxCaWcpID0gXGhhdHtcYmV0YX1fMCArIFxoYXR7XGJldGF9XzEgeF8xICtcaGF0e1xiZXRhfV8yIHhfMiArIC4uLiArIFxoYXR7XGJldGF9X3AgeF9wCiQkIAoKb3IgCgokJApcZnJhY3tcaGF0e3B9fXsxLVxoYXR7cH19ID0gZV57XGhhdHtcYmV0YX1fMH1lXntcaGF0e1xiZXRhfV8xeF8xfWVee1xoYXR7XGJldGF9XzIgeF8yfSBcY2RvdHMgZV57XGhhdHtcYmV0YX1fcCB4X3B9CiQkCgpUaGVzZSBlcXVhdGlvbnMgZ2l2ZSB1cyBuaWNlIHdheXMgdG8gaW50ZXJwcmV0IHRoZSBjb2VmZmljaWVudHMuIAoKVGhlIHF1YW50aXR5ICRcZnJhY3tcaGF0e3B9fXsxLVxoYXR7cH19JCBpcyBjYWxsZWQgdGhlICpvZGRzKi4gCgojIyMgVGFuZ2VudDogV2hhdCBhcmUgb2Rkcz8KCkJlZm9yZSB3ZSBtb3ZlIG9uIHRvIGludGVycHJldGluZyB0aGUgcmVzdWx0cyBvZiBvdXIgbW9kZWxzLCBsZXQncyBmaXJzdCBtYWtlIHN1cmUgd2UgaGF2ZSBhbiB1bmRlcnN0YW5kaW5nIG9mIG9kZHMuIAoKTGV0IHggYmUgc29tZSBldmVudCAoaWUuIGdldHRpbmcgYSBoZWFkcywgd2lubmluZyB0aGUgbG90dGVyeSwgYnV5aW5nIGEgc2hpcnQsIHBhc3NpbmcgdGhpcyBjbGFzcywgLi4uKS4gVGhlbiB0aGUgb2RkcyBvZiB4LCAkb2Rkcyh4KSQsIGlzIGRlZmluZWQgYXM6CgokJApvZGRzKHgpID0gXGZyYWN7cCh4KX17MSAtIHAoeCl9LAokJAoKdGhlIHByb2JhYmlsaXR5IG9mIHggZGl2aWRlZCBieSAxIG1pbnVzIHRoZSBwcm9iYWJpbGl0eSBvZiB4ICh3aGljaCBpcyB0aGUgcHJvYmFiaWxpdHkgb2Ygb2Ygbm90IHgpLgoKPGRpdiBjbGFzcz0iYWxlcnQgYWxlcnQtaW5mbyI+CiAgPHN0cm9uZz5ZT1VSIFRVUk4hPC9zdHJvbmc+CiAgCjEuIEFzc3VtZSB0aGUgcHJvYmFiaWxpdHkgb2YgZmxpcHBpbmcgaGVhZHMgb24gYSBjb2luIGlzIC41LiBGaW5kIHRoZSBvZGRzIG9mIGZsaXBwaW5nIGEgaGVhZC4gICAKMi4gSW4gYSByZWd1bGFyIDUyIGNhcmQgZGVjayBvZiBjYXJkcywgdGhlIG9kZHMgb2YgY2hvb3NpbmcgYSBjYXJkIHRoYXQgaXMgaGVhcnRzLiAgCjMuIElmIHRoZSBwcm9iYWJpbGl0eSBvZiBzdXJ2aXZhbCBpcyAkcD0uODAkLCB3aGF0IGFyZSB0aGUgb2RkcyBvZiBzdXJ2aXZhbD8gIAo0LiBJbiB0aGUgcHJldmlvdXMgcXVlc3Rpb24sIHdoYXQgYXJlIHRoZSBsb2cgb2RkcyBvZiBzdXJ2aXZhbD8gIAo1LiBJcyBpdCBlYXN5IHRvIHRoaW5rIGFib3V0IHRoZSBsb2cgb2RkcyBzY2FsZT8gT3IgZXZlbiB0aGUgb2RkcyBzY2FsZT8KCjwvZGl2PgoKIyMgQmFjayB0byBleHBsYW5hdGlvbgoKUmVjYWxsIHRoZSBtb2RlbCB3ZSB3ZXJlIGp1c3QgbG9va2luZyBhdC4gQSBhbHNvIGFkZGVkIGEgY29sdW1uIG9mIHRoZSBleHBvbmVudGlhdGVkIGNvZWZmaWNpZW50cyAoJGVee2NvZWZmaWNpZW50fSQpLgoKYGBge3J9CnRpZHkoZ2xtX2RlbnkpICU+JSAKICBzZWxlY3QodGVybSwgZXN0aW1hdGUpICU+JSAKICBtdXRhdGUoZXhwX2VzdCA9IGV4cChlc3RpbWF0ZSkpCmBgYAoKV2Ugc2hvdWxkIGtlZXAgaW4gbWluZDoKCjEuIFRoZSBjb2VmZmljaWVudHMgdGhhdCBhcmUgaW4gdGhlIG91dHB1dCBhcmUgb24gdGhlIGBsb2cob2RkcylgIHNjYWxlIC0gWVVDSyEgV2UgZG9uJ3QgdXN1YWxseSB3YW50IHRvIGludGVycHJldCB0aGluZ3Mgb24gdGhhdCBzY2FsZS4gIAoyLiBUaGUgZXhwb25lbnRpYXRlZCBlcXVhdGlvbiBpcyBtdWx0aXBsaWNhdGl2ZSBvbiB0aGUgb2RkcyBzY2FsZS4gVGhhdCdzIGEgYmV0dGVyIHdheSB0byBpbnRlcnByZXQgb3VyIHJlc3VsdHMKCjxkaXYgY2xhc3M9ImFsZXJ0IGFsZXJ0LWluZm8iPgogIDxzdHJvbmc+WU9VUiBUVVJOITwvc3Ryb25nPgoKSW50ZXJwcmV0L2ZpbmQgdGhlIGZvbGxvd2luZzoKCjEuICRcaGF0e1xiZXRhfV8wJCwgdGhlIGludGVyY2VwdC4KMi4gJGVee1xoYXR7XGJldGF9XzB9JCwgdGhlIGV4cG9uZW50aWF0ZWQgaW50ZXJjZXB0LgozLiAkXGhhdHtcYmV0YX1fMSQsIHRoZSBjb2VmZmljaWVudCBmb3IgYGRpcmAuIFdoeSBtaWdodCB0aGlzIGJlIGEgdXNlbGVzcyBpbnRlcnByZXRhdGlvbj8gSW4gd2hhdCB1bml0cyBtaWdodCB3ZSB3YW50IHRvIGludGVycHJldCB0aGlzPwo0LiAkZV57XGhhdHtcYmV0YX1fMX0kLiAKNS4gJFxoYXR7XGJldGF9XzIkLCAKNi4gJGVee1xoYXR7XGJldGF9XzJ9JCBIaW50OiBjb21wYXJlIHRoZSBvZGRzIG9mIGRlbmlhbCBmb3Igc2luZ2xlIGFuZCBub24tc2luZ2xlIHdpdGggdGhlIHNhbWUgYGRpcmAuICAKNy4gVGhlIHByb2JhYmlsaXR5IG9mIGEgZGVuaWVkIG1vcnRnYWdlIGFwcGxpY2F0aW9uIGZvciBhIHNpbmdsZSBhcHBsaWNhbnQgd2hvIGhhcyBhIGRlYnQgcGF5bWVudHMgdG8gdG90YWwgaW5jb21lIHJhdGlvIG9mIC4yLiAgCjguIFRoZSBwcm9iYWJpbGl0eSBvZiBhbiBhY2NlcHRlZCBtb3J0Z2FnZSBmb3IgYSBzaW5nbGUgYXBwbGljYW50IHdobyBoYXMgYSBkZWJ0IHBheW1lbnRzIHRvIHRvdGFsIGluY29tZSByYXRpbyBvZiAuMi4gCgo8L2Rpdj4KCiMjIFByZWRpY3Rpb24KCldlIGNhbiB1c2UgdGhlIGBhdWdtZW50KClgIGZ1bmN0aW9uIHRvIHByZWRpY3QgbmV3IHZhbHVlcywgc2ltaWxhciB0byBob3cgd2UgdXNlZCBpdCBiZWZvcmUuIFNlZSBgYXVnbWVudC5nbG1gIGluIHRoZSBoZWxwIGZvciBtb3JlIGRldGFpbHMuCgpMZXQncyBzaG93IGhvdyB0byBkbyB0aGF0IHVzaW5nIHByb2JsZW0gNyBmcm9tIGFib3ZlLiAqKldoYXQgaXMgLmZpdHRlZD8qKgoKYGBge3J9CmF1Z21lbnQoZ2xtX2RlbnksIAogICAgICAgIG5ld2RhdGEgPSB0aWJibGUoc2luZ2xlID0gInllcyIsIGRpciA9IC4yKSkKYGBgCgpMZXQncyBwdXQgdGhpcyBpbiB0ZXJtcyBvZiBwcm9iYWJpbGl0eToKCmBgYHtyfQphdWdtZW50KGdsbV9kZW55LCAKICAgICAgICBuZXdkYXRhID0gdGliYmxlKHNpbmdsZSA9ICJ5ZXMiLCBkaXIgPSAuMiksCiAgICAgICAgdHlwZS5wcmVkaWN0ID0gInJlc3BvbnNlIikKYGBgCgpKdXN0IGxpa2Ugd2l0aCBsaW5lYXIgcmVncmVzc2lvbiwgaW4gc2ltcGxlIGNhc2VzLCB3ZSBjYW4gcGxvdCB0aGUgbW9kZWwgdmFsdWVzICh0aGUgcHJvYmFiaWxpdGllcykuIFRoaXMgaXMgb25lIG9mIHRob3NlIGNhc2VzLiAqKkhvdyBkb2VzIHRoaXMgcGxvdCBsb29rIGRpZmZlcmVudCBmcm9tIHdoZW4gd2UgdXNlZCBsaW5lYXIgcmVncmVzc2lvbiB0byBtb2RlbCBgZGVueWA/KioKCmBgYHtyfQphdWdtZW50KGdsbV9kZW55LCAKICAgICAgICBkYXRhID0gSG1kYTIsCiAgICAgICAgdHlwZS5wcmVkaWN0PSJyZXNwb25zZSIpICU+JSAKICAjSSBuZWVkIHRvIHBsb3QgZGVueSBhcyBhIDAvMQogIGdncGxvdChhZXMoeD1kaXIsIHk9ZGVueV9xdWFudCwgY29sb3I9c2luZ2xlKSkgKwogIGdlb21faml0dGVyKGhlaWdodCA9IC4wNSwgc2l6ZSA9IC4yLCBhbHBoYSA9IC41KSArCiAgZ2VvbV9saW5lKGFlcyh5ID0gLmZpdHRlZCkpCmBgYAoKCiMjIEZpdHRpbmcgdGhlIG1vZGVsCgpXZSBsZWFybmVkIHRoYXQgbGluZWFyIG1vZGVscyBhcmUgZml0IGJ5IGZpbmRpbmcgdGhlIGNvZWZmaWNpZW50cyB0aGF0IG1pbmltaXplIHRoZSBzdW0gb2YgdGhlIHNxdWFyZWQgcmVzaWR1YWxzLiBDb2VmZmljaWVudHMgaW4gbG9naXN0aWMgcmVncmVzc2lvbiBtYXhpbWl6ZSB0aGUgbGlrZWxpaG9vZCBmdW5jdGlvbi4gSW4gdGhlIGNhc2Ugb2YgbG9naXN0aWMgcmVncmVzc2lvbiwgdGhlIGxpa2VsaWhvb2QgZnVuY3Rpb24gaXM6IAoKJCQKXHByb2Rfe2k9MX1ebiBwX2lee3lfaX0oMS1wX2kpXnsxLXlfaX0uCiQkCgpUaGlzIGZvcm11bGEgbWF5IGxvb2sgY29tcGxpY2F0ZWQgYnV0IGl0J3Mgbm90IHRvbyBiYWQuIAoKVGhlICR5X2kkIGlzIHRoZSBvYnNlcnZlZCB2YWx1ZSBmb3IgdGhlICRpXnt0aH0kIG9ic2VydmF0aW9uLiBTbywgaXQgaXMgZWl0aGVyIDAgb3IgMS4gCgpOb3RpY2UgdGhhdCB3aGVuICR5X2kgPSAxJCwgCgokJApwX2lee3lfaX0oMS1wX2kpXnsxLXlfaX0gPSBwX2kKJCQgCgphbmQgd2hlbiAkeV9pID0gMCQsIAoKJCQKcF9pXnt5X2l9KDEtcF9pKV57MS15X2l9ID0gMSAtIHBfaS4KJCQgCgpTbywgdGhpcyBpcyBqdXN0IGEgcHJvZHVjdCBvZiBlaXRoZXIgdGhlIHByZWRpY3RlZCBwcm9iYWJpbGl0aWVzIChmb3IgY2FzZXMgd2hlbiAkeV9pID0gMSQpIG9yIG9uZSBtaW51cyB0aGUgcHJlZGljdGVkIHByb2JhYmlsaXRpZXMgKGZvciBjYXNlcyB3aGVuICR5X2kgPSAwJCkuIAoKVGhlIGxhcmdlc3QgdGhpcyB2YWx1ZSBjYW4gYmUgaXMgJDEkLCB3aGljaCB3b3VsZCBoYXBwZW4gaWYgYWxsIHRoZSAxJ3MgaGFkIGEgcHJlZGljdGVkIHByb2JhYmlsaXR5IG9mIDEgYW5kIGFsbCB0aGUgMCdzIHdvdWxkIGhhdmUgYSBwcmVkaWN0ZWQgcHJvYmFiaWxpdHkgb2YgMC4gCgpUaGlzIHdpbGwgbmV2ZXIgaGFwcGVuIGluIHJlYWwgbGlmZSwgYnV0IGluIGdlbmVyYWwsIGEgImdvb2QiIG1vZGVsIHdvdWxkIGJlIG9uZSB3aGVyZSB0aGUgMSdzIGhhdmUgcHJlZGljdGVkIHByb2JhYmlsaXRpZXMgdGhhdCBhcmUgY2xvc2UgdG8gMSBhbmQgMCdzIGhhdmUgcHJlZGljdGVkIHByb2JhYmlsaXRpZXMgdGhhdCBhcmUgY2xvc2UgdG8gMC4gCgoKCgoKCgoKCgo=</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("07_logistic_regression.Rmd");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

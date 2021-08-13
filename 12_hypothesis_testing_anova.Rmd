@@ -1,0 +1,169 @@
+---
+title: "Hypothesis testing with categorical variables"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    code_download: true
+---
+
+```{r, message=FALSE, warning=FALSE}
+library(alr4) #for data
+library(tidyverse) #for plotting and summarizing
+library(ggridges) #for ridge plots
+library(ggmosaic) #for mosaic plots
+library(moderndive) #for nice model output
+library(broom) #for nice model output 
+library(infer) #for making inferences about models
+theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
+```
+
+Let's look at the `diamonds` data from the `tidyverse` library.
+We are interested in testing if there is a relationship between `cut` and `log(price)`.
+
+```{r}
+diamonds_new <- diamonds %>% 
+  mutate(cut = fct_relevel(fct_inorder(cut, ordered = FALSE), 
+                           "Fair", "Good", "Very Good", "Premium"))
+
+diamonds_new %>% 
+  ggplot(aes(x=cut, y=log(price))) +
+  geom_boxplot() +
+  theme_minimal()
+```
+
+And we could fit a model:
+
+```{r}
+lm_cut <- lm(log(price) ~ cut, 
+              data=diamonds_new)
+tidy(lm_cut)
+```
+
+<div class="alert alert-info">
+  <strong>YOUR TURN!</strong>
+
+
+* What is the hypothesis in any of the rows testing?  
+
+* Is that what we're interested in testing?
+
+</div>
+
+The hypothesis test we conduct to test the significance of `cut` overall is:
+
+$$
+H_0: \beta_1 = \beta_2 = \beta_3 = \beta_4 = 0 \\
+H_a: \text{at least one of the } \beta_i \ne 0
+$$
+
+In general, this is called an "F-Test" and is:
+
+$$
+H_0: \beta_{k+1} = \beta_{k+2} = ... = \beta_{k+p} = 0 \\
+H_a: \text{at least one of the } \beta_i \neq 0,
+$$
+
+which we can think of as testing if at least one of the variables is "useful" in the model. Notice that this test is a little trickier than the other hypothesis tests we've been doing because we're dealing with more than one coefficient. We'd like to be able to summarize our results to one number in order to compare what we're seeing in our data to what we'd expect when the null hypothesis is true.
+
+# Using "theory", ie. R output
+
+There is a statistic we can use, $F$, that has a well-defined theoretical distribution under $H_0$ (ie. when $H_0$ is true). I have written its formula below. I will not talk about the detail of it, but notice that it is a function of $R^2$. 
+
+$$
+F = \frac{\frac{R^2}{p}}{\frac{1 - R^2}{n-(p+1)}}
+$$
+
+We can use the `anova()`, AN(alysis) O(f) VA(riance), function in R to test the desired hypothesis. First, we need the "null" model, which in this case is a model with no variables. The `p.value` is the p-value for the test we described above. **Caution**: the two models must be "nested" models in order to use ANOVA. That means that one model is a subset of the other, or that the variables from the smaller model are all in the larger model.
+
+```{r}
+null_mod <- lm(log(price) ~ 1, data = diamonds_new)
+
+anova(null_mod, lm_cut) %>% tidy()
+```
+
+
+# Using $R^2$ and simulation
+
+We could also use a simulation method to compute a p-value. One number we could use to summarize the relationship is $R^2$.
+
+<div class="alert alert-info">
+  <strong>YOUR TURN!</strong>
+
+What would you expect the $R^2$ to be if there were no relationship?
+
+</div>
+
+
+We can extract the $R^2$ from the model. This is the *actual* $R^2$ from our sample of data. I have also saved this into a variable called *r_squared_actual*.
+
+```{r}
+glance(lm_cut) %>% select(r.squared)
+
+r_squared_actual <- glance(lm_cut) %>% select(r.squared) %>% pull()
+```
+
+Now, just like when we had a quantitative variable, we can break the relationship between `cut` and `log(price)`. Below is one example. Note that I did NOT set a seed (`set.seed`) at the top, so you will get a different answer when you run it on your computer. Try running it a few times. What values of $R^2$ do you see?
+
+```{r}
+mod_no_relationship <- lm(sample(log(price)) ~ cut,
+                          data=diamonds_new)
+tidy(mod_no_relationship)
+glance(mod_no_relationship) %>% select(r.squared)
+```
+
+Now, let's use R to help us do this many times (200 seems good enough) and keep track of the $R^2$ each time. (This takes a bit of time since there's so much data).
+
+```{r}
+set.seed(100)
+
+r_squared <- diamonds_new %>% 
+  rep_sample_n(size = 53940, replace = FALSE, reps = 200) %>% 
+  group_by(replicate) %>% 
+  do(lm(sample(log(price)) ~ cut, data = .) %>% glance()) %>% 
+  ungroup() %>% 
+  select(replicate, r.squared)
+
+r_squared
+```
+
+
+Now, let's plot these in a histogram. 
+
+```{r}
+r_squared %>% 
+  ggplot(aes(x=r.squared)) +
+  geom_histogram(bins = 500) +
+  geom_vline(xintercept = r_squared_actual, color="darkred")
+```
+
+<div class="alert alert-info">
+  <strong>YOUR TURN!</strong>
+
+How would you describe the distribution? How could we calculate a p-value?
+
+</div>
+
+# Adding more variables to the model
+
+Now, what if we want to test the significance of a categorical variable, with other variables already in the model? For example, 
+
+```{r}
+lm_more <- lm(log(price) ~ cut + carat,
+                 data=diamonds_new)
+tidy(lm_more)
+```
+
+<div class="alert alert-info">
+  <strong>YOUR TURN!</strong>
+
+Write out your hypotheses and use the `anova()` function to conduct the test. 
+
+```{r}
+lm_carat <- lm(log(price) ~ carat, data = diamonds_new)
+anova(lm_carat, lm_more) %>% tidy()
+```
+
+</div>
+

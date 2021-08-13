@@ -9,6 +9,24 @@ navbar:
       href: 02_multivariate.html
     - text: Simple linear regression
       href: 03_slr_creating_interpreting_point_pred.html
+    - text: Multiple linear regression
+      href: 04_mlr_creating_interpreting_point_pred.html
+    - text: Model evaluation
+      href: 05_model_fitting_eval.html
+    - text: Model assumptions & transformations
+      href: 06_assumptions_transformations.html
+    - text: Logistic regression
+      href: 07_logistic_regression.html
+    - text: Sampling variation with Reese's
+      href: 08_sampling_reeses.html
+    - text: Sampling variation in models
+      href: 09_sampling_variation_models.html
+    - text: Confidence intervals
+      href: 10_confidence_intervals.html
+    - text: Hypothesis tests
+      href: 11_hypothesis_tests.html
+    - text: Hypothesis tests - ANOVA
+      href: 12_hypothesis_testing_anova.html
 output:
   html_document:
     theme: flatly
