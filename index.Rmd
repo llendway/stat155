@@ -5,3 +5,5 @@ output: html_document
 
 These are the in-class lessons for STAT 155.
 
+Please read the [syllabus](syllabus/syllabus_2020spring.html) and check out the [R Basics](https://r-basics.netlify.app/) tutorial.
+

@@ -1,0 +1,252 @@
+---
+title: "Residuals, Assumptions, and Transformations"
+output:  
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    code_download: true
+---
+
+```{r, message=FALSE, warning=FALSE}
+library(alr4) #NEW! For data. Let me know if you have issues installing this one)
+library(GGally) #New ... maybe? For pairwise plots
+library(tidyverse) #for plotting and summarizing
+library(moderndive) #for nice model output
+library(broom) #for nice model output 
+library(gridExtra) #for nicely organizing plots
+library(openintro) #for data
+theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
+```
+
+::: {.alert .alert-success}
+<strong>GOAL:</strong>
+
+By the end of these notes and activities, you should be able to perform the following tasks.
+
+-   Check for non-constant variance and linearity using a residuals versus fitted values plot.\
+-   Check for normality by looking at a histogram of the residuals.\
+-   Know when to add a polynomial term to a model and implement it.\
+-   Know a few key scenarios when log-transforming the response variable and/or predictor variables could help satisfy model assumptions.\
+-   Interpret model coefficients with a log-transformed response variable.
+:::
+
+# REVIEW: Models we have explored so far - quantitative response variable
+
+0.  No explanatory variables. Every predicted value is the average response.
+
+1.  One quantitative explanatory variable.
+
+-   Intercept is the average response when explanatory variable is zero.\
+-   Coefficient of explanatory variable is the average change in the response for a one unit change in the explanatory variable.
+
+2.  One categorical explanatory variable.
+
+-   Intercept is the average response when explanatory variable is zero.\
+-   Coefficient of an indicator variable is the difference in average response between the level of the indicator variable and the baseline/reference level.
+
+3.  More than one explanatory variable.
+
+-   Interpretations much the same as above, except when interpreting each variable, it is necessary to acknowledge that there are other variables in the model. So, adding something like, "With all other variables held fixed" or "Accounting for (name of other variable)".
+-   Models with only main effects imply that the effect of a variable on the response is the same, regardless of values of other variable(s) in the model. But, this effect is diffferent than if the other variables were not included in the model.
+
+4.  Models with interaction effects. Interpretations change depending on what types of variables are in the model, but models with interaction effects allow the relationship between each explanatory variable involved in the interaction and the response variable to differ depending on the value of the other explanatory variable involved in the interaction.
+
+5.  (We haven't actually discussed this, but we're ready to!) Models with more than two variables. The most important piece is to always acknowledge the that you've accounted for other variables when interpreting specific coefficients.
+
+# Residuals & Model Assumptions
+
+The residuals in linear models are assumed to follow some assumptions.
+
+1.  They should be normally distributed. (Normality)
+2.  They should have a mean of 0 consistently.(Mean zero/linearity)
+3.  They should have constant variance, meaning how spread out they are should not vary depending on something else. (Constant variance)
+4.  They should be independent.
+
+Violations of these assumptions can cause problems when we want to make inferences, which we'll want to do very soon. We can check many of these assumptions by looking at a plot of the residuals vs. fitted values and a histogram of the residuals.
+
+## Example: assumptions satisfied
+
+Below I simulated some data to assure assumptions are met. Do not worry about the code.
+
+```{r}
+set.seed(10)
+x <- rnorm(500, mean = 400, sd = 200)
+y <- 100 + 4*x + rnorm(500, mean = 0, sd = 300)
+
+simdat <- data.frame(x, y)
+
+ggplot(simdat) +
+  geom_point(aes(x = x, y = y)) +
+  theme_minimal()
+```
+
+Let's fit a model and look at some helpful plots.
+
+```{r}
+sim_mod <- lm(y ~ x, data=simdat)
+tidy(sim_mod)
+```
+
+```{r, message=FALSE}
+augment(sim_mod) %>% 
+  ggplot(aes(x=.fitted, y=.resid)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  geom_hline(yintercept = 0, color = "red")
+```
+
+```{r}
+augment(sim_mod) %>% 
+  ggplot(aes(x=.resid)) +
+  geom_histogram(bins = 30) 
+```
+
+::: {.alert .alert-info}
+<strong>YOUR TURN!</strong>
+
+1.  In the first plot, we can assess if the residuals have constant variance and mean zero. How? What might the plot look like if they didn't?\
+
+2.  The second plot allows us to check the normality of the residuals. How? What might it look like if it weren't normal?
+
+3.  It is difficult to check for independence. Can you think of any scenarios where our data might not be independent?\
+:::
+
+## Examples: assumptions not satisfied
+
+### King County house data
+
+Let's try this with the King County house data. First, we read in the data and do some slight modifications.
+
+```{r, message=FALSE, warning=FALSE}
+kc_house_data2 <-
+  house_prices %>% 
+  filter(bedrooms<=5, bedrooms>0) %>% 
+  mutate(grade_CAT = fct_relevel(ifelse(grade %in% "1":"7", "Low",
+                                        ifelse(grade == "8", "Medium","High")),
+                                     "Low", "Medium", "High"),
+         age=2015-yr_built)
+```
+
+Next, fit the model `price ~ sqft_living15 + age`.
+
+```{r}
+kc_2var <- lm(price ~ sqft_living15 + age, 
+                   data=kc_house_data2)
+tidy(kc_2var)
+```
+
+Now, let's look at a plot of residuals vs. fitted values and a histogram of the residuals.
+
+```{r, message=FALSE, fig.asp=.3}
+a1 <- augment(kc_2var) %>% 
+  ggplot(aes(x=.fitted, y = .resid)) +
+  geom_point(size = .5, alpha = .3) +
+  geom_smooth(se=FALSE) +
+  geom_hline(yintercept = 0, color = "red") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(x = "Fitted Values", y = "Residuals")
+
+a2 <- augment(kc_2var) %>% 
+  ggplot(aes(x=.resid)) +
+  geom_histogram(bins=50) +
+  scale_x_continuous(labels = scales::comma)
+
+gridExtra::grid.arrange(a1, a2, nrow = 1)
+```
+
+::: {.alert .alert-info}
+<strong>YOUR TURN!</strong>
+
+What do you observe in these plots? Do any assumptions appear violated?
+:::
+
+### Walleye data
+
+Let's look at another plot. This is a new dataset that has the age and length of walleye (a type of fish), from the `alr4` package.
+
+```{r}
+ggplot(walleye) + 
+  geom_jitter(aes(x = age, y = length)) +
+  theme_minimal()
+```
+
+::: {.alert .alert-info}
+<strong>YOUR TURN!</strong>
+
+1.  Fit a model that uses `age` to explain `length`.
+2.  Look at the 2 residual plots we discussed and assess them.
+:::
+
+# Correcting model assumptions with transformations
+
+There are many sophisticated methods that can be used to fix problems with linear model assumptions. But a fairly simple solution that often works well is to transform variables. We will discuss two different transformations and apply them to the two examples from above.
+
+## Logarithmic transformation
+
+When variables range across more than one order of magnitude in their values (ie. they have values in the 1,000's AND 10,000's or 100,000's AND the 1,000,000's), log transforming can often help fix non-constant variance. Let's look at the following scatterplot matrix. I did a log base 2 transformation of both *price* and *sqft_living15*. What do you notice?
+
+```{r, message=FALSE}
+kc_house_data2 %>% 
+  mutate(log2_price = log2(price),
+         log2_sqft = log2(sqft_living15)) %>% 
+  select(age, sqft_living15, log2_sqft, log2_price) %>% 
+  ggpairs()
+```
+
+Now, let's fit a model that uses *log2_price* as the response and *age* and *log2_sqft* as explanatory variables. First, I need to create a new dataset with these variables.
+
+```{r}
+kc_house_log <- kc_house_data2 %>% 
+  mutate(log2_price = log2(price),
+         log2_sqft = log2(sqft_living15))
+kc_log <- lm(log2_price ~ age + log2_sqft,
+             data = kc_house_log)
+get_regression_table(kc_log)
+```
+
+::: {.alert .alert-info}
+<strong>YOUR TURN!</strong>
+
+Use the residual plots to check the model assumptions. How do they look now?
+:::
+
+## Adding a polynomial term to the model
+
+For the walleye data, the biggest problem seemed to be that the mean was not zero throughout the range of fitted values. This is because the relationship between `age` and `length` was not linear to begin with.
+
+We can try to address this by adding a quadratic (or higher order polynomial) term to our model. I have done that below. Notice that you need to enclose the polynomial term in `I()`.
+
+```{r}
+walleye_quadratic <-  lm(length ~ age + I(age^2), 
+                         data=walleye)
+tidy(walleye_quadratic)
+```
+
+::: {.alert .alert-info}
+<strong>YOUR TURN!</strong>
+
+1.  Plot this model on the scatterplot of `age` versus `length`.
+2.  Create the two residual plots and evaluate them.
+3.  Try interpreting the coefficients of the model.
+:::
+
+## Interpreting a model after transforming variables
+
+Interpretation can get a bit tricky after transforming variables. We usually still prefer to interpret the model in the original units. When doing log transformations, it will be helpful to remember some rules of logs of exponents (see the help sheet on the moodle page). Below you will work through an example using the following model.
+
+```{r}
+tidy(kc_log)
+```
+
+::: {.alert .alert-info}
+<strong>YOUR TURN!</strong>
+
+1.  Write down the model equation in terms of `price`. That is, rather than having `log2_price` on the left hand side of the equation, `price` is on the left hand side.
+
+2.  Using the equation from the previous step, how does an increase of 1 year in age of a home typically affect the price (with all other variables in the model held fixed)? It might be helpful to try an example.
+
+3.  How does doubling square footage typically affect the price (with all other variables in the model held fixed)? There is a reason I'm asking this question in this way ...
+
+4.  Now build a more complex model with *log2_price* as the response. Add a categorical variable and/or interaction effect. How do you interpret the coefficients of a categorical variable? An interaction effect?
+:::

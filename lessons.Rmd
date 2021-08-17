@@ -1,0 +1,26 @@
+---
+title: "In-class lessons"
+output:   
+  html_document: 
+    df_print: paged
+---
+
+
+This is where you will find what I call the "In-class lessons". We will go through most of this in class together, although there are extra words and sometimes links to other resources that you can read or watch on your own outside of class. The most important parts are the "Your Turn" sections where you can try out new code and concepts on your own and with the students around you.
+
+Links to each lesson can be found below:
+
+* [Creating graphs with one variable](lessons/01_univariate.html).
+* [Creating graphs with two variables](lessons/02_multivariate.html)  
+* [Simple linear regression](lessons/03_slr_creating_interpreting_point_pred.html)  
+* [Multiple linear regression](lessons/04_mlr_creating_interpreting_point_pred.html)  
+* [Model evaluation](lessons/05_model_fitting_eval.html)  
+* [Model assumptions & transformations](lessons/06_assumptions_transformations.html)  
+* [Logistic regression](lessons/07_logistic_regression.html)  
+* [Sampling variation - Reese's Pieces example](lessons/08_sampling_reeses.html)  
+* [Sampling variation in models](lessons/09_sampling_variation_models.html)  
+* [Confidence intervals](lessons/10_confidence_intervals.html)  
+* [Hypothesis tests](lessons/11_hypothesis_tests.html)  
+* [Hypothesis tests - ANOVA](lessons/12_hypothesis_testing_anova.html)
+
+

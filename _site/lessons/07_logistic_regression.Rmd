@@ -1,0 +1,309 @@
+---
+title: "Logistic Regression"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+    code_download: true
+---
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse) #for plotting and summarizing
+library(ggridges) #for ridge plots
+library(ggmosaic) #NEW! for mosaic plots
+library(moderndive) #for nice model output
+library(broom) #for nice model output 
+library(Ecdat) #for data
+theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
+```
+
+<div class="alert alert-success">
+  <strong>GOAL:</strong>
+
+By the end of these notes and activities, you should be able to perform the following tasks.
+
+* Create appropriate plots to explore the relationship between categorical or quantitative predictors and a binary response.  
+* Know when a logistic regression model is appropriate.  
+* Fit a logistic regression model using `glm()`. (Don't forget `family = binomial(link = "logit")`.)  
+* Interpret coefficients from a logistic regression model for both categorical and quantitative predictors.  
+* Find the predicted probability of "success" for a new observation.  
+* Plot the logistic model in simple cases.
+
+</div>
+
+So far all the modeling we have done in this course has used a quantitative response variable. Now, we are going to talk about how to model a different type of response variable, one with a binary response: yes/no, true/false, dead/alive, etc. 
+
+Before we start, I would like to take some time to discuss some real-life examples. **Can you think of any places where this might be used?**
+
+To introduce this concept, we will use the `Hmda` dataset from the `Ecdat` library. It contains data on mortgage application denials in Boston. The data are from 1997-98. You can learn more about the data by typing `Hmda` into help or `?Hmda` in the Console. The response variable is called `deny` and is a `yes` if the applicant was denied, and a `no` otherwise.
+
+We will filter out a couple outliers, so use `Hmda2` from now on.
+
+```{r}
+Hmda2 <- 
+  Hmda %>% 
+  filter(hir < 1, dir < 1, ) %>% 
+  mutate(deny_quant = ifelse(deny == "yes", 1, 0))
+```
+
+
+# Exploratory analysis
+
+To examine relationships between quantitative variables and the binary response, `deny`, we can use boxplots along with scatterplots.
+
+```{r}
+Hmda2 %>% 
+  ggplot(aes(x = deny, y = dir)) +
+  geom_jitter(width = .1, size = .2, alpha = .5, color = "darkgray") +
+  geom_boxplot(outlier.size = 0,varwidth = TRUE, alpha = .5) +
+  coord_flip()
+```
+
+Or we could use ridge plots. There are other options, too. These are just some of my favorites.
+
+```{r}
+Hmda2 %>% 
+  ggplot(aes(x= dir, y = deny, fill = deny)) +
+  geom_density_ridges(alpha = .5)
+```
+
+
+```{r}
+ggplot(data=Hmda2) +
+  geom_bar(aes(x=single, fill=deny), 
+           position = "fill") +
+  ylab("")
+```
+
+A mosaic plot is an even more informative graph than the one above. The widths reflect the proportion in each level of the x-axis variable, in this case `single`. This function is a bit tedious because you have to do some labeling on your own.
+
+```{r}
+Hmda2 %>% 
+  ggplot() +
+  geom_mosaic(aes(x = product(single), 
+                  fill = deny)) +
+  labs(x = "Single", y = "Deny") +
+  guides(fill = "none")
+
+```
+
+<div class="alert alert-info">
+  <strong>YOUR TURN!</strong>
+
+Explore some other potential predictor variables on your own. Do any variables seem to be good predictors of `deny`? 
+
+</div>
+
+# Try to apply regular regression techniques ... (BAD IDEA - DO NOT EVER DO THIS!)
+
+Since we know how to model data with a quantitative response, we might think of turning the `deny` variable into a quantitative variable. I did that when I created `Hmda2`; `deny_quant` is a 1 if the applicant was denied and 0 otherwise.
+
+Now, we could use this as our response variable in a linear model, same as we have been doing all semester. Let's use `dir` and `single` as explanatory variables. **Interpret each of the coefficients in the model below. Do you see an issue? (Hint, try predicting the response for non-single applicants with low debt payments to total income ratio, `dir`).**
+
+```{r}
+lm_deny_WRONG <- lm(deny_quant ~ dir + single, data = Hmda2)
+tidy(lm_deny_WRONG)
+```
+
+It might also help to look at the plot.
+
+```{r}
+augment(lm_deny_WRONG) %>% 
+  ggplot(aes(x=dir, y=deny_quant, color=single)) +
+  geom_jitter(height = .05, size = .2, alpha = .5) +
+  geom_line(aes(y = .fitted))
+```
+
+
+How do we solve this problem? We want to guarantee that the model values are between 0 and 1. We are going to use something called a *link function*. We can think about this in two steps:
+
+1. Fit a linear model the way we are used to, adding terms times their coefficients. (Note that the method isn't exactly the same ... I'll talk about that later). Call this output *y*. This value is not a probability.
+
+2. Use a link function to translate the value *y* to a scale between 0 and 1, *p* (which stands for probability). The function that will be used is called the "logit link" or the logistic transformation and it is defined as 
+
+$$
+p = \frac{e^y}{(1 + e^y)}
+$$
+
+# Fitting the logistic regression model with `glm()`
+
+Let's investigate how to do this in R. We can use a function called `glm()` (generalized linear model) to fit this model. Before explaining how the model is fit, let's fit it and talk about interpreting the coefficients and predicting new values. 
+
+
+```{r}
+
+glm_deny <- glm(deny ~ dir + single, 
+                data = Hmda2,
+                family = binomial(link = "logit") #new!
+                ) 
+
+#NOTE: get_regression_table() doesn't work for glm's
+tidy(glm_deny) 
+```
+
+## Explanation
+
+Remember, the value that comes out of the linear model portion is *y* and *y* is the result of a linear equation. So, 
+
+$$
+\hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x_1 +\hat{\beta}_2 x_2 + ... + \hat{\beta}_p x_p
+$$
+
+Let's also solve for $y$ in 
+
+$$ 
+\hat{p} = \frac{e^{\hat{y}}}{(1 + e^{\hat{y}})},
+$$
+
+which, after a bit of math, gives:
+$$
+\hat{y} = log\Big(\frac{\hat{p}}{1-\hat{p}}\Big)
+$$ 
+
+or 
+$$
+e^{\hat{y}} = \frac{\hat{p}}{1-\hat{p}}.
+$$
+
+Combining these, we have 
+
+$$
+log\Big(\frac{\hat{p}}{1-\hat{p}}\Big) = \hat{\beta}_0 + \hat{\beta}_1 x_1 +\hat{\beta}_2 x_2 + ... + \hat{\beta}_p x_p
+$$ 
+
+or 
+
+$$
+\frac{\hat{p}}{1-\hat{p}} = e^{\hat{\beta}_0}e^{\hat{\beta}_1x_1}e^{\hat{\beta}_2 x_2} \cdots e^{\hat{\beta}_p x_p}
+$$
+
+These equations give us nice ways to interpret the coefficients. 
+
+The quantity $\frac{\hat{p}}{1-\hat{p}}$ is called the *odds*. 
+
+### Tangent: What are odds?
+
+Before we move on to interpreting the results of our models, let's first make sure we have an understanding of odds. 
+
+Let x be some event (ie. getting a heads, winning the lottery, buying a shirt, passing this class, ...). Then the odds of x, $odds(x)$, is defined as:
+
+$$
+odds(x) = \frac{p(x)}{1 - p(x)},
+$$
+
+the probability of x divided by 1 minus the probability of x (which is the probability of of not x).
+
+<div class="alert alert-info">
+  <strong>YOUR TURN!</strong>
+  
+1. Assume the probability of flipping heads on a coin is .5. Find the odds of flipping a head.   
+2. In a regular 52 card deck of cards, the odds of choosing a card that is hearts.  
+3. If the probability of survival is $p=.80$, what are the odds of survival?  
+4. In the previous question, what are the log odds of survival?  
+5. Is it easy to think about the log odds scale? Or even the odds scale?
+
+</div>
+
+## Back to explanation
+
+Recall the model we were just looking at. A also added a column of the exponentiated coefficients ($e^{coefficient}$).
+
+```{r}
+tidy(glm_deny) %>% 
+  select(term, estimate) %>% 
+  mutate(exp_est = exp(estimate))
+```
+
+We should keep in mind:
+
+1. The coefficients that are in the output are on the `log(odds)` scale - YUCK! We don't usually want to interpret things on that scale.  
+2. The exponentiated equation is multiplicative on the odds scale. That's a better way to interpret our results
+
+<div class="alert alert-info">
+  <strong>YOUR TURN!</strong>
+
+Interpret/find the following:
+
+1. $\hat{\beta}_0$, the intercept.
+2. $e^{\hat{\beta}_0}$, the exponentiated intercept.
+3. $\hat{\beta}_1$, the coefficient for `dir`. Why might this be a useless interpretation? In what units might we want to interpret this?
+4. $e^{\hat{\beta}_1}$. 
+5. $\hat{\beta}_2$, 
+6. $e^{\hat{\beta}_2}$ Hint: compare the odds of denial for single and non-single with the same `dir`.  
+7. The probability of a denied mortgage application for a single applicant who has a debt payments to total income ratio of .2.  
+8. The probability of an accepted mortgage for a single applicant who has a debt payments to total income ratio of .2. 
+
+</div>
+
+## Prediction
+
+We can use the `augment()` function to predict new values, similar to how we used it before. See `augment.glm` in the help for more details.
+
+Let's show how to do that using problem 7 from above. **What is .fitted?**
+
+```{r}
+augment(glm_deny, 
+        newdata = tibble(single = "yes", dir = .2))
+```
+
+Let's put this in terms of probability:
+
+```{r}
+augment(glm_deny, 
+        newdata = tibble(single = "yes", dir = .2),
+        type.predict = "response")
+```
+
+Just like with linear regression, in simple cases, we can plot the model values (the probabilities). This is one of those cases. **How does this plot look different from when we used linear regression to model `deny`?**
+
+```{r}
+augment(glm_deny, 
+        data = Hmda2,
+        type.predict="response") %>% 
+  #I need to plot deny as a 0/1
+  ggplot(aes(x=dir, y=deny_quant, color=single)) +
+  geom_jitter(height = .05, size = .2, alpha = .5) +
+  geom_line(aes(y = .fitted))
+```
+
+
+## Fitting the model
+
+We learned that linear models are fit by finding the coefficients that minimize the sum of the squared residuals. Coefficients in logistic regression maximize the likelihood function. In the case of logistic regression, the likelihood function is: 
+
+$$
+\prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}.
+$$
+
+This formula may look complicated but it's not too bad. 
+
+The $y_i$ is the observed value for the $i^{th}$ observation. So, it is either 0 or 1. 
+
+Notice that when $y_i = 1$, 
+
+$$
+p_i^{y_i}(1-p_i)^{1-y_i} = p_i
+$$ 
+
+and when $y_i = 0$, 
+
+$$
+p_i^{y_i}(1-p_i)^{1-y_i} = 1 - p_i.
+$$ 
+
+So, this is just a product of either the predicted probabilities (for cases when $y_i = 1$) or one minus the predicted probabilities (for cases when $y_i = 0$). 
+
+The largest this value can be is $1$, which would happen if all the 1's had a predicted probability of 1 and all the 0's would have a predicted probability of 0. 
+
+This will never happen in real life, but in general, a "good" model would be one where the 1's have predicted probabilities that are close to 1 and 0's have predicted probabilities that are close to 0. 
+
+
+
+
+
+
+
+
+
+
