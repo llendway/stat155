@@ -3,6 +3,4 @@ navbar:
   left:
   - text: Lessons
     href: lessons.html
-output: 
-  html_document:
-    theme: cerulean
+output: html_document

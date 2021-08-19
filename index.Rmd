@@ -3,7 +3,7 @@ title: "STAT 155"
 output: html_document
 ---
 
-These are the in-class lessons for STAT 155.
+Welcome to STAT 155 at Macalester College, taught by Lisa Lendway. This website is mainly to house our in-class lessons, which are found on the lessons tab. Other assignments, grades, and feedback will be on the moodle page. 
 
-Please read the [syllabus](syllabus/syllabus_2020spring.html) and check out the [R Basics](https://r-basics.netlify.app/) tutorial.
+Please read the [syllabus](syllabus/syllabus_2020spring.html) to better understand how the course will be conducted. To get up and running with R and RStudio, the main software we will use in the course, go through the [R Basics](https://r-basics.netlify.app/) tutorial.
 
