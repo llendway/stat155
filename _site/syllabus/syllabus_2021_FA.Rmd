@@ -1,6 +1,6 @@
 ---
 title: "STAT 155: Introduction to Statistical Modeling"
-subtitle: "TTH 8:00-9:30AM"
+subtitle: "TTH 8:00-9:30AM, OLRI 254"
 output: 
   html_document:
     toc: TRUE
