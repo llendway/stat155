@@ -152,7 +152,7 @@ If you need extra help, or if you need more time with something, or if you feel 
   
   **Project** (40%) Work in groups of 2-4 students doing a complete statistical analysis of a dataset. You will begin working on these near the beginning of the semester and will continue to build them up until the end. More details will be provided in a separate document. NOTE: you will present final projects during your final exam time.
 
-  **Quizzes** (5%) There will be 6-7, short multiple choice Moodle quizzes each week that cover reading and other pre-class work. These should only take about 5 minutes to complete. *Your lowest quiz will be dropped.*
+  **Quizzes** (5%) There will be 6-7, short multiple choice Moodle quizzes that cover reading and other pre-class work. These should only take about 5 minutes to complete. *Your lowest quiz will be dropped.*
   
   **Reflections** (5%) You will submit a short reflection at the end of most class periods to ask questions about what was covered in class and in recent readings. They are 2 points each and I will drop your 3 lowest scores.  
 
