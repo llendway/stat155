@@ -45,7 +45,7 @@ We will construct visualizations that allow us to examine:
 
 * *Outliers* in the relationship
 
-By the end of these notes and activities, you should have a general idea for how to do the following tasks.
+By the end of these notes and activities, you should be able to do the following tasks.
 
 * Create a scatterplot to examine and relationship between two quantitative variables.  
 * Describe the from, strength, and direction that you observe in a scatterplot.  
@@ -76,7 +76,8 @@ Examine the following plot that shows the relationship between `hwy` and `displ`
 ```{r}
 ggplot(data = vehicles_2015) +
   geom_point(aes(x = displ, y = hwy)) +
-  labs(x = "Engine Displacement", y = "Highway MPG") +
+  labs(x = "Engine Displacement", 
+       y = "Highway MPG") +
   theme_minimal()
 ```
 
@@ -89,7 +90,8 @@ vehicles_2015_no_na <- vehicles_2015 %>% drop_na()
 ```{r}
 ggplot(data = vehicles_2015_no_na) +
   geom_point(aes(x = displ, y = hwy)) +
-  labs(x = "Engine Displacement", y = "Highway MPG") +
+  labs(x = "Engine Displacement", 
+       y = "Highway MPG") +
   theme_minimal()
 ```
 
@@ -123,7 +125,8 @@ We can jitter the points, adding a little bit of noise to each point, in order t
 ```{r}
 ggplot(data = vehicles_2015_no_na) +
   geom_jitter(aes(x = displ, y = hwy)) + #noice the code change here
-  labs(x = "Engine Displacement", y = "Highway MPG") +
+  labs(x = "Engine Displacement", 
+       y = "Highway MPG") +
   theme_minimal()
 ```
 
@@ -132,7 +135,8 @@ We can add an `alpha` argument, which controls the transparency of points. This 
 ```{r}
 ggplot(data = vehicles_2015_no_na) +
   geom_point(aes(x = displ, y = hwy), alpha = .2) +
-  labs(x = "Engine Displacement", y = "Highway MPG") +
+  labs(x = "Engine Displacement", 
+       y = "Highway MPG") +
   theme_minimal()
 ```
 
@@ -150,7 +154,8 @@ With large datasets, you may want to use a combination of these options.
 ```{r}
 ggplot(data = vehicles %>% drop_na(displ)) +
   geom_jitter(aes(x = displ, y = hwy), size = .5, alpha = .2) +
-  labs(x = "Engine Displacement", y = "Highway MPG") +
+  labs(x = "Engine Displacement", 
+       y = "Highway MPG") +
   theme_minimal()
 ```
 
@@ -161,7 +166,9 @@ We can color the points by that variable.
 ```{r}
 ggplot(data = vehicles_2015_no_na) +
   geom_jitter(aes(x = displ, y = hwy, color = drive)) +
-  labs(x = "Engine Displacement", y = "Highway MPG", color = "Drive") +
+  labs(x = "Engine Displacement", 
+       y = "Highway MPG", 
+       color = "Drive") +
   theme_minimal()
 ```
 
@@ -171,7 +178,8 @@ Or we can facet by that variable.
 ggplot(data = vehicles_2015_no_na) +
   geom_jitter(aes(x = displ, y = hwy)) +
   facet_wrap(vars(drive)) +
-  labs(x = "Engine Displacement", y = "Highway MPG") +
+  labs(x = "Engine Displacement", 
+       y = "Highway MPG") +
   theme_minimal()
 ```
 
@@ -189,7 +197,8 @@ Examine the side-by-side boxplot below. What are some observations you would mak
 ```{r}
 ggplot(data = vehicles_2015_no_na) +
   geom_boxplot(aes(x = drive, y = hwy)) +
-  labs(x = "Drive", y = "Highway MPG") +
+  labs(x = "Drive", 
+       y = "Highway MPG") +
   theme_minimal()
 ```
 
@@ -198,7 +207,8 @@ We could also examine this relationship using density plots. Notice that the x a
 ```{r}
 ggplot(data = vehicles_2015_no_na) +
   geom_density_ridges(aes(x = hwy, y = drive)) +
-  labs(x = "Highway MPG", y = "Drive") +
+  labs(x = "Highway MPG", 
+       y = "Drive") +
   theme_minimal()
 ```
 
@@ -228,10 +238,10 @@ For what? | Graph |`ggplot` `geom` hints
 ------------- | ------------- | --------------
 Distribution of quantitative | Histogram | `geom_histogram(aes(x = quantitative variable))` 
 Distribution of quantitative | Density plot | `geom_density(aes(x = quantitative variable))` 
-Distribution of categorical | Barplot | `geom_bar(aes(x = categorical variable))`  
-Distribution of categorical (if you already know the counts) | Barplot | `geom_col(aes(x = categorical variable, y = count variable))`  
+Distribution of categorical | Barplot | `geom_bar(aes(x = categorical variable))`  (or on y axis)
+Distribution of categorical (if you already know the counts) | Barplot | `geom_col(aes(x = categorical variable, y = count variable))` (or flip the axes)
 Relationship between quant. response and quant. predictor | Scatterplot| `geom_point(aes(x = quant. predictor, y = quant. response))`   
-Relationship between quant. response and cat. predictor | side-by-side boxplots | `geom_boxplot(aes(x = cat. predictor, y = quant. response))`  
+Relationship between quant. response and cat. predictor | side-by-side boxplots | `geom_boxplot(aes(x = cat. predictor, y = quant. response))` (or flip the axes)
 Relationship between quant. response and cat. predictor | density ridge plots | `geom_density_ridges(aes(x = quant. response, y = cat. predictor))`
 
 ## So many more plots! 
