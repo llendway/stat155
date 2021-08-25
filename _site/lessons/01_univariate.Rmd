@@ -11,9 +11,9 @@ output:
 
 **Statistics is the practice of using data from a sample to make inferences about some broader population of interest.** This class focuses on using linear and logistic models built from a sample of data to learn about relationships in the broader population and to make predictions.
 
-### Set up R Studio (from R Basics)
+### Set up R Studio
 
-Go to Tools --> Global Options. On the General tab, next to *Save workspace to .RData on exit*, choose *Never* and uncheck the box next to *Restore .Rdata into workspace at startup*. You can also go to the Appearance tab to customize the look of R Studio. Some people like black screens better than white.
+A couple reminders from the [R Basics](https://r-basics.netlify.app/) document. Go to Tools --> Global Options. On the General tab, next to *Save workspace to .RData on exit*, choose *Never* and uncheck the box next to *Restore .Rdata into workspace at startup*. You can also go to the Appearance tab to customize the look of R Studio. Some people like black screens better than white.
 
 Save this file to somewhere **OTHER THAN YOUR DOWNLOADS FOLDER**! Save often.
 
@@ -32,14 +32,14 @@ library(fueleconomy) #for the dataset
 ## Intro to Graphing Data
 
 <center>
-![](images/moderndive_flowchart_explore.png){width=600px}
+![](images/moderndive_flowchart_explore.png){width="50%"}
 </center>
 
 
 <div class="alert alert-success">
   <strong>GOAL:</strong>
 
-Visually examine distributions of both quantitative and categorical variables. By the end of these notes and activities, you should have a general idea for how to do the following tasks.
+Visually examine distributions of both quantitative and categorical variables. By the end of these notes and activities, you should be able to do the following tasks.
 
 * Create a histogram of a quantitative variable using a reasonable number of bins or binwidth so that the graph shows enough detail but not too much.  
 * Describe the shape, center, and spread of the distribution of a quantitative variable. Only one statistic should be use to describe each of the shape and spread, usually mean and standard deviation or median and IQR. 
@@ -76,13 +76,21 @@ The ggplot2 [cheatsheet](https://www.rstudio.com/resources/cheatsheets/) is a go
 
 We will also be doing some basic data summaries using the `dplyr` package. Both `dplyr` and `ggplot2` are part of the `tidyverse` package, which is a collection of packages that are useful in data visualization and manipulation. We already installed and loaded this package.
 
+For a deeper dive into `ggplot` with more examples, see my [notes](https://ggplot-dplyr-intro.netlify.app/#creating-graphs-with-ggplot) from Intro Data Science. In this class we will focus on a smaller subset of graphs than we do in that class. So, don't feel like you need to know all the material I cover there.
+
 
 **The data**: We will use a subset of the `vehicles` data from the `fueleconomy` library throughout. These are fuel economy data from the [EPA](https://www.fueleconomy.gov/feg/download.shtml). Some variables have been excluded or modified from the original dataset. For more details search for `vehicles` in the Help section or run `?vehicles` in the console.
-First, take a moment to explore that data and see what is there. Run the code below and then try to answer the questions below. Don't worry about the code syntax.
+First, take a moment to explore that data and see what is there. Run the code below and then try to answer the questions below. Don't worry about the code syntax for now.
 
 ```{r}
+# First, filter vehicles to 2015 vehicles
+# Save to a dataset called vehicles_2015
 vehicles_2015 <- vehicles %>% filter(year == 2015)
-summary(vehicles_2015 %>% mutate_if(is.character, as.factor))
+
+# Give basic summary stats of each variable
+vehicles_2015 %>% 
+  mutate(across(where(is.character), as.factor)) %>% 
+  summary()
 ```
 
 
@@ -145,7 +153,8 @@ We can customize plots in various ways, like I did below, but the most important
 ```{r}
 ggplot(data = vehicles_2015) +
   geom_histogram(aes(x = hwy), bins = 25, fill = "lightblue") +
-  labs(x = "Highway MPG", y = "Number of vehicles") +
+  labs(x = "Highway MPG", 
+       y = "Number of vehicles") +
   theme_minimal() 
 ```
 
@@ -167,7 +176,7 @@ vehicles_2015 %>%
   ggplot(aes(x=hwy)) +
   geom_density(fill = "orange") 
 
-acs12 %>%
+vehicles_2015 %>%
   filter(____________) %>% 
   ggplot(aes(x=hwy)) +
   geom_density()
@@ -266,12 +275,11 @@ As with histograms, you can make many modifications to barplots. I have illustra
 #Plot 1
 vehicles_2015 %>% 
   mutate(make_ordered = fct_infreq(make)) %>% #creates a new variable that is the same as the `make` variable but is in frequency order
-  ggplot(aes(x = fct_rev(make_ordered))) + #reverse the order so largest is first
+  ggplot(aes(y = fct_rev(make_ordered))) + #reverse the order so largest is first, also put it on the y-axis
   geom_bar(fill = "lightblue") +
-  coord_flip() +
   labs(x = "Make of vehicle", 
-       y = "Number of vehicles", 
-       title = "2015") +
+       title = "Number of vehicles (2015)", 
+       y = NULL) + # I skip the y-axis label since the title makes it clear
   theme_minimal()
 
 #Plot 2
@@ -279,12 +287,11 @@ vehicles_2015 %>%
   mutate(make_ordered = fct_infreq(make)) %>% 
   count(make_ordered) %>% 
   mutate(prop = n/sum(n)) %>% 
-  ggplot(aes(x = fct_rev(make_ordered), y = round(prop,2))) + #`round()` will round the number to the specified number of decimal places - 2 in this case
+  ggplot(aes(y = fct_rev(make_ordered), x = round(prop,2))) + #`round()` will round the number to the specified number of decimal places - 2 in this case
   geom_point(color = "darkolivegreen") +
-  coord_flip() +
   labs(x = "Make of vehicle", 
-       y = "Proportion of vehicles", 
-       title = "2015") +
+       title = "Proportion of vehicles (2015)", 
+       y = NULL) + # I skip the y-axis label since the title makes it clear
   theme_minimal()
 ```
 
