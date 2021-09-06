@@ -76,9 +76,6 @@ The ggplot2 [cheatsheet](https://www.rstudio.com/resources/cheatsheets/) is a go
 
 We will also be doing some basic data summaries using the `dplyr` package. Both `dplyr` and `ggplot2` are part of the `tidyverse` package, which is a collection of packages that are useful in data visualization and manipulation. We already installed and loaded this package.
 
-For a deeper dive into `ggplot` with more examples, see my [notes](https://ggplot-dplyr-intro.netlify.app/#creating-graphs-with-ggplot) from Intro Data Science. In this class we will focus on a smaller subset of graphs than we do in that class. So, don't feel like you need to know all the material I cover there.
-
-
 **The data**: We will use a subset of the `vehicles` data from the `fueleconomy` library throughout. These are fuel economy data from the [EPA](https://www.fueleconomy.gov/feg/download.shtml). Some variables have been excluded or modified from the original dataset. For more details search for `vehicles` in the Help section or run `?vehicles` in the console.
 First, take a moment to explore that data and see what is there. Run the code below and then try to answer the questions below. Don't worry about the code syntax for now.
 
@@ -211,6 +208,36 @@ vehicles_2015 %>%
 
 </div>
 
+
+### Other resources
+
+* For a deeper dive into `ggplot` with more examples, see my [notes](https://ggplot-dplyr-intro.netlify.app/#creating-graphs-with-ggplot) from Intro Data Science. In this class we will focus on a smaller subset of graphs than we do in that class. So, don't feel like you need to know all the material I cover there. 
+
+* You can watch a [short video](https://youtu.be/K1SuD43INLQ) of me using the `palmerpenguins` dataset to do some plotting and summarizing of quantitative variables. You can download the files to follow along below. Save these files as you'll use them in the next section too.
+
+```{r, echo=FALSE}
+library(downloadthis)
+download_file(
+  path = "../demos/univariate_no_code.Rmd",
+  button_label = "Download demo file (without code)",
+  button_type = "warning",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  self_contained = FALSE
+)
+```
+
+```{r, echo=FALSE}
+download_file(
+  path = "../demos/univariate_code.Rmd",
+  button_label = "Download demo file (with code)",
+  button_type = "info",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  self_contained = FALSE
+)
+```
+
 ## Univariate visualization/summarization of categorical variables
 
 **Research Question**: How many 2015 vehicles are Fords?
@@ -318,5 +345,10 @@ A few suggestions when you create barplots:
   + Describe the shape, center, and spread of the distribution. You should use one statistic for each of the center and spread. Any other interesting features? Summarize your findings in 1-2 short sentences. 
 
 </div>
+
+### Other resources
+
+* Watch a short [video](https://youtu.be/KVGkeWUIKR0) of me doing a couple examples of plotting and summarizing with categorical data. The files to follow along are in the previous section.
+
 
 
