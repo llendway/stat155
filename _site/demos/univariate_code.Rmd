@@ -1,0 +1,108 @@
+---
+title: "Univariate demo"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load libraries
+
+```{r}
+library(tidyverse)        #for visualization and wrangling
+library(palmerpenguins)   #for penguins data
+```
+
+Load the data so we can see it in the Environment tab. When you first load it, it will say `<Promise>` next to it, but as soon as you use the data, it will be there for you to interact with it. If you need to, start typing `penguins` in the console (and then delete it), and that will also make it show up.
+
+```{r}
+data("penguins")
+```
+
+First, let's briefly open up the dataset and peruse it.
+
+## Quantitative variable example
+
+Let's examine the distribution of `bill_length_mm` by creating a histogram.
+
+```{r}
+penguins %>% 
+  ggplot(aes(x = bill_length_mm)) +
+  geom_histogram()
+```
+
+```{r}
+penguins %>% 
+  ggplot(aes(x = bill_length_mm)) +
+  geom_histogram(bins = 30, 
+                 fill = "orange")
+```
+
+And, let's describe this distribution in terms of shape, center, and spread. In order to do this, we'll likely want to calculate some numbers to be more specific. When describing a distribution, think about trying to tell someone who can't see it what it looks like.
+
+```{r}
+penguins %>% 
+  summarize(bill_mean = mean(bill_length_mm, na.rm = TRUE),
+            bill_sd = sd(bill_length_mm, na.rm = TRUE),
+            bill_median = median(bill_length_mm, na.rm = TRUE),
+            bill_IQR = IQR(bill_length_mm, na.rm = TRUE))
+```
+
+Density plots can be nice when we have a lot of data. I'll show one here, even though this is a fairly small dataset.
+
+```{r}
+penguins %>% 
+  ggplot(aes(x = bill_length_mm)) +
+  geom_density()
+```
+
+
+## Categorical variable example.
+
+Let's examine the distribution of island by creating a bar plot.
+
+```{r}
+penguins %>% 
+  ggplot(aes(x = island)) +
+  geom_bar()
+```
+
+It is helpful to order them from most to least frequent.
+
+```{r}
+penguins %>% 
+  ggplot(aes(x = fct_infreq(island))) +
+  geom_bar() +
+  labs(x = "",
+       y = NULL,
+       title = "The Biscoe Island has the most penguins")
+```
+
+I prefer the bars to be horizontal.
+
+```{r}
+penguins %>% 
+  ggplot(aes(y = island)) +
+  geom_bar()
+```
+
+```{r}
+penguins %>% 
+  ggplot(aes(y = fct_rev(fct_infreq(island)))) +
+  geom_bar() +
+  labs(x = "",
+       y = NULL,
+       title = "The Biscoe Island has the most penguins")
+```
+
+We can also create a table, summarizing this information.
+
+```{r}
+penguins %>% 
+  count(island) %>% 
+  arrange(desc(n))
+```
+
