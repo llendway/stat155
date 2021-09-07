@@ -213,12 +213,12 @@ vehicles_2015 %>%
 
 * For a deeper dive into `ggplot` with more examples, see my [notes](https://ggplot-dplyr-intro.netlify.app/#creating-graphs-with-ggplot) from Intro Data Science. In this class we will focus on a smaller subset of graphs than we do in that class. So, don't feel like you need to know all the material I cover there. 
 
-* You can watch a [short video](https://youtu.be/K1SuD43INLQ) of me using the `palmerpenguins` dataset to do some plotting and summarizing of quantitative variables. You can download the files to follow along below. Save these files as you'll use them in the next section too.
+* You can watch a [short video](https://youtu.be/K1SuD43INLQ) of me using the `penguins` dataset to do some plotting and summarizing of quantitative variables. You can download the files to follow along below. Save these files as you'll use them in the next section too.
 
 ```{r, echo=FALSE}
 library(downloadthis)
 download_file(
-  path = "../demos/univariate_no_code.Rmd",
+  path = "../demos/00_univariate_no_code.Rmd",
   button_label = "Download demo file (without code)",
   button_type = "warning",
   has_icon = TRUE,
@@ -229,7 +229,7 @@ download_file(
 
 ```{r, echo=FALSE}
 download_file(
-  path = "../demos/univariate_code.Rmd",
+  path = "../demos/00_univariate_code.Rmd",
   button_label = "Download demo file (with code)",
   button_type = "info",
   has_icon = TRUE,

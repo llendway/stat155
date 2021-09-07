@@ -247,3 +247,30 @@ Relationship between quant. response and cat. predictor | density ridge plots | 
 ## So many more plots! 
 
 We have focused on the plots we will need most to better understand the data that we will use to create linear models. We will continue to use these plots, and we will add to them as needed. I also encourage you to explore more on your own. The `esquisse` package is especially helpful when you are first starting your explorations.
+
+## Other resources
+
+* You can watch a [short video](https://youtu.be/yfIp0BWkpU0) of me applying some of these functions to the `penguins` dataset. You can download the files to follow along below. 
+
+```{r, echo=FALSE}
+library(downloadthis)
+download_file(
+  path = "../demos/01_multivariate_no_code.Rmd",
+  button_label = "Download demo file (without code)",
+  button_type = "warning",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  self_contained = FALSE
+)
+```
+
+```{r, echo=FALSE}
+download_file(
+  path = "../demos/01_multivariate_code.Rmd",
+  button_label = "Download demo file (with code)",
+  button_type = "info",
+  has_icon = TRUE,
+  icon = "fa fa-save",
+  self_contained = FALSE
+)
+```

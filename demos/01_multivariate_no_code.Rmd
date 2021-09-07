@@ -1,0 +1,68 @@
+---
+title: "Multivariate demo"
+output: 
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load libraries
+
+```{r}
+library(tidyverse)        #for visualization and wrangling
+library(ggridges)         #for making density ridge plots
+library(palmerpenguins)   #for penguins data
+```
+
+Load the data:
+
+```{r}
+data("penguins")
+```
+
+
+## Quantitative vs. quantitative
+
+Examine the relationship between `body_mass_g` and `flipper_length_mm` via a scatterplot.
+
+```{r}
+
+```
+
+And, let's describe this relationship in terms of form, strength, direction, and calling out any outlying points. 
+
+Computing the correlation can be a convenient way to numerically describe the strength and direction of the LINEAR relationship.
+
+```{r}
+
+```
+
+## Quantitative vs. categorical
+
+Now, we want to examine the relationship between `body_mass_g` and `island`. We can phrase this as examining how the distribution of `body_mass_g` varies by `island`. We'll do this first with a side-by-side boxplot (I'll explain what is show in the boxplot).
+
+```{r}
+
+```
+
+We can also do this using a density ridge plot. This uses `geom_density_ridges()` from the `ggridges` library.
+
+```{r}
+
+```
+
+For both of these, we want to describe what we're seeing. It can be helpful to compute some statistics for each level of the categorical variable to help us. 
+
+```{r}
+
+```
+
+
+
+
+
+
+
