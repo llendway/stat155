@@ -9,10 +9,11 @@ output:
 ---
 
 ```{r, message=FALSE, warning=FALSE}
-library(tidyverse) #for plotting and summarizing
-library(moderndive) #for nice model output
-library(broom) #for nice model output 
-theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
+library(tidyverse)      # for plotting and summarizing
+library(moderndive)     # for nice model output
+library(broom)          # for nice model output 
+library(equatiomatic)   # for writing model equations
+theme_set(theme_minimal()) # changes the theme of ggplots to theme_minimal, my personal favorite
 ```
 
 
@@ -133,6 +134,17 @@ $$
 \hat{hwy} = 35.70 - 3.53 displ
 $$
 
+There's even a function that will write out the model equation for us!
+
+```{r}
+extract_eq(lm_displ, 
+           wrap = TRUE, 
+           use_coefs = TRUE,
+           ital_vars = TRUE)
+```
+
+
+
 ## Explanation
 
 <div class="alert alert-info">
@@ -192,12 +204,12 @@ In addition to interpreting the models, we often want to use them to predict fut
 ```{r, echo=FALSE}
 augment(lm_displ, data = mpg) %>% 
   ggplot(aes(x = displ, y = hwy)) +
-  geom_jitter() + 
+  geom_point(alpha=.3) + 
   geom_line(aes(x = displ, y = .fitted), color = "blue", size = .5) +
   geom_point(aes(x = displ, y = .fitted), color = "blue") +
   geom_segment(aes(xend = displ, 
                    yend = 35.70 - 3.53*displ), 
-               color = "red") +
+               color = "darkred") +
   scale_x_continuous(breaks = 1:8) +
   scale_y_continuous(breaks = seq(10,60,10)) +
   labs(title = "Actual (black), Fitted (blue), and residuals (red)")
@@ -315,6 +327,15 @@ Let's write out the model equation:
 $$
 \hat{hwy} = 19.18 + 8.99drvf + 1.83drvr
 $$
+
+Or, we can write code that writes the equation for us:
+
+```{r}
+extract_eq(lm_drv, 
+           wrap = TRUE, 
+           use_coefs = TRUE,
+           ital_vars = TRUE)
+```
 
 <div class="alert alert-info">
   <strong>YOUR TURN! (don't look ahead)</strong>
