@@ -1,5 +1,5 @@
 ---
-title: "Model Language, Formulas, and Coefficients (PART 2)"
+title: "Multiple Linear Regression: Creating models, interpreting models, point prediction"
 output:
   html_document:
     toc: true
@@ -9,9 +9,10 @@ output:
 ---
 
 ```{r, message=FALSE, warning=FALSE}
-library(tidyverse) #for plotting and summarizing
-library(moderndive) #for nice model output
-library(broom) #for nice model output 
+library(tidyverse)      # for plotting and summarizing
+library(moderndive)     # for nice model output
+library(broom)          # for nice model output 
+library(equatiomatic)   # for writing model equations
 theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
 ```
 
@@ -105,7 +106,7 @@ tidy(lm_twovars)
 <div class="alert alert-info">
   <strong>YOUR TURN!</strong>
 
-1. Write out the model equation using the form:
+1. Write out the model equation using the form below. You can use the `extract_eq()` function to do this.
 
 $$
 \hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x_1 + \hat{\beta}_2 x_2 + ... + \hat{\beta}_p x_p.
@@ -159,7 +160,7 @@ The relationship between *x* and *y* within each *grp* is different than the ove
 
 ## General Interpretation
 
-In general, in a multiple linear regression model, the intercept is the *average* response when the explanatory variables are all equal to zero. If there are categorical variables in the model, the intercept then reflects when all of those are at the baseline/reference level. 
+In general, in a multiple linear regression model, the intercept is the *average* response when the explanatory variables are all equal to zero. If there are categorical variables in the model, the intercept then reflects the average response when the categorical variable(s) are at the baseline/reference level. 
 
 Coefficients of quantitative explanatory variables are the *average* change in the response variable for a one unit increase in the explanatory variable, with all other variables held fixed (this indicates that we've accounted for those variables being in the model).
 
@@ -183,7 +184,7 @@ tidy(lm_interaction)
 <div class="alert alert-info">
   <strong>YOUR TURN! (Don't look ahead)</strong>
 
-1. Write out the model equation using the form:
+1. Write out the model equation using the form below. You can use the `extract_eq()` function to do this.
 
 $$
 \hat{y} = \hat{\beta}_0 + \hat{\beta}_1 x_1 + \hat{\beta}_2 x_2 + ... + \hat{\beta}_p x_p.
@@ -229,7 +230,7 @@ Interaction effects allow one explanatory variable to modify how another explana
 
 The coefficients of interaction terms that involve a quantitative and categorical variable represent a change in the slope of the line in the model where the quantitative predictor is used to model the response between the level of the indicator variable and the reference level. 
 
-In the example above, the coefficient for the `drvr:displ` term means that the slope of the line the uses `displ` to model `hwy` is 1.96 greater for rear wheel drive cars than 4 wheel drive cars. We could also say that the amount by which hwy mpg increases for a 1 unit increase in displacement is 1.96 MPG greater for rear wheel drive cars than 4 wheel drive cars.
+In the example above, the coefficient for the `drvr:displ` term means that the slope of the line that uses `displ` to model `hwy` is 1.96 greater for rear wheel drive cars than 4 wheel drive cars. We could also say that the amount by which hwy mpg increases for a 1 unit increase in displacement is 1.96 MPG greater for rear wheel drive cars than 4 wheel drive cars.
 
 The coefficients of the main effect terms have to be interpreted very carefully since those variables are also involved in the interaction terms. They often will be about the reference level or when the quantitative variable takes a value of 0. We are usually most interested in the coefficients of the interaction term.
 
