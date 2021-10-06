@@ -9,17 +9,18 @@ output:
 ---
 
 ```{r, message=FALSE, warning=FALSE}
-library(alr4) #NEW! For data. Let me know if you have issues installing this one)
-library(GGally) #New ... maybe? For pairwise plots
-library(tidyverse) #for plotting and summarizing
-library(moderndive) #for nice model output
-library(broom) #for nice model output 
-library(gridExtra) #for nicely organizing plots
-library(openintro) #for data
+library(alr4)        # NEW! For data. Let me know if you have issues installing this one)
+library(GGally)      # New ... maybe? For pairwise plots
+library(nullabor)    # for picking out residual plots from a "line-up" of plots
+library(tidyverse)   # for plotting and summarizing
+library(moderndive)  # for nice model output
+library(broom)       # for nice model output 
+library(patchwork)   # for nicely organizing plots
+library(openintro)   # for data
 theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
 ```
 
-::: {.alert .alert-success}
+<div class="alert alert-success">
 <strong>GOAL:</strong>
 
 By the end of these notes and activities, you should be able to perform the following tasks.
@@ -29,7 +30,7 @@ By the end of these notes and activities, you should be able to perform the foll
 -   Know when to add a polynomial term to a model and implement it.\
 -   Know a few key scenarios when log-transforming the response variable and/or predictor variables could help satisfy model assumptions.\
 -   Interpret model coefficients with a log-transformed response variable.
-:::
+</div>
 
 # REVIEW: Models we have explored so far - quantitative response variable
 
@@ -42,12 +43,12 @@ By the end of these notes and activities, you should be able to perform the foll
 
 2.  One categorical explanatory variable.
 
--   Intercept is the average response when explanatory variable is zero.\
+-   Intercept is the average response when explanatory variable is zero. In this case it is the average response for the baseline/referece level.\
 -   Coefficient of an indicator variable is the difference in average response between the level of the indicator variable and the baseline/reference level.
 
 3.  More than one explanatory variable.
 
--   Interpretations much the same as above, except when interpreting each variable, it is necessary to acknowledge that there are other variables in the model. So, adding something like, "With all other variables held fixed" or "Accounting for (name of other variable)".
+-   Interpretations much the same as above, except when interpreting each variable, it is necessary to acknowledge that there are other variables in the model. So, adding something like, "With all other variables held fixed" or "Accounting for (name of other variable or variables)".
 -   Models with only main effects imply that the effect of a variable on the response is the same, regardless of values of other variable(s) in the model. But, this effect is diffferent than if the other variables were not included in the model.
 
 4.  Models with interaction effects. Interpretations change depending on what types of variables are in the model, but models with interaction effects allow the relationship between each explanatory variable involved in the interaction and the response variable to differ depending on the value of the other explanatory variable involved in the interaction.
@@ -67,14 +68,14 @@ Violations of these assumptions can cause problems when we want to make inferenc
 
 ## Example: assumptions satisfied
 
-Below I simulated some data to assure assumptions are met. Do not worry about the code.
+Below I simulated some data to assure assumptions are met. Simulated means I created the data in a specific way to adhere to certain properties. Do not worry about the code.
 
 ```{r}
 set.seed(10)
 x <- rnorm(500, mean = 400, sd = 200)
 y <- 100 + 4*x + rnorm(500, mean = 0, sd = 300)
 
-simdat <- data.frame(x, y)
+simdat <- tibble(x, y)
 
 ggplot(simdat) +
   geom_point(aes(x = x, y = y)) +
@@ -90,9 +91,12 @@ tidy(sim_mod)
 
 ```{r, message=FALSE}
 augment(sim_mod) %>% 
-  ggplot(aes(x=.fitted, y=.resid)) +
+  # plot residuals on y-axis and fitted values on x-axis
+  ggplot(aes(x=.fitted, y=.resid)) + 
   geom_point() +
+  # add a line that shows a "moving average" of the fitted values
   geom_smooth(se = FALSE) +
+  # add a horizontal line at y = 0
   geom_hline(yintercept = 0, color = "red")
 ```
 
@@ -102,7 +106,7 @@ augment(sim_mod) %>%
   geom_histogram(bins = 30) 
 ```
 
-::: {.alert .alert-info}
+<div class="alert alert-info">
 <strong>YOUR TURN!</strong>
 
 1.  In the first plot, we can assess if the residuals have constant variance and mean zero. How? What might the plot look like if they didn't?\
@@ -110,7 +114,35 @@ augment(sim_mod) %>%
 2.  The second plot allows us to check the normality of the residuals. How? What might it look like if it weren't normal?
 
 3.  It is difficult to check for independence. Can you think of any scenarios where our data might not be independent?\
-:::
+</div>
+
+
+It can be difficult to decide if the residual plot shows any "weird" patterns. Our eyeballs and brains are pretty good at seeing patterns where they don't actually exist. 
+
+One way we can combat this is by looking at the plot from our model among a lineup of other plots where there is no pattern. If we can't pick out the plot from our model, then likely there is no weird pattern.
+
+I won't ever ask you to write this code on your own, but I will explain what it is doing. First, we create 20 datasets that have `.fitted` and `.resid`. One of the datasets is our actual dataset, created using the `augment()` function. The other 19 are the same except the residuals are permuted (randomly mixed up).
+
+The weird code in the output can be used to find out which `.sample` is the true data. Run it in the console after looking at the plots to find out if your guess what correct.
+
+```{r}
+set.seed(155) # for reproducibility
+# create a "lineup" of data from our model
+# BUT, in each dataset, the residuals are permuted (mixed up)
+mod_lineup <- lineup(null_permute(".resid"),
+                 true = augment(sim_mod))
+
+mod_lineup
+```
+
+Then, we look at all 20 `.resid` vs. `.fitted` plots. Can we pick out our residual plot from the lineup? If not, there's likely nothing "weird" about it and our assumptions are probably satisfied (at least the ones we can check with this plot). If we CAN pick it out, then an assumption is likely violated.
+
+```{r, fig.width=8, fig.height=8}
+ggplot(mod_lineup) +
+  geom_point(aes(x = .fitted, y = .resid)) +
+  facet_wrap(vars(.sample))
+```
+
 
 ## Examples: assumptions not satisfied
 
@@ -138,12 +170,12 @@ tidy(kc_2var)
 
 Now, let's look at a plot of residuals vs. fitted values and a histogram of the residuals.
 
-```{r, message=FALSE, fig.asp=.3}
+```{r, message=FALSE}
 a1 <- augment(kc_2var) %>% 
   ggplot(aes(x=.fitted, y = .resid)) +
   geom_point(size = .5, alpha = .3) +
   geom_smooth(se=FALSE) +
-  geom_hline(yintercept = 0, color = "red") +
+  geom_hline(yintercept = 0, color = "darkred") +
   scale_y_continuous(labels = scales::comma) +
   labs(x = "Fitted Values", y = "Residuals")
 
@@ -152,14 +184,36 @@ a2 <- augment(kc_2var) %>%
   geom_histogram(bins=50) +
   scale_x_continuous(labels = scales::comma)
 
-gridExtra::grid.arrange(a1, a2, nrow = 1)
+a1 + a2
 ```
 
-::: {.alert .alert-info}
+I will also create the lineup of residuals vs. fitted values. Can you pick out one that looks different? After you've looked and think you might have found it (if you think you can), you can copy and paste the `decrypt()` code in the console to see if it's the one you thought.
+
+```{r}
+set.seed(155) # for reproducibility
+
+kc_lineup <- lineup(null_permute(".resid"),
+                 true = augment(kc_2var))
+
+
+#
+#null_lm(price ~ sqft_living15 + age, method = 'rotate')
+```
+
+
+```{r, fig.width=8, fig.height=8}
+ggplot(kc_lineup) +
+  geom_point(aes(x = .fitted, y = .resid),
+             size = .5, alpha = .3) +
+  facet_wrap(vars(.sample))
+```
+
+<div class="alert alert-info">
 <strong>YOUR TURN!</strong>
 
 What do you observe in these plots? Do any assumptions appear violated?
-:::
+</div>
+
 
 ### Walleye data
 
@@ -171,12 +225,14 @@ ggplot(walleye) +
   theme_minimal()
 ```
 
-::: {.alert .alert-info}
+<div class="alert alert-info">
 <strong>YOUR TURN!</strong>
 
-1.  Fit a model that uses `age` to explain `length`.
-2.  Look at the 2 residual plots we discussed and assess them.
-:::
+1. Fit a model that uses `age` to explain `length`.
+2. Look at the 2 residual plots we discussed and assess them.
+3. OPTIONAL CHALLENGE: Create a lineup and see if you can spot this model's residual plot.
+</div>
+
 
 # Correcting model assumptions with transformations
 
@@ -200,16 +256,18 @@ Now, let's fit a model that uses *log2_price* as the response and *age* and *log
 kc_house_log <- kc_house_data2 %>% 
   mutate(log2_price = log2(price),
          log2_sqft = log2(sqft_living15))
+
 kc_log <- lm(log2_price ~ age + log2_sqft,
              data = kc_house_log)
-get_regression_table(kc_log)
+tidy(kc_log)
 ```
 
-::: {.alert .alert-info}
+<div class="alert alert-info">
 <strong>YOUR TURN!</strong>
 
 Use the residual plots to check the model assumptions. How do they look now?
-:::
+</div>
+
 
 ## Adding a polynomial term to the model
 
@@ -223,13 +281,14 @@ walleye_quadratic <-  lm(length ~ age + I(age^2),
 tidy(walleye_quadratic)
 ```
 
-::: {.alert .alert-info}
+<div class="alert alert-info">
 <strong>YOUR TURN!</strong>
 
 1.  Plot this model on the scatterplot of `age` versus `length`.
 2.  Create the two residual plots and evaluate them.
 3.  Try interpreting the coefficients of the model.
-:::
+</div>
+
 
 ## Interpreting a model after transforming variables
 
@@ -239,7 +298,7 @@ Interpretation can get a bit tricky after transforming variables. We usually sti
 tidy(kc_log)
 ```
 
-::: {.alert .alert-info}
+<div class="alert alert-info">
 <strong>YOUR TURN!</strong>
 
 1.  Write down the model equation in terms of `price`. That is, rather than having `log2_price` on the left hand side of the equation, `price` is on the left hand side.
@@ -249,4 +308,5 @@ tidy(kc_log)
 3.  How does doubling square footage typically affect the price (with all other variables in the model held fixed)? There is a reason I'm asking this question in this way ...
 
 4.  Now build a more complex model with *log2_price* as the response. Add a categorical variable and/or interaction effect. How do you interpret the coefficients of a categorical variable? An interaction effect?
-:::
+</div>
+
