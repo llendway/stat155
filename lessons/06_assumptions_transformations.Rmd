@@ -310,3 +310,22 @@ tidy(kc_log)
 4.  Now build a more complex model with *log2_price* as the response. Add a categorical variable and/or interaction effect. How do you interpret the coefficients of a categorical variable? An interaction effect?
 </div>
 
+## Rules of logs and exponents
+
+In our class, anytime we use $log$ without a subscript, it should be taken as the natural log, $log_e$ or $ln$. 
+
+In the rules below, $a, b$ are numbers.
+
+* $a^{log_a x} = x$
+* $log_a(a^x) = x$
+* $log_a (xy) = log_a(x) + log_a(y)$
+* $log_a(x^b) = b (log_a(x))$
+* $x^{a+b} = x^a x^b$
+* $(x^a)^b = x^{ab}$
+
+R tips
+
+* `exp(x)` = $e^x$
+* `log(x)` = $log_e(x)$
+* base 2 and base 10 logarithms have special functions in R, `log2()` and `log10()`, respectively.
+
