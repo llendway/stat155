@@ -50,17 +50,18 @@ Hmda2 <-
 
 # Exploratory analysis
 
-To examine relationships between quantitative variables and the binary response, `deny`, we can use boxplots along with scatterplots.
+We will learn some new techniques to examine relationships between quantitative variables and the binary response. One option, shown below, is to use boxplots. I also added the original data.
 
 ```{r}
 Hmda2 %>% 
-  ggplot(aes(x = deny, y = dir)) +
+  ggplot(aes(y = deny, x = dir)) +
   geom_jitter(width = .1, size = .2, alpha = .5, color = "darkgray") +
-  geom_boxplot(outlier.size = 0,varwidth = TRUE, alpha = .5) +
-  coord_flip()
+  geom_boxplot(outlier.shape = NA, # doesn't indicate outliers
+               varwidth = TRUE, # width of boxplot changes according to number of observations
+               alpha = .5)
 ```
 
-Or we could use ridge plots. There are other options, too. These are just some of my favorites.
+Or we could use ridge plots. 
 
 ```{r}
 Hmda2 %>% 
@@ -68,15 +69,27 @@ Hmda2 %>%
   geom_density_ridges(alpha = .5)
 ```
 
+To explore the relationship between two categorical variables, we can use barplots. Below, I construct them in three different ways. *When would you use each of them? What are the different things each of them show well?*
+
+```{r}
+ggplot(data=Hmda2) +
+  geom_bar(aes(x=single, fill=deny))
+```
+
+```{r}
+ggplot(data=Hmda2) +
+  geom_bar(aes(x=single, fill=deny),
+           position = "dodge")
+```
 
 ```{r}
 ggplot(data=Hmda2) +
   geom_bar(aes(x=single, fill=deny), 
            position = "fill") +
-  ylab("")
+  labs(y = "proportion")
 ```
 
-A mosaic plot is an even more informative graph than the one above. The widths reflect the proportion in each level of the x-axis variable, in this case `single`. This function is a bit tedious because you have to do some labeling on your own.
+A mosaic plot is an even more informative graph than the last plot from above. The widths reflect the proportion in each level of the x-axis variable, in this case `single`. This function is a bit tedious because you have to do some labeling on your own.
 
 ```{r}
 Hmda2 %>% 
@@ -95,7 +108,7 @@ Explore some other potential predictor variables on your own. Do any variables s
 
 </div>
 
-# Try to apply regular regression techniques ... (BAD IDEA - DO NOT EVER DO THIS!)
+# Try to apply regular regression techniques ... (Typically a bad idea)
 
 Since we know how to model data with a quantitative response, we might think of turning the `deny` variable into a quantitative variable. I did that when I created `Hmda2`; `deny_quant` is a 1 if the applicant was denied and 0 otherwise.
 
@@ -207,7 +220,7 @@ the probability of x divided by 1 minus the probability of x (which is the proba
 
 ## Back to explanation
 
-Recall the model we were just looking at. A also added a column of the exponentiated coefficients ($e^{coefficient}$).
+Recall the model we were just looking at. I also added a column of the exponentiated coefficients ($e^{coefficient}$).
 
 ```{r}
 tidy(glm_deny) %>% 
@@ -244,14 +257,16 @@ Let's show how to do that using problem 7 from above. **What is .fitted?**
 
 ```{r}
 augment(glm_deny, 
-        newdata = tibble(single = "yes", dir = .2))
+        newdata = tibble(single = "yes", 
+                         dir = .2))
 ```
 
 Let's put this in terms of probability:
 
 ```{r}
 augment(glm_deny, 
-        newdata = tibble(single = "yes", dir = .2),
+        newdata = tibble(single = "yes", 
+                         dir = .2),
         type.predict = "response")
 ```
 
@@ -276,9 +291,11 @@ $$
 \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}.
 $$
 
-This formula may look complicated but it's not too bad. 
+This formula may look complicated but it's not too bad if we break apart the pieces. 
 
-The $y_i$ is the observed value for the $i^{th}$ observation. So, it is either 0 or 1. 
+First, the big pi,$\prod_{i=1}^n$ means multiplication.
+
+The $y_i$ is the observed value for the $i^{th}$ observation in the dataset. So, it is either 0 or 1. 
 
 Notice that when $y_i = 1$, 
 
@@ -292,13 +309,64 @@ $$
 p_i^{y_i}(1-p_i)^{1-y_i} = 1 - p_i.
 $$ 
 
-So, this is just a product of either the predicted probabilities (for cases when $y_i = 1$) or one minus the predicted probabilities (for cases when $y_i = 0$). 
+So, this is a product of either the predicted probabilities (for cases when $y_i = 1$) or one minus the predicted probabilities (for cases when $y_i = 0$). 
 
 The largest this value can be is $1$, which would happen if all the 1's had a predicted probability of 1 and all the 0's would have a predicted probability of 0. 
 
 This will never happen in real life, but in general, a "good" model would be one where the 1's have predicted probabilities that are close to 1 and 0's have predicted probabilities that are close to 0. 
 
 
+# Recap!
+
+## The logistic model
+
+The response variable $y$ takes two values, 1 or 0. If it is not coded that way, we (or R) will code it that way.
+
+Let $p(X) =$ probability that $y=1$ for predictors $X$ (for multiple logistic, this can mean multiple predictors $x_1, x_2, ..., x_k$).
+
+We use the logit link function to construct a model that is linear in the log-odds scale:
+
+$$
+log \Bigg(\frac{p(X)}{1-p(X)}  \Bigg) = \beta_0 + \beta_1x_1 + \beta_2x_2 + ...\beta_k x_k
+$$
+
+Equivalently,
+
+$$
+p(X) = \frac{e^{\beta_0 + \beta_1x_1 + \beta_2x_2 + ...\beta_k x_k}}{1 + e^{\beta_0 + \beta_1x_1 + \beta_2x_2 + ...\beta_k x_k}}
+$$
+
+and 
+
+$$
+\frac{p(X)}{1-p(X)} = odds(X) = e^{\beta_0}e^{\beta_1x_1}e^{\beta_2x_2}...e^{\beta_k x_k}
+$$
+
+This last equation gives us a nice way to interpret the exponentiated coefficients, for both categorical and quantitative predictors. If *x_i* is quantitative, then the interpretation is that with all other variables held fixed, a one unit change in *x_i* corresponds to multiplying the odds by $e^{\beta_i}$. If *x_i* is an indicator variable created from a categorical variable (assume it is a 1 if category = L), then the exponentiated coefficient is an odds ratio. So, with all other variables held fixed, the odds for category L are $e^{\beta_i}$ times the odds for the reference category. 
+
+IMPORTANT: The odds are always the odds of a 1, so be sure you know which level is coded as a 1 in the response variable. 
+
+## R code
+
+We use the `glm` function in R to fit these models. This function works in much the same way as `lm`, but we need to add additional arguments that tell it to do logistic regression and what link function to use. The notation is
+
+```
+glm(y ~ x1 + x2 + ... + xk, 
+    data=dataname, 
+    family = binomial(link = "logit"))
+```
+
+Note that if the response variable is not already coded as 0's and 1's, R will do that part. It will code the value that is lower alphabetically as 0 and the other as 1. This is important to know as it affects the interpretation of the model.
+
+The `tidy` function gives the estimated coefficients, along with their standard errors and p-values. 
+
+The `augment` function can either give the log-odds (default) or it can give the probabilities, by adding `type.predict = "response"`, like below.
+
+```
+augment(model, type.predict = "response")
+```
+
+It can also be used to find predicted probabilities for a new data set or a single new observation by using the `newdata` argument. Either provide a new dataset that contains all the predictor variables or add a tiny data.frame with values for all the variables in the model. 
 
 
 
