@@ -64,6 +64,7 @@ Here is the general bootstrapping algorithm:
 * Compute the statistic you are interested in on the bootstrap sample. So, $\hat{p}$, in this example.  
 * Repeat the previous two steps a reasonable number of times, say at least 100 but more if you can. 
 
+If you'd like to see an example of doing a tactile bootstrap sample, please see the video [here](https://macalester.voicethread.com/share/14006248/). You can speed it up or skip through some parts if desired.
 
 9. We are going to use R to help us do more simulations. Each of you will use the data from the original sample you took. We first create a dataset with two variables: `obs` is just the observation number, `color` is the color of that observation. The observations will be numbered 1, 2, ..., 25. Replace my 14, 6, and 5 with the numbers you got for each color.
 
