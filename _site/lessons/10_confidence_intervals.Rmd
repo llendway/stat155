@@ -9,13 +9,13 @@ output:
 ---
 
 ```{r, message=FALSE, warning=FALSE}
-library(tidyverse) #for plotting and summarizing
-library(ggridges) #for ridge plots
-library(ggmosaic) #NEW! for mosaic plots
-library(moderndive) #for nice model output
-library(broom) #for nice model output 
-library(infer) #for making inferences about models
-theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
+library(tidyverse)     # for plotting and summarizing
+library(ggridges)      # for ridge plots
+library(ggmosaic)      # for mosaic plots
+library(moderndive)    # for nice model output
+library(broom)         # for nice model output 
+library(infer)         # for making inferences about models
+theme_set(theme_minimal()) # changes the theme of ggplots to theme_minimal, my personal favorite
 ```
 
 <div class="alert alert-success">
@@ -86,7 +86,7 @@ slopes_200_times <-
                reps = 200, 
                replace = FALSE) %>% 
   group_by(replicate) %>%     
-  do(lm(log(price) ~ log(sqft_living), data=.) %>% tidy()) %>% 
+  summarize(lm(log(price) ~ log(sqft_living)) %>% tidy()) %>% 
   ungroup() %>% 
   filter(term == "log(sqft_living)") 
 
@@ -226,7 +226,7 @@ boot_model_200_times <-
                reps = 200, 
                replace = TRUE) %>% 
   group_by(replicate) %>%     
-  do(lm(log(price) ~ log(sqft_living), data=.) %>% tidy()) %>% 
+  summarize(lm(log(price) ~ log(sqft_living)) %>% tidy()) %>% 
   ungroup() %>% 
   filter(term == "log(sqft_living)") 
 
@@ -241,20 +241,21 @@ boot_model_200_times %>%
 1. Find the SE of the coefficient estimates from the bootstrapped estimates. (Remove `eval=FALSE` when finished)
 
 ```{r, eval=FALSE}
+# HINT: open the boot_model_200_times file to see what's in it, first
 boot_model_200_times %>% 
-  summarize(___ = ___)
+  summarize(SE = ___)
 ```
 
 2. How does this SE compare to the SE you found from the sampling distribution?  
 
 
-3. Construct a 95% confidence interval using the SE you found from the boostrap distribution. (Remove `eval=FALSE` when finished)
+3. Construct a 95% confidence interval using the SE you found from the bootstrap distribution. (Remove `eval=FALSE` when finished)
 
 ```{r, eval=FALSE}
 boot_model_200_times %>% 
   summarize(SE = ___,
-            lowerCI = ___,
-            upperCI = ___)
+            lowerCI = ___ - ___*___,
+            upperCI = ___ + ___*___)
 ```
 
 
@@ -284,13 +285,13 @@ tidy(lm.samp1, conf.int = TRUE) %>%
 
 Notice that there is a variable in this output called ... `std.error`! **How does that standard error compare to the standard error you computed from the bootstrap distribution? **
 
-This standard error is computed using some statistical theory (for reference, see [Heggeseth/Myint](https://bcheggeseth.github.io/Stat155Notes/confidence-intervals.html)). That is used in constructing the confidence interval. 
+This standard error is computed using some statistical theory (for reference, see [STAT 155 Notes](https://bcheggeseth.github.io/Stat155Notes/confidence-intervals.html)). That is used in constructing the confidence interval. 
 
 # Confidence in Predictions
 
 <div class="alert alert-info">
   <strong>YOUR TURN! (Extra challenge) </strong>
 
-I would like to construct a confidence interval for the average price of homes with 2000 sqft of living. Describe in words how you could use the bootstrap techniqe to help answer that question. Then, code it!
+I would like to construct a confidence interval for the average price of homes with 2000 sqft of living. Describe in words how you could use the bootstrap technique to help answer that question. Then, code it!
 
 </div>
