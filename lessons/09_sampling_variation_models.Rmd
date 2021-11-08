@@ -10,12 +10,13 @@ output:
 
 
 ```{r, message=FALSE, warning=FALSE}
-library(tidyverse) #for plotting and summarizing
-library(ggridges) #for ridge plots
-library(ggmosaic) #NEW! for mosaic plots
-library(moderndive) #for nice model output
-library(broom) #for nice model output 
-library(infer) #for making inferences about models
+library(tidyverse)    # for plotting and summarizing
+library(equatiomatic) # for model equations
+library(ggridges)     # for ridge plots
+library(ggmosaic)     # for mosaic plots
+library(moderndive)   # for nice model output
+library(broom)        # for nice model output 
+library(infer)        # for making inferences about models
 theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
 ```
 
@@ -49,7 +50,7 @@ kc_house_data <-
 ```
 
 
-# Sampling Distributions
+## Sampling Distributions
 
 We will examine a really simple model that uses `log(sqft_living)` to explain `log(price)`. We are going to think of this as the "population model". 
 
@@ -66,6 +67,15 @@ lm_simple <- lm(log(price) ~ log(sqft_living),
 tidy(lm_simple)
 ```
 
+The "population model" is:
+
+```{r}
+extract_eq(lm_simple, 
+           ital_vars = TRUE, 
+           wrap = TRUE, 
+           use_coefs = TRUE)
+```
+
 
 Let's plot that line on the scatterplot of the data.
 
@@ -80,7 +90,7 @@ augment(lm_simple, data=kc_house_data) %>%
 
 Now let's say that I was going to collect this data myself and I didn't have time (or the technical skills) to get all 21,613 observations. So, instead, I collect a sample of 500 observations. 
 
-I will mimic this by sampling from the entire dataset using the `sample_n()` function. *Reminder*:  The `set.seed()` function at the beginning allows you to replicate the random sampling process so that you get the same random sample everytime the code runs (including when you knit the document). This also means that if someone else uses that same seed, they will get the sampe result, as long as they started with the same data. It is very important to use `set.seed()` anytime we conduct a random process so that we can replicate it. It does not matter what number we put in there.
+I will mimic this by sampling from the entire dataset using the `sample_n()` function. *Reminder*:  The `set.seed()` function at the beginning allows you to replicate the random sampling process so that you get the same random sample every time the code runs (including when you knit the document). This also means that if someone else uses that same seed, they will get the same result, as long as they started with the same data. It is very important to use `set.seed()` anytime we conduct a random process so that we can replicate it. It does not matter what number we put in there.
 
 Then, fit the model that uses `log(sqft_living)` to explain `log(price)`. **How does this model compare to the model that used all the data?**
 
@@ -96,17 +106,24 @@ lm_samp1 <- lm(log(price) ~ log(sqft_living),
 tidy(lm_samp1)
 ```
 
+```{r}
+extract_eq(lm_samp1, 
+           ital_vars = TRUE, 
+           wrap = TRUE, 
+           use_coefs = TRUE)
+```
+
+
 Let's plot the lines. I am going to use the `geom_smooth` function to do this because it will come in handy later.
 
-```{r}
+```{r, message=FALSE}
 augment(lm_simple, data=kc_house_data) %>% 
   ggplot(aes(x=log(sqft_living), y = log(price))) +
   geom_point(alpha=.2, size = .2) +
   geom_point(data = samp1, color="lightblue", alpha = .2, size = .2) +
   geom_line(aes(y=.fitted), color="darkred") +
   geom_smooth(data = samp1, method = "lm", se = FALSE, 
-              color="lightblue", size=.5)  +
-  theme_minimal()
+              color="lightblue", size=.5)
 ```
 
 Let's take another sample of size 500 and fit another line. Use a different seed from the first sample so they are different random samples.
@@ -123,6 +140,13 @@ lm_samp2 <- lm(log(price) ~ log(sqft_living),
 tidy(lm_samp2)
 ```
 
+```{r}
+extract_eq(lm_samp2, 
+           ital_vars = TRUE, 
+           wrap = TRUE, 
+           use_coefs = TRUE)
+```
+
 And plot this line ...
 
 ```{r}
@@ -133,13 +157,12 @@ augment(lm_simple, data=kc_house_data) %>%
   geom_smooth(data = samp1, method = "lm", se = FALSE, 
               color="lightblue", size = .5) +
   geom_smooth(data = samp2, method = "lm", se = FALSE, 
-              color="lightblue", size = .5) +
-  theme_minimal()
+              color="lightblue", size = .5) 
 ```
 
 Now, in order to understand sampling variability we need to be able to this many times. Rather than having us run different models one by one to learn about the variability of the coefficients, we can use simulation to do that for us. 
 
-Like in the Reese's Pieces activity, we will use the `rep_sample_n()` function to take multiple repeated samples. Below we take 200 samples of size 500 from the "population", `kc_house_data`. We are taking samples *without* replacement this time because we are pretending that we are sampling from the population, like when we sampled Reeses pieces using the applets. **How many observations are in `samples_200`?** 
+Like in the Reese's Pieces activity, we will use the `rep_sample_n()` function to take multiple repeated samples. Below we take 200 samples of size 500 from the "population", `kc_house_data`. We are taking samples *without* replacement this time because we are pretending that we are sampling from the population, like when we sampled Reese's Pieces using the applets. **How many observations are in `samples_200`?** 
 
 ```{r}
 set.seed(1113)
@@ -156,7 +179,7 @@ samples_200 <- rep_sample_n(kc_house_data, #data we're sampling from
 First, let's do this graphically. **What do you observe?**
 
 ```{r}
-#This first section just plots the points:
+#This first section plots the "population" points:
 augment(lm_simple, data=kc_house_data) %>% 
   ggplot(aes(x=log(sqft_living), y = log(price))) + 
   geom_point(alpha=.2, color="darkgray", size = .2) + 
@@ -177,7 +200,7 @@ Now, let's actually fit the model 200 times. Look carefully at the output. **Wha
 model_200_times <-
   samples_200 %>% #start with the 200 samples of size 500
   group_by(replicate) %>% #for each replicate 
-  do(lm(log(price) ~ log(sqft_living), data=.) %>% tidy()) %>% #???
+  summarize(lm(log(price) ~ log(sqft_living)) %>% tidy()) %>% #???
   ungroup() #ungroup the data - good to do this when finished with
             #grouped calculations
 
@@ -185,7 +208,7 @@ model_200_times
 ```
 
 
-We can now look at the *sampling distributions* of the etimated slope and intercept. These show us how we expect those statistics to vary from sample to sample. I also put vertical lines where the actual intercept and slope (from the "population model") are located. 
+We can now look at the *sampling distributions* of the estimated slope and intercept. These show us how we expect those statistics to vary from sample to sample. I also put vertical lines where the actual intercept and slope (from the "population model") are located. 
 
 ```{r}
 #slope
@@ -200,7 +223,7 @@ model_200_times %>% #200 models
 ```{r}
 #intercept
 model_200_times %>% 
-  filter(term == "(Intercept)") %>% 
+  filter(term == "(Intercept)") %>% # LOOK CAREFULLY!!
   ggplot(aes(x = estimate)) +
   geom_histogram(bins = 20) +
   geom_vline(xintercept = 6.7431084, color = "darkred") +
@@ -215,12 +238,16 @@ model_200_times %>%
 
 2. How would you describe these distributions in terms of shape?
 
-3. Compute the mean and standard deviation of the slope and intercept estimates. The standard deviation here has a special name, a *standard error*, or SE for short. A standard error is the standard deviation of a statistic. 
+3. Compute the mean and standard deviation of the slope and intercept estimates. The standard deviation here has a special name, a *standard error*, or SE for short. A standard error is the standard deviation of a statistic. I've started the code for you below. Remove the `eval=FALSE`.
 
-```{r}
+```{r, eval=FALSE}
+model_200_times %>% 
+  group_by(___) %>% # We want to compute the mean and standard deviation for each what?
+  summarize(mean_est = ___, # The mean of the estimate
+            se_est = ___)   # The standard deviation of the estimate 
 ```
 
-3. What would happen to the sampling distribution of the slope if, instead of taking samples of size 500, we took samples of size 100? Redo the simulation taking samples of size 100 rather than 500. I have started the code for you below. Fill in the "???"'s and also compute the mean and standard error.
+3. What would happen to the sampling distribution of the slope if, instead of taking samples of size 500, we took samples of size 100? Redo the simulation taking samples of size 100 rather than 500. I have started the code for you below. Fill in the "???"'s and also compute the mean and standard error. Remove the `eval=FALSE`.
 
 ```{r, eval=FALSE}
 #Sample from the "population"
@@ -236,7 +263,7 @@ size100_200 <- rep_sample_n(kc_house_data, #data we're sampling from
 model_size100_200_times <-
   size100_200 %>% #start with the 200 samples of size 500
   group_by(???) %>% #for each replicate 
-  do(lm(??? ~ ???, data=.) %>% tidy()) %>% #???
+  summarize(lm(??? ~ ???) %>% tidy()) %>% #???
   ungroup() #ungroup the data - good to do this when finished with
             #grouped calculations
 
@@ -256,9 +283,9 @@ model_size100_200_times %>% #200 models
 </div>
 
 
-# Bootstrap Distributions
+## Bootstrap Distributions
 
-Remember initially I said to pretend that I couldn't collect the entire population of data. I could only collect 500 observation. But, if I couldn't collect the entire sample of data to begin with, why would I be able to collect 200 different samples of size 500? I couldn't! 
+Remember initially I said to pretend that I couldn't collect the entire population of data. I could only collect 500 observations. But, if I couldn't collect the entire sample of data to begin with, why would I be able to collect 200 different samples of size 500? I couldn't! 
 
 This is where **bootstrapping** comes in to save the day! We can use bootstrapping to estimate the sampling distribution of the slope (we could also do this for the intercept, in a similar way) using only the original sample we took.
 
@@ -275,25 +302,24 @@ Recall, the general bootstrapping algorithm:
 
 Assume that we only have the initial sample we took, *samp1*. and construct the bootstrap distribution of the slope. How does it compare to the actual sampling distribution of the slope above? Find the mean and standard error of the slopes, in addition to plotting the distribution.
 
-I have started the code for you below. 
+I have started the code for you below. Remove the `eval=FALSE` when finished.
 
 ```{r, eval=FALSE}
 set.seed(1113)
-resamples_200 <- rep_sample_n(_____, 
-                            size = _____, 
-                            reps = _____, 
-                            replace = _____)
+resamples_200 <- rep_sample_n(_____,        # where do we sample from?
+                            size = _____,   # what is the size of each sample?
+                            reps = _____,   # how many timed do we repeat the whole sampling process?
+                            replace = _____) # do we sample with or without replacement?
 
 boot_model_200_times <-
   resamples_200 %>% 
   group_by(_____) %>%     
-  do(lm(_____ ~ _____, data = .) %>% tidy())
+  summarize(lm(_____ ~ _____) %>% tidy())
 
 boot_model_200_times %>% 
   filter(term == "_____") %>% 
   ggplot(aes(x = _____)) +
   geom_histogram()
-
 ```
 
 </div>
