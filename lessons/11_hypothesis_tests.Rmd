@@ -9,13 +9,14 @@ output:
 ---
 
 ```{r, message=FALSE, warning=FALSE}
-library(alr4) #for data
-library(tidyverse) #for plotting and summarizing
-library(ggridges) #for ridge plots
-library(ggmosaic) #for mosaic plots
-library(moderndive) #for nice model output
-library(broom) #for nice model output 
-library(infer) #for making inferences about models
+library(alr4)         # for data
+library(tidyverse)    # for plotting and summarizing
+library(ggridges)     # for ridge plots
+library(ggmosaic)     # for mosaic plots
+library(moderndive)   #for nice model output
+library(broom)        # for nice model output 
+library(infer)        # for making inferences about models
+library(equatiomatic) # for nice model equations
 theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
 ```
 
@@ -89,7 +90,7 @@ hypothetical_samples <-
 
 hypothetical_samples %>% 
   ggplot(aes(x = lengthcm, y = new_Age, group = replicate)) +
-  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(method = "lm", se = FALSE, color = "lightblue") +
   geom_abline(intercept = -0.9930344, slope = 0.2692521, color = "darkred") +
   ylim(0,8)
 ```
@@ -101,7 +102,7 @@ hypothetical_samples %>%
   filter(replicate<10) %>% 
   ggplot(aes(x = lengthcm, y = new_Age)) +
   geom_jitter(size = .5, alpha = .5) +
-  geom_smooth(method = "lm", se = FALSE) +
+  geom_smooth(method = "lm", se = FALSE, color = "lightblue") +
   geom_abline(intercept = -0.9930344, slope = 0.2692521, color = "darkred") +
   facet_wrap(~replicate)
 ```
@@ -114,11 +115,11 @@ This histogram/distribution simulates the sampling distribution of the slope in 
 ```{r}
 hypothetical_samples %>%
   group_by(replicate) %>%     
-  do(lm(new_Age ~ lengthcm, data=.) %>% tidy()) %>% 
+  summarize(lm(new_Age ~ lengthcm) %>% tidy()) %>% 
   ungroup() %>% 
   filter(term == "lengthcm") %>% 
   ggplot(aes(x=estimate)) +
-  geom_histogram(bins=30) +
+  geom_histogram(bins=30, fill = "lightblue") +
   geom_vline(xintercept = 0.2692521, color = "darkred")
 ```
 
@@ -126,7 +127,7 @@ hypothetical_samples %>%
 <div class="alert alert-info">
   <strong>YOUR TURN!</strong>
 
-* What is an observation in the histogram above.  
+* What is an observation in the histogram above?  
 * What does this tell us about the slope from the sample data compared to what we'd expect to see in the hypothetical world where there is no relationship between `Age` and `lengthcm`?
 
 </div>
@@ -152,17 +153,17 @@ How could you finish the following statements so that they are true?
 ```{r, echo=FALSE}
 hypothetical_samples %>%
   group_by(replicate) %>%     
-  do(lm(new_Age ~ lengthcm, data=.) %>% tidy()) %>% 
+  summarize(lm(new_Age ~ lengthcm) %>% tidy()) %>% 
   ungroup() %>% 
   filter(term == "lengthcm") %>% 
   ggplot(aes(x=estimate)) +
-  geom_histogram(bins=15)
+  geom_histogram(bins=15, fill = "lightblue")
 ```
 
 2. Compare the observed value of the statistic (the slope from the sample data) to the known distribution. There are two possible outcomes:
 
-  *Agreement: the observed statistic is a plausible outcome from the distribution of the statistic  
-  *Disagreement: the observed statistic is not a plausible outcome from the distribution of the statistic
+  * Agreement: the observed statistic is a plausible outcome from the distribution of the statistic  
+  * Disagreement: the observed statistic is not a plausible outcome from the distribution of the statistic
 
 3. Draw a conclusion (see [contrapositive](http://www.mathwords.com/c/contrapositive.htm))
 
@@ -210,9 +211,9 @@ set.seed(1119)
 
 hypothetical_samples <-
   wblake2 %>% #original sample of data
-  rep_sample_n(size = 439, #take samples of this size from the original sample
+  rep_sample_n(size = 439, #take samples of this size from the original sample - why this?
                replace = FALSE, #without replacement
-               reps = 200) %>% #this many samples/ replicates of the process
+               reps = 200) %>% #this many replicates of the process
   group_by(replicate) %>% #for each replicate
   mutate(new_Age = sample(Age)) %>% #shuffle/permute the Ages
   ungroup() #ungroup the data
@@ -225,11 +226,11 @@ Then, for each sample, we fit the model `new_Age ~ lengthcm` and keep track of t
 ```{r}
 hypothetical_samples %>% #200 samples of data from "hypothetical world" where there is no relationship
   group_by(replicate) %>% #for each replicate/sample
-  do(lm(new_Age ~ lengthcm, data=.) %>% tidy()) %>% #fit this model
+  summarize(lm(new_Age ~ lengthcm) %>% tidy()) %>% #fit this model
   ungroup() %>% #ungroup the data
   filter(term == "lengthcm") %>% #filter to only this term
   ggplot(aes(x=estimate)) + #make a histogram of the estimated coefficients
-  geom_histogram(bins=15) 
+  geom_histogram(bins=15, fill = "lightblue") 
 ```
 
 
@@ -238,11 +239,11 @@ Does the slope from our sample data seem to agree or disagree with the null hypo
 ```{r}
 hypothetical_samples %>%
   group_by(replicate) %>%     
-  do(lm(new_Age ~ lengthcm, data=.) %>% tidy()) %>% 
+  summarize(lm(new_Age ~ lengthcm) %>% tidy()) %>% 
   ungroup() %>% 
   filter(term == "lengthcm") %>% 
   ggplot(aes(x=estimate)) +
-  geom_histogram(bins=30) +
+  geom_histogram(bins=30, fill = "lightblue") +
   geom_vline(xintercept = 0.2692521, color = "darkred")
 ```
 
@@ -251,29 +252,29 @@ hypothetical_samples %>%
  
 In the discussion about agreement and disagreement above, I didn't mention any detail around how you might decide if the observed statistic is a plausible outcome from the distribution of the statistic. What counts as plausible? And how do we calculate it? 
 
-The p-value is the fraction of the distribution of the statistics when the null hypothesis is true that are more extreme (less likely) than the observed statistic from the sample. Conventially an observation is considered implausible when the p-value is less than .05. 
+The p-value is the fraction of the distribution of the statistics when the null hypothesis is true that are more extreme (less likely) than the observed statistic from the sample. Conventionally an observation is considered implausible when the p-value is less than .05. 
 
 How would you calculate the p-value using the simulated data? 
 
-1. We need to understand that "more extreme" means further into the tails of the distribution. So, in our example, that would mean further to the right of where the observed value lies. It also means further to the left of the negative of the observed value because that is equally as extreme. In other problems, we could have a negative observed slope so "more extrems" would be to the left of the observed value and to the right of the positive of the observed value. You need to take time to think about this.
+1. We need to understand that "more extreme" means further into the tails of the distribution. So, in our example, that would mean further to the right of where the observed value lies. It also means further to the left of the negative of the observed value because that is equally as extreme. In other problems, we could have a negative observed slope so "more extreme" would be to the left of the observed value and to the right of the positive of the observed value. You need to take time to think about this.
 
 2. Create a column/variable that indicates if the estimated slope is more extreme than the observed value. I do that below, creating a variable called `more_extreme_than_actual`. **What values does this variable take?**
 
 ```{r}
 hypothetical_samples %>%
   group_by(replicate) %>%     
-  do(lm(new_Age ~ lengthcm, data=.) %>% tidy()) %>% 
+  summarize(lm(new_Age ~ lengthcm) %>% tidy()) %>% 
   ungroup() %>% 
   filter(term == "lengthcm") %>% 
   mutate(more_extreme_than_actual = estimate > 0.2692521)
 ```
 
-3. Compute the p-value by finding the proportion or fraction of the distribution of the statistics when the null hypothesis is true (the estimated coeffficients) that are more extreme (less likely) than the observed statistic from the sample. In the code below, inside the `summary()` function, I compute the p-value in two different ways. You DO NOT need to do both as they are doing the exact same thing. The `more_extreme_than_actual` variable takes TRUE/FALSE values but those are treated as 1/0. So, taking the mean is giving the proportion that are more extreme. We double it (multiply by 2) to account for the equivalent extrem cases in the other direction.
+3. Compute the p-value by finding the proportion or fraction of the distribution of the statistics when the null hypothesis is true (the estimated coeffficients) that are more extreme (less likely) than the observed statistic from the sample. In the code below, inside the `summarize()` function, I compute the p-value in two different ways. You DO NOT need to do both as they are doing the exact same thing. The `more_extreme_than_actual` variable takes TRUE/FALSE values but those are treated as 1/0. So, taking the mean is giving the proportion that are more extreme. We double it (multiply by 2) to account for the equivalent extreme cases in the other direction.
 
 ```{r}
 hypothetical_samples %>%
   group_by(replicate) %>%     
-  do(lm(new_Age ~ lengthcm, data=.) %>% tidy()) %>% 
+  summarize(lm(new_Age ~ lengthcm) %>% tidy()) %>% 
   ungroup() %>% 
   filter(term == "lengthcm") %>% 
   mutate(more_extreme_than_actual = estimate > 0.2692521) %>% 
@@ -337,7 +338,7 @@ Then, we use the data to make our conclusion. We observe that $\hat{\beta}_1 = 0
 # Summary of the process
 
 1. State $H_0$ and $H_a$.    
-2. Select the threshold for a small enough p-value at which you will reject $H_0$. This is calle $\alpha$ and is commonly set at .05.  
+2. Select the threshold for a small enough p-value at which you will reject $H_0$. This is called $\alpha$ and is commonly set at .05.  
 3. Calculate a test statistic and corresponding p-value. This can be done using theory (R output) or simulation.  
 4. Make a decision - reject or don't reject $H_0$.
 5. Put your decision in the context of the data! 
@@ -346,7 +347,7 @@ Then, we use the data to make our conclusion. We observe that $\hat{\beta}_1 = 0
 <div class="alert alert-info">
   <strong>YOUR TURN!</strong>
 
-Often, we have more than one variable in our model. For example with the fish data, we may also use the size of their scale to predice their age. What are the hypotheses being tested for each of the coefficients (not the intercept) in the output below? How would you use simulation to compute the p-value? Do you get a similar result to when you use the regression table directly?
+Often, we have more than one variable in our model. For example with the fish data, we may also use the size of their scale to predict their age. What are the hypotheses being tested for each of the coefficients (not the intercept) in the output below? How would you use simulation to compute the p-value? Do you get a similar result to when you use the regression table directly?
 
 
 ```{r}

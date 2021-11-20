@@ -9,13 +9,14 @@ output:
 ---
 
 ```{r, message=FALSE, warning=FALSE}
-library(alr4) #for data
-library(tidyverse) #for plotting and summarizing
-library(ggridges) #for ridge plots
-library(ggmosaic) #for mosaic plots
-library(moderndive) #for nice model output
-library(broom) #for nice model output 
-library(infer) #for making inferences about models
+library(alr4)         # for data
+library(tidyverse)    # for plotting and summarizing
+library(ggridges)     # for ridge plots
+library(ggmosaic)     # for mosaic plots
+library(moderndive)   # for nice model output
+library(infer)        # for making inferences about models
+library(broom)        # for nice model output 
+library(equatiomatic) # for nice model equations
 theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
 ```
 
@@ -23,11 +24,7 @@ Let's look at the `diamonds` data from the `tidyverse` library.
 We are interested in testing if there is a relationship between `cut` and `log(price)`.
 
 ```{r}
-diamonds_new <- diamonds %>% 
-  mutate(cut = fct_relevel(fct_inorder(cut, ordered = FALSE), 
-                           "Fair", "Good", "Very Good", "Premium"))
-
-diamonds_new %>% 
+diamonds %>% 
   ggplot(aes(x=cut, y=log(price))) +
   geom_boxplot() +
   theme_minimal()
@@ -37,7 +34,7 @@ And we could fit a model:
 
 ```{r}
 lm_cut <- lm(log(price) ~ cut, 
-              data=diamonds_new)
+              data=diamonds)
 tidy(lm_cut)
 ```
 
@@ -78,7 +75,7 @@ $$
 We can use the `anova()`, AN(alysis) O(f) VA(riance), function in R to test the desired hypothesis. First, we need the "null" model, which in this case is a model with no variables. The `p.value` is the p-value for the test we described above. **Caution**: the two models must be "nested" models in order to use ANOVA. That means that one model is a subset of the other, or that the variables from the smaller model are all in the larger model.
 
 ```{r}
-null_mod <- lm(log(price) ~ 1, data = diamonds_new)
+null_mod <- lm(log(price) ~ 1, data = diamonds)
 
 anova(null_mod, lm_cut) %>% tidy()
 ```
@@ -108,20 +105,22 @@ Now, just like when we had a quantitative variable, we can break the relationshi
 
 ```{r}
 mod_no_relationship <- lm(sample(log(price)) ~ cut,
-                          data=diamonds_new)
+                          data=diamonds)
 tidy(mod_no_relationship)
 glance(mod_no_relationship) %>% select(r.squared)
 ```
 
-Now, let's use R to help us do this many times (200 seems good enough) and keep track of the $R^2$ each time. (This takes a bit of time since there's so much data).
+Now, let's use R to help us do this many times (100 seems good enough this time - the intial dataset is big!) and keep track of the $R^2$ each time. (This takes a bit of time since there's so much data).
 
 ```{r}
 set.seed(100)
 
-r_squared <- diamonds_new %>% 
-  rep_sample_n(size = 53940, replace = FALSE, reps = 200) %>% 
+r_squared <- diamonds %>% 
+  rep_sample_n(size = 53940, 
+               replace = FALSE, 
+               reps = 100) %>% 
   group_by(replicate) %>% 
-  do(lm(sample(log(price)) ~ cut, data = .) %>% glance()) %>% 
+  summarize(lm(sample(log(price)) ~ cut) %>% glance()) %>% 
   ungroup() %>% 
   select(replicate, r.squared)
 
@@ -134,7 +133,7 @@ Now, let's plot these in a histogram.
 ```{r}
 r_squared %>% 
   ggplot(aes(x=r.squared)) +
-  geom_histogram(bins = 500) +
+  geom_histogram(bins = 500) + # do this b/c the actual is so far away
   geom_vline(xintercept = r_squared_actual, color="darkred")
 ```
 
@@ -151,7 +150,7 @@ Now, what if we want to test the significance of a categorical variable, with ot
 
 ```{r}
 lm_more <- lm(log(price) ~ cut + carat,
-                 data=diamonds_new)
+                 data=diamonds)
 tidy(lm_more)
 ```
 
@@ -161,8 +160,8 @@ tidy(lm_more)
 Write out your hypotheses and use the `anova()` function to conduct the test. 
 
 ```{r}
-lm_carat <- lm(log(price) ~ carat, data = diamonds_new)
-anova(lm_carat, lm_more) %>% tidy()
+lm_carat <- lm(log(price) ~ carat, data = diamonds)
+# add the anova function here
 ```
 
 </div>
