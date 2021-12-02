@@ -20,6 +20,15 @@ library(equatiomatic) # for nice model equations
 theme_set(theme_minimal()) #changes the theme of ggplots to theme_minimal, my personal favorite
 ```
 
+```{r}
+# Make a small change to the data so that our output shows up as expected.
+
+diamonds <- diamonds %>% 
+  mutate(cut = fct_relevel(fct_inorder(cut, ordered = FALSE), 
+                           "Fair", "Good", "Very Good", "Premium"))
+```
+
+
 Let's look at the `diamonds` data from the `tidyverse` library.
 We are interested in testing if there is a relationship between `cut` and `log(price)`.
 
